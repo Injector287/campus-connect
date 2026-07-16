@@ -1,0 +1,543 @@
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link type="text/css" href="../../resources/css/studentstyle.css" rel="stylesheet"/>
+        <link type="text/css" href="../../resources/css/bootstrap.min.css" rel="stylesheet"/>
+        <!-- load jquery library -->
+        <script src="../../resources/js/jquery-1.8.2.js" type="text/javascript"></script>
+
+        <!-- load jquery ui library -->
+        <script src="../../resources/js/jquery-ui-1.8.15.custom.min.js" type="text/javascript"></script>
+
+        <!-- load jquery ui css theme -->
+        <link type="text/css" href="../../resources/css/jquery-ui-1.8.15.custom.css" rel="stylesheet" />
+        <script type="text/javascript" src="../../resources/js/stripes.js" ></script>
+
+        <link href="../../resources/css/sDashboard.css" rel="stylesheet">
+        <link href="../../resources/css/jquery.jqplot.css" rel="stylesheet">
+
+
+        <!-- load touch punch library to enable dragging on touch based devices -->
+        <script src="../../resources/js/jquery.ui.touch-punch.js" type="text/javascript"></script>
+
+        <!-- load jqplot charting library -->
+        <script src="../../resources/js/jquery.jqplot.js" type="text/javascript"></script>
+        <script src="../../resources/js/jqplot.pieRenderer.js" type="text/javascript"></script>
+
+        <!-- load dashboard library -->
+        <script src="../../resources/js/jquery-sDashboard.js" type="text/javascript"></script>
+        <script>
+            function funLoadAttendanceAbstract() {
+                document.getElementById('td_2').innerHTML = ":&nbsp;" + document.getElementById('hdnHrsPresent').value; 
+                if (parseInt(document.getElementById('hdnHrsAbsent').value) > 0) {
+                    $('#tr_3').show();
+                    document.getElementById('td_3').innerHTML = ":&nbsp;" + document.getElementById('hdnHrsAbsent').value;
+                }
+                if (parseInt(document.getElementById('hdnCL').value) > 0) {
+                    $('#tr_4').show();
+                    document.getElementById('td_4').innerHTML = ":&nbsp;" + document.getElementById('hdnCL').value;
+                } else {
+                    $('#tr_4').hide();
+                }
+                if (parseInt(document.getElementById('hdnML').value) > 0) {
+                    $('#tr_5').show();
+                    document.getElementById('td_5').innerHTML = ":&nbsp;" + document.getElementById('hdnML').value;
+                } else {
+                    $('#tr_5').hide();
+                }
+                if (parseInt(document.getElementById('hdnOD').value) > 0) {
+                    $('#tr_6').show();
+                    document.getElementById('td_6').innerHTML = ":&nbsp;" + document.getElementById('hdnOD').value;
+                } else {
+                    $('#tr_6').hide();
+                }
+                if (parseInt(document.getElementById('hdnHrsOverAllAbsent').value) > 0) {
+                    $('#tr_7').show();
+                    document.getElementById('td_7').innerHTML = ":&nbsp;" + document.getElementById('hdnHrsOverAllAbsent').value;
+                } else {
+                    $('#tr_7').hide();
+                }
+                if (parseInt(document.getElementById('hdnDA').value) > 0) {
+                    $('#tr_8').show();
+                    document.getElementById('td_8').innerHTML = ":&nbsp;" + document.getElementById('hdnDA').value;
+                } else {
+                    $('#tr_8').hide();
+                }
+                if (parseInt(document.getElementById('hdnLA').value) > 0) {
+                    $('#tr_9').show();
+                    document.getElementById('td_9').innerHTML = ":&nbsp;" + document.getElementById('hdnLA').value;
+                } else {
+                    $('#tr_9').hide();
+                }
+//                if (parseInt(document.getElementById('hdnIN').value) > 0) {
+//                    $('#tr_10').show();
+//                    document.getElementById('td_10').innerHTML = ":&nbsp;" + document.getElementById('hdnIN').value;
+//                } else {
+//                    $('#tr_10').hide();
+//                }
+//                if (parseInt(document.getElementById('hdnPW').value) > 0) {
+//                    $('#tr_12').show();
+//                    document.getElementById('td_12').innerHTML = ":&nbsp;" + document.getElementById('hdnPW').value;
+//                } else {
+//                    $('#tr_12').hide();
+//                }
+//                if (parseInt(document.getElementById('hdnFW').value) > 0) {
+//                    $('#tr_13').show();
+//                    document.getElementById('td_13').innerHTML = ":&nbsp;" + document.getElementById('hdnFW').value;
+//                } else {
+//                    $('#tr_13').hide();
+//                }
+//                if (parseInt(document.getElementById('hdnSL').value) > 0) {
+//                    $('#tr_14').show();
+//                    document.getElementById('td_14').innerHTML = ":&nbsp;" + document.getElementById('hdnSL').value;
+//                } else {
+//                    $('#tr_14').hide();
+//                }
+//                if (parseInt(document.getElementById('hdnIV').value) > 0) {
+//                    $('#tr_15').show();
+//                    document.getElementById('td_15').innerHTML = ":&nbsp;" + document.getElementById('hdnIV').value;
+//                } else {
+//                    $('#tr_15').hide();
+//                }
+//                if (parseInt(document.getElementById('hdnET').value) > 0) {
+//                    $('#tr_16').show();
+//                    document.getElementById('td_16').innerHTML = ":&nbsp;" + document.getElementById('hdnET').value;
+//                } else {
+//                    $('#tr_16').hide();
+//                }
+
+                var presentPercentage = document.getElementById('hdnPresentPercentage').value;
+                if (parseFloat(presentPercentage) < 60) {
+                    document.getElementById("progressbar").innerHTML = "Attendance Level: Poor, Must Improve";
+                    document.getElementById("progressbar").style.backgroundColor = "red";
+                    document.getElementById("progressbar").style.color = "#fff";
+                } else if (parseFloat(presentPercentage) < 80) {
+                    document.getElementById("progressbar").innerHTML = "Attendance Level: Should Improve";
+                    document.getElementById("progressbar").style.backgroundColor = "YELLOW";
+                } else {
+                    document.getElementById("progressbar").innerHTML = "Attendance Level: Satisfactory";
+                    document.getElementById("progressbar").style.backgroundColor = "GREEN";
+                    document.getElementById("progressbar").style.color = "#fff";
+                }
+                pieChart();
+            }
+
+            function pieChart() {
+                //jq plot data
+                var Present = document.getElementById('hdnHrsPresent').value;
+                var OverAllAbsent = document.getElementById('hdnHrsOverAllAbsent').value;
+                var Absent = document.getElementById('hdnHrsAbsent').value;
+                var CL = document.getElementById('hdnCL').value;
+                var ML = document.getElementById('hdnML').value;
+                var OD = document.getElementById('hdnOD').value;
+                var DA = document.getElementById('hdnDA').value;
+                var LA = document.getElementById('hdnLA').value;
+//                var IN = document.getElementById('hdnIN').value;
+//                var PW = document.getElementById('hdnPW').value;
+//                var FW = document.getElementById('hdnFW').value;
+//                var SL = document.getElementById('hdnSL').value;
+//                var IV = document.getElementById('hdnIV').value;
+//                var ET = document.getElementById('hdnET').value;
+                var totalHour = parseFloat(Present + OverAllAbsent);
+                var PresentPercent = parseFloat(Present / totalHour * 100);
+                var AbsentPercent = parseFloat(Absent / totalHour * 100);
+                var CLPercent = parseFloat(CL / totalHour * 100);
+                var MLPercent = parseFloat(ML / totalHour * 100);
+                var ODPercent = parseFloat(OD / totalHour * 100);
+                var DAPercent = parseFloat(DA / totalHour * 100);
+                var LAPercent = parseFloat(LA / totalHour * 100);
+//                var INPercent = parseFloat(IN / totalHour * 100);
+//                var PWPercent = parseFloat(PW / totalHour * 100);
+//                var FWPercent = parseFloat(FW / totalHour * 100);
+//                var SLPercent = parseFloat(SL / totalHour * 100);
+//                var IVPercent = parseFloat(IV / totalHour * 100);
+//                var ETPercent = parseFloat(ET / totalHour * 100);
+                var jqplotPieData = [['Present', PresentPercent],
+                    ['Absent', AbsentPercent],
+                    ['CL', CLPercent],
+                    ['ML', MLPercent],
+                    ['OD', ODPercent],
+                    ['DA', DAPercent],
+                    ['LA', LAPercent],
+//                    ['IN', INPercent],
+//                    ['PW', PWPercent],
+//                    ['FW', FWPercent],
+//                    ['SL', SLPercent],
+//                    ['IV', IVPercent],
+//                    ['ET', ETPercent]
+                ];
+
+                //construct and render a jq plot chart
+                var plot1 = $.jqplot('chart1', [jqplotPieData], {
+                    seriesDefaults: {
+                        // Make this a pie chart.
+                        renderer: jQuery.jqplot.PieRenderer,
+                        trendline: {show: false},
+                        rendererOptions: {
+                            // Put data labels on the pie slices.
+                            // By default, labels show the percentage of the slice.
+                            showDataLabels: true,
+                            sliceMargin: 1,
+                            startAngle: -90,
+                            padding: 10
+                        }
+                    },
+                    legend: {
+                        show: true,
+                        location: 'n',
+                        placement: 'outside',
+                        rendererOptions: {
+                            numberRows: 2
+                        },
+                        marginBottom: '30px',
+                        padding: 40
+                    },
+                    pie: {
+                        show: true,
+                        explode: 6
+                    }
+                });
+
+
+                //**********************************************//
+                //dashboard json data
+                //this is the data format that the dashboard framework expects
+                //**********************************************//
+
+                var dashboardJSON = [{
+                        widgetTitle: "jqPlot Example",
+                        widgetId: "jqPlotExample123",
+                        widgetContent: $("#chart1")
+                    }];
+
+                //add an event listener for dashboard creation complete event
+                $("#myDashboard").bind("sdashboardcreationcomplete", function (e) {
+
+                    $('#chart1').height(80);
+                    $('#chart1').width(175);
+
+                    plot1.replot({
+                        resetAxes: true
+                    });
+                });
+
+                //add an event listener for dashboard widget maximized event
+                $("#myDashboard").bind("sdashboardwidgetmaximized", function (e, data) {
+
+                    var widgetDefinition = data.widgetDefinition;
+                    widgetDefinition.widgetContent.height(600 * 0.96);
+                    widgetDefinition.widgetContent.width(800 * 0.96);
+
+                    plot1.replot({
+                        resetAxes: true
+                    });
+                });
+
+                //add an event listener for dashboard widget minimized event
+                $("#myDashboard").bind("sdashboardwidgetminimized", function (e, data) {
+                    var widgetDefinition = data.widgetDefinition;
+                    widgetDefinition.widgetContent.height(80);
+                    widgetDefinition.widgetContent.width(175);
+
+                    plot1.replot({
+                        resetAxes: true
+                    });
+                });
+
+
+                //render a dashboard
+                $("#myDashboard").sDashboard({
+                    dashboardData: dashboardJSON
+                });
+            }
+
+        </script>
+    </head>
+    <body>
+        <TABLE width="100%" class="table">
+            <TR>
+                <TD colspan="3"  class="header ui-corner-all" style="height: 25px;">
+                    HOUR WISE ATTENDANCE
+                </TD>
+            </TR>
+            <TR><TD style="vertical-align: top" width="30%%">
+                    <TABLE width="100%" class="ui-corner-all">
+                        <TR align="center" style='height:120px'><td>&nbsp;</td></tr>
+                        <TR><TD><div id="chart1" ></div>
+                                <ul id="myDashboard"></ul>
+                            </TD></TR>
+                    </TABLE>           
+
+                    <BR>     
+                    <TABLE align="center" cellpadding='5' cellspacing='0'  class="ui-corner-all table" border="0" width="100%">
+                        <TR><TD width="50%" nowrap>Total No. Working Days</TD><TD id="td_1">:&nbsp;25</TD></TR>
+                        <TR><TD nowrap valign="top">No. Hours Present <br>(including AR,IN,PW,FW,SL,IV,ET)</TD><TD id="td_2"  valign="top"></TD></TR>
+                        <TR><TD nowrap valign="top">No. Hours Absent<br>(including Leave,CL,ML,OD,DA and LA)</TD><TD  valign="top" id="td_7"></TD></TR> 
+                        <tr><td colspan="2"><div id="progressbar" style="text-align: center "></div></td><tr>    
+                        <TR style="color:#396A92;" id="tr_3" style="display:none;"><TD nowrap>No. Hours Leave</TD><TD id="td_3"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_4" style="display:none;"><TD nowrap>No. Hours CL</TD><TD id="td_4"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_5" style="display:none;"><TD nowrap>No. Hours ML</TD><TD id="td_5"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_6" style="display:none;"><TD nowrap>No. Hours OD</TD><TD id="td_6"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_8" style="display:none;"><TD nowrap>No. Hours DA</TD><TD id="td_8"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_9" style="display:none;"><TD nowrap>No. Hours LA</TD><TD id="td_9"></TD></TR>
+<!--                        <TR style="color:#396A92;" id="tr_10" style="display:none;"><TD nowrap>No. Hours IN</TD><TD id="td_10"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_12" style="display:none;"><TD nowrap>No. Hours PW</TD><TD id="td_12"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_13" style="display:none;"><TD nowrap>No. Hours FW</TD><TD id="td_13"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_14" style="display:none;"><TD nowrap>No. Hours SL</TD><TD id="td_14"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_15" style="display:none;"><TD nowrap>No. Hours IV</TD><TD id="td_15"></TD></TR>
+                        <TR style="color:#396A92;" id="tr_16" style="display:none;"><TD nowrap>No. Hours ET</TD><TD id="td_16"></TD></TR>-->
+                    </TABLE>
+
+                    
+                        <p> <b>Legends:</b><br><font size="2"><b>A</b>-Absent, <b>P</b>-Present, <b>OD</b>-On Duty,<b>ML</b>-Medical Leave, <b>CL</b>-Casual Leave, <b>DA</b>-Disciplinary Action, <b>LA</b>-Late Comer, <b>AR</b>-Attendance Release, <b>IP</b>-Internship Present 
+                            ,<b>IN</b>-Internship, <b>PW</b>-Project Work,<b>FW</b>-Field Work, <b>SL</b>-Service Learning, <b>IV</b>-Industrial Visit, <b>ET</b>-Educational Tour</font></p> 
+                        <TABLE>        
+                            <TR><TD class='dynaColorTR2' colspan="2"><b>Disclaimer:</b><br><font size="2">Attendance details published in this website is only for the immediate information to the students and does not constitute to be a legal document.</font> </TD>
+                            </TR>
+                        </TABLE>
+
+                    </TD>
+
+                    <TD valign="top">
+
+                        <TABLE  name="table1" cellpadding='5' cellspacing='1' align="center" class="table"  border="0">
+                            <tr>
+                                <td class='bg-primary ui-corner-all'>Attendance Date</td>
+                            
+                                
+                                <td width="30px" align="center" class='bg-primary ui-corner-all'>1</td>    
+                            
+                                
+                                <td width="30px" align="center" class='bg-primary ui-corner-all'>2</td>    
+                            
+                                
+                                <td width="30px" align="center" class='bg-primary ui-corner-all'>3</td>    
+                            
+                                
+                                <td width="30px" align="center" class='bg-primary ui-corner-all'>4</td>    
+                            
+                                
+                                <td width="30px" align="center" class='bg-primary ui-corner-all'>5</td>    
+                                                 
+                        </tr>
+
+                        <tr><td class='bg-primary' width='30%' nowrap title='6th Day'>15-Jul-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='5th Day'>14-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='4th Day'>13-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='3rd Day'>10-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='2nd Day'>09-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='1st Day'>08-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='6th Day'>07-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='5th Day'>06-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='4th Day'>03-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='3rd Day'>02-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='2nd Day'>01-Jul-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='1st Day'>30-Jun-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='6th Day'>29-Jun-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='5th Day'>27-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='4th Day'>25-Jun-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='3rd Day'>24-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='2nd Day'>23-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='1st Day'>22-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>ML</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='6th Day'>20-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='5th Day'>19-Jun-2026</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-info  ui-corner-all' align=center width='20px'>P</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+<td class='alert-deafualt ui-corner-all' align=center width='20px'>&nbsp;</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='4th Day'>18-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='3rd Day'>17-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='2nd Day'>16-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+</tr>
+<tr><td class='bg-primary' width='30%' nowrap title='1st Day'>15-Jun-2026</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+<td class='alert-danger  ui-corner-all' align=center width='20px'>A</td>
+</tr>
+
+                        
+
+                    </table>
+
+                </TD>
+
+
+                
+
+            <input type="hidden" id="hdnWorkingDays" value="24">
+            <input type="hidden" id="hdnHrsPresent" value="65">
+            <input type="hidden" id="hdnHrsAbsent" value="32">
+            <input type="hidden" id="hdnCL" value="0">
+            <input type="hidden" id="hdnML" value="14">
+            <input type="hidden" id="hdnOD" value="0">
+            <input type="hidden" id="hdnDA" value="0">
+            <input type="hidden" id="hdnLA" value="0">     
+<!--            <input type="hidden" id="hdnIN" value="0"> 
+            <input type="hidden" id="hdnPW" value="0">
+            <input type="hidden" id="hdnFW" value="0">
+            <input type="hidden" id="hdnSL" value="0">
+            <input type="hidden" id="hdnIV" value="0">
+            <input type="hidden" id="hdnET" value="0">-->
+            
+            <input type="hidden" id="hdnHrsOverAllAbsent" value="46">
+            <input type="hidden" id="hdnPresentPercentage" value="58.55855855855856">
+
+            <script>
+                funLoadAttendanceAbstract();
+            </script>
+
+            <TD valign="top">
+                
+
+            </TD>
+        </TR>
+    </TABLE>
+</body>
+</html>

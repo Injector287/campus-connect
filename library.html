@@ -1,0 +1,108 @@
+
+
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link type="text/css" href="../../resources/css/studentstyle.css" rel="stylesheet"/>
+        <link type="text/css" href="../../resources/css/bootstrap.min.css" rel="stylesheet"/>
+        <link type="text/css" href="../../resources/css/jquery-ui-1.8.15.custom.css" rel="stylesheet"/>
+        <script language="javascript" src="../../resources/js/jquery.js" type="text/javascript"></script>                  
+        <script type="text/javascript" src="../../resources/js/jquery-ui.js"></script>
+        <title>Library Details</title>
+        <script>
+            var SWSUrl="../../students/report/studentLibraryDetailsInner.jsp"
+            $(function() {
+                $("#tabs").tabs({
+                    activate: function(event, ui) {
+                        var tabindex = $(ui.newTab).index();
+                        if (tabindex == 0) {
+                            funLoadBooksInHand();
+                        }
+                        if (tabindex == 1) {
+                            funLoadLibraryActivities();
+                        }
+                        if (tabindex == 2) {
+                            funLoadLibraryFineDetails();
+                        }
+                    }
+                });
+            });
+            
+            function funLoadBooksInHand() {
+                StudentWiseSubjectsParameter = [];
+                StudentWiseSubjectsParameter.push({name: "ids", value: 1});
+                StudentWiseSubjectsParameter.push({name: "filter", value: ""});
+                $("#divBooksInHand").html("<img src='../../resources/Image/loading.gif'>");
+                $("#divBooksInHand").show();
+                $.post(SWSUrl, StudentWiseSubjectsParameter, function(data) {
+                    $("#divBooksInHand").html(data);
+                    $("#divBooksInHand").show();
+                    stripeTables("tblBooksInHand","dynaColorTR1", "dynaColorTR2");
+                }, "html").error(function(jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText);
+                })
+            }
+            
+            function funLoadLibraryActivities() {
+                StudentWiseSubjectsParameter = [];
+                StudentWiseSubjectsParameter.push({name: "ids", value: 2});
+                StudentWiseSubjectsParameter.push({name: "filter", value: ""});
+                $("#divLibraryActivities").html("<img src='../../resources/Image/loading.gif'>");
+                $("#divLibraryActivities").show();
+                $.post(SWSUrl, StudentWiseSubjectsParameter, function(data) {
+                    $("#divLibraryActivities").html(data);
+                    $("#divLibraryActivities").show();
+                    stripeTables("tblLibraryActivities","dynaColorTR1", "dynaColorTR2");
+                }, "html").error(function(jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText);
+                })
+            }
+            
+            function funLoadLibraryFineDetails() {
+                StudentWiseSubjectsParameter = [];
+                StudentWiseSubjectsParameter.push({name: "ids", value: 3});
+                StudentWiseSubjectsParameter.push({name: "filter", value: ""});
+                $("#divLibraryFine").html("<img src='../../resources/Image/loading.gif'>");
+                $("#divLibraryFine").show();
+                $.post(SWSUrl, StudentWiseSubjectsParameter, function(data) {
+                    $("#divLibraryFine").html(data);
+                    $("#divLibraryFine").show();
+                    stripeTables("tblLibraryFineDetails","dynaColorTR1", "dynaColorTR2");
+                }, "html").error(function(jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText);
+                })
+            }
+            
+        </script>
+    </head>
+    <body onload="funLoadBooksInHand()">
+        <table width="100%" cellpadding="5" class="table">
+            <TR>
+                <td colspan="1"  class="header ui-corner-all" style="height: 25px;">LIBRARY DETAILS </td>
+            </TR>  
+            <tr>
+                <td>
+                    <div id="tabs">
+                            <ul>
+                                <li id="tab1"><a href="#tabs-1">Books in Hand</a></li>
+                                <li id="tab2"><a href="#tabs-2">Library Activities</a></li>
+                                <li id="tab3"><a href="#tabs-3">Library Fine</a></li>
+                            </ul>
+                            <div id="tabs-1">
+                                <div id="divBooksInHand" style="display:none;"></div>
+                            </div>
+                            <div id="tabs-2">
+                                <div id="divLibraryActivities" style="display:none;"></div>
+                            </div>
+                            <div id="tabs-3">
+                                <div id="divLibraryFine" style="display:none;"></div>
+                            </div>
+                        </div>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

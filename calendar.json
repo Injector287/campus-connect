@@ -1,0 +1,3287 @@
+[
+    {
+        "date": "01.06.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "02.06.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "03.06.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "04.06.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "05.06.2026",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "06.06.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "07.06.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "08.06.2026",
+        "day": "MON",
+        "event": "PG Entrance Examination",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "09.06.2026",
+        "day": "TUE",
+        "event": "FDP for Junior Academic Staff (Day - 1)",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "10.06.2026",
+        "day": "WED",
+        "event": "FDP for Junior Academic Staff (Day - 2)",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "11.06.2026",
+        "day": "THU",
+        "event": "General Orientation for Academic Staff (Day - 1)",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "12.06.2026",
+        "day": "FRI",
+        "event": "General Orientation for Academic Staff (Day - 2) / General Orientation for Administrative Staff",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "13.06.2026",
+        "day": "SAT",
+        "event": "Leadership Programme for Officials, HODs & Coordinators",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "14.06.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": null,
+        "day_order": null
+    },
+    {
+        "date": "15.06.2026",
+        "day": "MON",
+        "event": "College Reopens for II, III UG and II PG / Inaugural Prayer Service",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 1
+    },
+    {
+        "date": "16.06.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 2
+    },
+    {
+        "date": "17.06.2026",
+        "day": "WED",
+        "event": "Registration Begins for ODD Semester Repeaters",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 3
+    },
+    {
+        "date": "18.06.2026",
+        "day": "THU",
+        "event": "ODD Semester Fee Payment Begins",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 4
+    },
+    {
+        "date": "19.06.2026",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 5
+    },
+    {
+        "date": "20.06.2026",
+        "day": "SAT",
+        "event": "Loyola Students\u2019 Council (LSC) Election",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 6
+    },
+    {
+        "date": "21.06.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 1,
+        "day_order": null
+    },
+    {
+        "date": "22.06.2026",
+        "day": "MON",
+        "event": "IQAC Extended Members Meeting",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 1
+    },
+    {
+        "date": "23.06.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 2
+    },
+    {
+        "date": "24.06.2026",
+        "day": "WED",
+        "event": "Inaugural Prayer Service \u2013 I UG / Student Induction Programme (Day - 1)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 3
+    },
+    {
+        "date": "25.06.2026",
+        "day": "THU",
+        "event": "Student Induction Programme (Day - 2)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 4
+    },
+    {
+        "date": "26.06.2026",
+        "day": "FRI",
+        "event": "Muharram",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 2,
+        "day_order": null
+    },
+    {
+        "date": "27.06.2026",
+        "day": "SAT",
+        "event": "Student Induction Programme (Day - 3)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 5
+    },
+    {
+        "date": "28.06.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 2,
+        "day_order": null
+    },
+    {
+        "date": "29.06.2026",
+        "day": "MON",
+        "event": "Inaugural Prayer Service & Classes Begin for I PG / Internal Arrear Registration Begins / I UG English Bridge Course (Day - 1)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 6
+    },
+    {
+        "date": "30.06.2026",
+        "day": "TUE",
+        "event": "I UG English Bridge Course (Day - 2)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 1
+    },
+    {
+        "date": "01.07.2026",
+        "day": "WED",
+        "event": "I UG English Bridge Course (Day - 3)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 2
+    },
+    {
+        "date": "02.07.2026",
+        "day": "THU",
+        "event": "I UG English Bridge Course (Day - 4)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 3
+    },
+    {
+        "date": "03.07.2026",
+        "day": "FRI",
+        "event": "I UG English Bridge Course (Day - 5) / Holy Mass",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 4
+    },
+    {
+        "date": "04.07.2026",
+        "day": "SAT",
+        "event": "Retreat for III UG Catholic Boys",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 3,
+        "day_order": null
+    },
+    {
+        "date": "05.07.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 3,
+        "day_order": null
+    },
+    {
+        "date": "06.07.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 5
+    },
+    {
+        "date": "07.07.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 6
+    },
+    {
+        "date": "08.07.2026",
+        "day": "WED",
+        "event": "Inauguration of Loyola Students' Council (LSC)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 1
+    },
+    {
+        "date": "09.07.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 2
+    },
+    {
+        "date": "10.07.2026",
+        "day": "FRI",
+        "event": "Last date for Registration of ODD Semester Repeaters",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 3
+    },
+    {
+        "date": "11.07.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 4,
+        "day_order": null
+    },
+    {
+        "date": "12.07.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 4,
+        "day_order": null
+    },
+    {
+        "date": "13.07.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 4
+    },
+    {
+        "date": "14.07.2026",
+        "day": "TUE",
+        "event": "Academic & Administrative Audit 2025-2026",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 5
+    },
+    {
+        "date": "15.07.2026",
+        "day": "WED",
+        "event": "Academic & Administrative Audit 2025-2026",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 6
+    },
+    {
+        "date": "16.07.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 1
+    },
+    {
+        "date": "17.07.2026",
+        "day": "FRI",
+        "event": "Last date for payment of ODD Semester Fee without fine",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 2
+    },
+    {
+        "date": "18.07.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 3
+    },
+    {
+        "date": "19.07.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "20.07.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 4
+    },
+    {
+        "date": "21.07.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 5
+    },
+    {
+        "date": "22.07.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 6
+    },
+    {
+        "date": "23.07.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 1
+    },
+    {
+        "date": "24.07.2026",
+        "day": "FRI",
+        "event": "Last date for payment of Semester Fee with fine",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 2
+    },
+    {
+        "date": "25.07.2026",
+        "day": "SAT",
+        "event": "Retreat for II UG Catholic Boys",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 6,
+        "day_order": null
+    },
+    {
+        "date": "26.07.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 6,
+        "day_order": null
+    },
+    {
+        "date": "27.07.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 3
+    },
+    {
+        "date": "28.07.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 4
+    },
+    {
+        "date": "29.07.2026",
+        "day": "WED",
+        "event": "Last date for Internal Arrear Registration",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 5
+    },
+    {
+        "date": "30.07.2026",
+        "day": "THU",
+        "event": "Homage to St. Ignatius of Loyola",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 6
+    },
+    {
+        "date": "31.07.2026",
+        "day": "FRI",
+        "event": "Feast of St. Ignatius of Loyola \u2013 Founder\u2019s Day",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 6,
+        "day_order": null
+    },
+    {
+        "date": "01.08.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 6,
+        "day_order": null
+    },
+    {
+        "date": "02.08.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 6,
+        "day_order": null
+    },
+    {
+        "date": "03.08.2026",
+        "day": "MON",
+        "event": "Online Registration for Semester Exams Begin",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 1
+    },
+    {
+        "date": "04.08.2026",
+        "day": "TUE",
+        "event": "Springboard Leadership Program - I",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 2
+    },
+    {
+        "date": "05.08.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 3
+    },
+    {
+        "date": "06.08.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 4
+    },
+    {
+        "date": "07.08.2026",
+        "day": "FRI",
+        "event": "Holy Mass",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 5
+    },
+    {
+        "date": "08.08.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 7,
+        "day_order": null
+    },
+    {
+        "date": "09.08.2026",
+        "day": "SUN",
+        "event": "Alumni Day",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 7,
+        "day_order": null
+    },
+    {
+        "date": "10.08.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 6
+    },
+    {
+        "date": "11.08.2026",
+        "day": "TUE",
+        "event": "First CIA// Departments\u2019 ATR of Academic Audit findings",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 1
+    },
+    {
+        "date": "12.08.2026",
+        "day": "WED",
+        "event": "First CIA / Departments\u2019 ATR of Academic Audit findings",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 2
+    },
+    {
+        "date": "13.08.2026",
+        "day": "THU",
+        "event": "First CIA / Departments\u2019 ATR of Academic Audit findings",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 3
+    },
+    {
+        "date": "14.08.2026",
+        "day": "FRI",
+        "event": "First CIA / Departments\u2019 ATR of Academic Audit findings",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 4
+    },
+    {
+        "date": "15.08.2026",
+        "day": "SAT",
+        "event": "Independence Day / Assumption of Our Lady / Inauguration of Bertram Tournament",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 8,
+        "day_order": null
+    },
+    {
+        "date": "16.08.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 8,
+        "day_order": null
+    },
+    {
+        "date": "17.08.2026",
+        "day": "MON",
+        "event": "First CIA / Departments\u2019 ATR of Academic Audit findings",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 5
+    },
+    {
+        "date": "18.08.2026",
+        "day": "TUE",
+        "event": "First CIA / Departments\u2019 ATR of Academic Audit findings",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 6
+    },
+    {
+        "date": "19.08.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 1
+    },
+    {
+        "date": "20.08.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 2
+    },
+    {
+        "date": "21.08.2026",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 3
+    },
+    {
+        "date": "22.08.2026",
+        "day": "SAT",
+        "event": "98th Graduation Day",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 4
+    },
+    {
+        "date": "23.08.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 9,
+        "day_order": null
+    },
+    {
+        "date": "24.08.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 5
+    },
+    {
+        "date": "25.08.2026",
+        "day": "TUE",
+        "event": "FDP for Academic Staff",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 6
+    },
+    {
+        "date": "26.08.2026",
+        "day": "WED",
+        "event": "Milad-un-Nabi / Onam",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 9,
+        "day_order": null
+    },
+    {
+        "date": "27.08.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 1
+    },
+    {
+        "date": "28.08.2026",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 2
+    },
+    {
+        "date": "29.08.2026",
+        "day": "SAT",
+        "event": "Parent-Teacher Meeting (Department Level)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 3
+    },
+    {
+        "date": "30.08.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 10,
+        "day_order": null
+    },
+    {
+        "date": "31.08.2026",
+        "day": "MON",
+        "event": "Bertram Tournament Valediction",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 4
+    },
+    {
+        "date": "01.09.2026",
+        "day": "TUE",
+        "event": "Springboard Leadership Program - II",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 5
+    },
+    {
+        "date": "02.09.2026",
+        "day": "WED",
+        "event": "Holy Mass",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 6
+    },
+    {
+        "date": "03.09.2026",
+        "day": "THU",
+        "event": "Ovations 2026 - Inauguration",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 1
+    },
+    {
+        "date": "04.09.2026",
+        "day": "FRI",
+        "event": "Krishna Jayanthi",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "05.09.2026",
+        "day": "SAT",
+        "event": "Teacher's Day",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "06.09.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "07.09.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 2
+    },
+    {
+        "date": "08.09.2026",
+        "day": "TUE",
+        "event": "Nativity of Mother Mary",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "09.09.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 3
+    },
+    {
+        "date": "10.09.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 4
+    },
+    {
+        "date": "11.09.2026",
+        "day": "FRI",
+        "event": "Open Forum for Students",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 5
+    },
+    {
+        "date": "12.09.2026",
+        "day": "SAT",
+        "event": "Retreat for all PG Catholic Boys and Religious Brothers",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "13.09.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "14.09.2026",
+        "day": "MON",
+        "event": "Vinayakar Chathurthi",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "15.09.2026",
+        "day": "TUE",
+        "event": "Last date for Online Registration for Semester Exams without fine",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 6
+    },
+    {
+        "date": "16.09.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 1
+    },
+    {
+        "date": "17.09.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 2
+    },
+    {
+        "date": "18.09.2026",
+        "day": "FRI",
+        "event": "Ovations 2026",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 3
+    },
+    {
+        "date": "19.09.2026",
+        "day": "SAT",
+        "event": "Ovations 2026",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 4
+    },
+    {
+        "date": "20.09.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 12,
+        "day_order": null
+    },
+    {
+        "date": "21.09.2026",
+        "day": "MON",
+        "event": "Last date for Online Registration of Semester Exams with fine",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 5
+    },
+    {
+        "date": "22.09.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 6
+    },
+    {
+        "date": "23.09.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 1
+    },
+    {
+        "date": "24.09.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 2
+    },
+    {
+        "date": "25.09.2026",
+        "day": "FRI",
+        "event": "Corpus Christi Celebration",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 3
+    },
+    {
+        "date": "26.09.2026",
+        "day": "SAT",
+        "event": "Retreat for I UG Catholic Boys and Administrative Staff",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 13,
+        "day_order": null
+    },
+    {
+        "date": "27.09.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 13,
+        "day_order": null
+    },
+    {
+        "date": "28.09.2026",
+        "day": "MON",
+        "event": "Mentoring for III UG",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 4
+    },
+    {
+        "date": "29.09.2026",
+        "day": "TUE",
+        "event": "Mentoring for II UG / Skill based Training for Administrative Staff",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 5
+    },
+    {
+        "date": "30.09.2026",
+        "day": "WED",
+        "event": "Mentoring for I UG / Skill based Training for Administrative Staff",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 6
+    },
+    {
+        "date": "01.10.2026",
+        "day": "THU",
+        "event": "Mentoring for I & II PG / Online Staff Assessment",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 1
+    },
+    {
+        "date": "02.10.2026",
+        "day": "FRI",
+        "event": "Gandhi Jayanthi",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 14,
+        "day_order": null
+    },
+    {
+        "date": "03.10.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 14,
+        "day_order": null
+    },
+    {
+        "date": "04.10.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 14,
+        "day_order": null
+    },
+    {
+        "date": "05.10.2026",
+        "day": "MON",
+        "event": "Second CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 2
+    },
+    {
+        "date": "06.10.2026",
+        "day": "TUE",
+        "event": "Second CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 3
+    },
+    {
+        "date": "07.10.2026",
+        "day": "WED",
+        "event": "Second CIA / Academic Council Meeting",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 4
+    },
+    {
+        "date": "08.10.2026",
+        "day": "THU",
+        "event": "Second CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 5
+    },
+    {
+        "date": "09.10.2026",
+        "day": "FRI",
+        "event": "Second CIA/ IQAC Committee Meeting",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 6
+    },
+    {
+        "date": "10.10.2026",
+        "day": "SAT",
+        "event": "Second CIA / College Council Meeting",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 1
+    },
+    {
+        "date": "11.10.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 15,
+        "day_order": null
+    },
+    {
+        "date": "12.10.2026",
+        "day": "MON",
+        "event": "Release of Retest & One Test List / Practical Examination UG \u2013 AL / PG",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 2
+    },
+    {
+        "date": "13.10.2026",
+        "day": "TUE",
+        "event": "Retest / Practical Examination UG \u2013 AL / PG",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 3
+    },
+    {
+        "date": "14.10.2026",
+        "day": "WED",
+        "event": "Retest / Practical Examination UG \u2013 AL / PG",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 4
+    },
+    {
+        "date": "15.10.2026",
+        "day": "THU",
+        "event": "Retest / Practical Examination UG \u2013 Major / PG",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 5
+    },
+    {
+        "date": "16.10.2026",
+        "day": "FRI",
+        "event": "Practical Examination UG \u2013 Major / PG",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 6
+    },
+    {
+        "date": "17.10.2026",
+        "day": "SAT",
+        "event": "General Staff Meeting and Last Signing Day / Practical Examination UG \u2013 Major / PG / Release of Hall Ticket",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": 1
+    },
+    {
+        "date": "18.10.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "19.10.2026",
+        "day": "MON",
+        "event": "Ayudha Pooja",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "20.10.2026",
+        "day": "TUE",
+        "event": "Vijayadashami",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "21.10.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "22.10.2026",
+        "day": "THU",
+        "event": "Semester Examinations Begin",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "23.10.2026",
+        "day": "FRI",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "24.10.2026",
+        "day": "SAT",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "25.10.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "26.10.2026",
+        "day": "MON",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "27.10.2026",
+        "day": "TUE",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "28.10.2026",
+        "day": "WED",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "29.10.2026",
+        "day": "THU",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "30.10.2026",
+        "day": "FRI",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "31.10.2026",
+        "day": "SAT",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "01.11.2026",
+        "day": "SUN",
+        "event": "All Saints Day",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "02.11.2026",
+        "day": "MON",
+        "event": "All Souls Day",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "03.11.2026",
+        "day": "TUE",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "04.11.2026",
+        "day": "WED",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "05.11.2026",
+        "day": "THU",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "06.11.2026",
+        "day": "FRI",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "07.11.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "08.11.2026",
+        "day": "SUN",
+        "event": "Deepavali",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "09.11.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "10.11.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "11.11.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "12.11.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "13.11.2026",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "14.11.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "15.11.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "16.11.2026",
+        "day": "MON",
+        "event": "College Reopens for EVEN Semester",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 1
+    },
+    {
+        "date": "17.11.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 2
+    },
+    {
+        "date": "18.11.2026",
+        "day": "WED",
+        "event": "Registration Begins for EVEN Semester Repeaters",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 3
+    },
+    {
+        "date": "19.11.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 4
+    },
+    {
+        "date": "20.11.2026",
+        "day": "FRI",
+        "event": "EVEN Semester Fee Payment Begins / Holy Mass",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 5
+    },
+    {
+        "date": "21.11.2026",
+        "day": "SAT",
+        "event": "Retreat for all PG & UG Catholic Girls and Religious Sisters",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 1,
+        "day_order": null
+    },
+    {
+        "date": "22.11.2026",
+        "day": "SUN",
+        "event": "Feast of Christ the King",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 1,
+        "day_order": null
+    },
+    {
+        "date": "23.11.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 1,
+        "day_order": 6
+    },
+    {
+        "date": "24.11.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 1
+    },
+    {
+        "date": "25.11.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 2
+    },
+    {
+        "date": "26.11.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 3
+    },
+    {
+        "date": "27.11.2026",
+        "day": "FRI",
+        "event": "IQAC Meeting for Extended Members",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 4
+    },
+    {
+        "date": "28.11.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 2,
+        "day_order": null
+    },
+    {
+        "date": "29.11.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 2,
+        "day_order": null
+    },
+    {
+        "date": "30.11.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 5
+    },
+    {
+        "date": "01.12.2026",
+        "day": "TUE",
+        "event": "Springboard Leadership Program - III",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 2,
+        "day_order": 6
+    },
+    {
+        "date": "02.12.2026",
+        "day": "WED",
+        "event": "Internal Arrear Registration Begins",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 1
+    },
+    {
+        "date": "03.12.2026",
+        "day": "THU",
+        "event": "Feast of St. Francis Xavier - Holy Mass",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 2
+    },
+    {
+        "date": "04.12.2026",
+        "day": "FRI",
+        "event": "Department Festival Day - 1",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 3
+    },
+    {
+        "date": "05.12.2026",
+        "day": "SAT",
+        "event": "Department Festival Day - 2",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 4
+    },
+    {
+        "date": "06.12.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 3,
+        "day_order": null
+    },
+    {
+        "date": "07.12.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 5
+    },
+    {
+        "date": "08.12.2026",
+        "day": "TUE",
+        "event": "Immaculate Conception of Our Lady",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 3,
+        "day_order": 6
+    },
+    {
+        "date": "09.12.2026",
+        "day": "WED",
+        "event": "III UG Internship Begins",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 1
+    },
+    {
+        "date": "10.12.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 2
+    },
+    {
+        "date": "11.12.2026",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 3
+    },
+    {
+        "date": "12.12.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 4,
+        "day_order": null
+    },
+    {
+        "date": "13.12.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 4,
+        "day_order": null
+    },
+    {
+        "date": "14.12.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 4
+    },
+    {
+        "date": "15.12.2026",
+        "day": "TUE",
+        "event": "Last date for payment of Semester Fee without fine",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 5
+    },
+    {
+        "date": "16.12.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 4,
+        "day_order": 6
+    },
+    {
+        "date": "17.12.2026",
+        "day": "THU",
+        "event": "Last date for Registration of EVEN Semester Repeaters",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 1
+    },
+    {
+        "date": "18.12.2026",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 2
+    },
+    {
+        "date": "19.12.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "20.12.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "21.12.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 3
+    },
+    {
+        "date": "22.12.2026",
+        "day": "TUE",
+        "event": "Christmas Celebration",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 4
+    },
+    {
+        "date": "23.12.2026",
+        "day": "WED",
+        "event": "Christmas Holidays Begin",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "24.12.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "25.12.2026",
+        "day": "FRI",
+        "event": "Christmas",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "26.12.2026",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "27.12.2026",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "28.12.2026",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "29.12.2026",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "30.12.2026",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "31.12.2026",
+        "day": "THU",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "01.01.2027",
+        "day": "FRI",
+        "event": "New Year",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "02.01.2027",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "03.01.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 5,
+        "day_order": null
+    },
+    {
+        "date": "04.01.2027",
+        "day": "MON",
+        "event": "College Reopens after Christmas Vacation",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 5
+    },
+    {
+        "date": "05.01.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 5,
+        "day_order": 6
+    },
+    {
+        "date": "06.01.2027",
+        "day": "WED",
+        "event": "Training Programme for Administrative Staff",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 1
+    },
+    {
+        "date": "07.01.2027",
+        "day": "THU",
+        "event": "Last date for payment of Semester Fee with fine",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 2
+    },
+    {
+        "date": "08.01.2027",
+        "day": "FRI",
+        "event": "Holy Mass/ IQAC Extended Members Meeting",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 3
+    },
+    {
+        "date": "09.01.2027",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 4
+    },
+    {
+        "date": "10.01.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 6,
+        "day_order": null
+    },
+    {
+        "date": "11.01.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 5
+    },
+    {
+        "date": "12.01.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 6,
+        "day_order": 6
+    },
+    {
+        "date": "13.01.2027",
+        "day": "WED",
+        "event": "III UG Join Classes after Internship / Mann Manam - Pongal Celebration",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 1
+    },
+    {
+        "date": "14.01.2027",
+        "day": "THU",
+        "event": "Bhogi",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 2
+    },
+    {
+        "date": "15.01.2027",
+        "day": "FRI",
+        "event": "Pongal",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 7,
+        "day_order": null
+    },
+    {
+        "date": "16.01.2027",
+        "day": "SAT",
+        "event": "Thiruvalluvar Day",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 7,
+        "day_order": null
+    },
+    {
+        "date": "17.01.2027",
+        "day": "SUN",
+        "event": "Uzhavar Thirunal",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 7,
+        "day_order": null
+    },
+    {
+        "date": "18.01.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 3
+    },
+    {
+        "date": "19.01.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 4
+    },
+    {
+        "date": "20.01.2027",
+        "day": "WED",
+        "event": "First CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 5
+    },
+    {
+        "date": "21.01.2027",
+        "day": "THU",
+        "event": "First CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 7,
+        "day_order": 6
+    },
+    {
+        "date": "22.01.2027",
+        "day": "FRI",
+        "event": "Thaipusam",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 7,
+        "day_order": null
+    },
+    {
+        "date": "23.01.2027",
+        "day": "SAT",
+        "event": "First CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 1
+    },
+    {
+        "date": "24.01.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 8,
+        "day_order": null
+    },
+    {
+        "date": "25.01.2027",
+        "day": "MON",
+        "event": "First CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 2
+    },
+    {
+        "date": "26.01.2027",
+        "day": "TUE",
+        "event": "Republic Day",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 8,
+        "day_order": null
+    },
+    {
+        "date": "27.01.2027",
+        "day": "WED",
+        "event": "First CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 3
+    },
+    {
+        "date": "28.01.2027",
+        "day": "THU",
+        "event": "First CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 4
+    },
+    {
+        "date": "29.01.2027",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 5
+    },
+    {
+        "date": "30.01.2027",
+        "day": "SAT",
+        "event": "Parent-Teacher Meeting (General)",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 8,
+        "day_order": 6
+    },
+    {
+        "date": "31.01.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 8,
+        "day_order": null
+    },
+    {
+        "date": "01.02.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 1
+    },
+    {
+        "date": "02.02.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 2
+    },
+    {
+        "date": "03.02.2027",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 3
+    },
+    {
+        "date": "04.02.2027",
+        "day": "THU",
+        "event": "Feast of St. John De Britto - Holy Mass",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 4
+    },
+    {
+        "date": "05.02.2027",
+        "day": "FRI",
+        "event": "Online Registration for EVEN Semester Examinations Begin",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 5
+    },
+    {
+        "date": "06.02.2027",
+        "day": "SAT",
+        "event": "Sports Day",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 9,
+        "day_order": 6
+    },
+    {
+        "date": "07.02.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 9,
+        "day_order": null
+    },
+    {
+        "date": "08.02.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 1
+    },
+    {
+        "date": "09.02.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 2
+    },
+    {
+        "date": "10.02.2027",
+        "day": "WED",
+        "event": "Ash Wednesday",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 3
+    },
+    {
+        "date": "11.02.2027",
+        "day": "THU",
+        "event": "Feast of Our Lady of Lourdes - Candle Light Procession",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 4
+    },
+    {
+        "date": "12.02.2027",
+        "day": "FRI",
+        "event": "Seminar for Academic Staff",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 5
+    },
+    {
+        "date": "13.02.2027",
+        "day": "SAT",
+        "event": "Seminar for Academic Staff",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 10,
+        "day_order": 6
+    },
+    {
+        "date": "14.02.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 10,
+        "day_order": null
+    },
+    {
+        "date": "15.02.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 1
+    },
+    {
+        "date": "16.02.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 2
+    },
+    {
+        "date": "17.02.2027",
+        "day": "WED",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 3
+    },
+    {
+        "date": "18.02.2027",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 4
+    },
+    {
+        "date": "19.02.2027",
+        "day": "FRI",
+        "event": "Open Forum for Students",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 5
+    },
+    {
+        "date": "20.02.2027",
+        "day": "SAT",
+        "event": "Penitential Walk",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "21.02.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 11,
+        "day_order": null
+    },
+    {
+        "date": "22.02.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 11,
+        "day_order": 6
+    },
+    {
+        "date": "23.02.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 1
+    },
+    {
+        "date": "24.02.2027",
+        "day": "WED",
+        "event": "Springboard Leadership Program - IV & Valedictory",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 2
+    },
+    {
+        "date": "25.02.2027",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 3
+    },
+    {
+        "date": "26.02.2027",
+        "day": "FRI",
+        "event": "Loyola Research Day",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 4
+    },
+    {
+        "date": "27.02.2027",
+        "day": "SAT",
+        "event": "Retreat for Academic Staff",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 12,
+        "day_order": null
+    },
+    {
+        "date": "28.02.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 12,
+        "day_order": null
+    },
+    {
+        "date": "01.03.2027",
+        "day": "MON",
+        "event": "Last date for Online Registration for Semester Exams without fine",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 5
+    },
+    {
+        "date": "02.03.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 12,
+        "day_order": 6
+    },
+    {
+        "date": "03.03.2027",
+        "day": "WED",
+        "event": "Loyola Students' Council (LSC) - Valedictory",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 1
+    },
+    {
+        "date": "04.03.2027",
+        "day": "THU",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 2
+    },
+    {
+        "date": "05.03.2027",
+        "day": "FRI",
+        "event": "Holy Mass",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 3
+    },
+    {
+        "date": "06.03.2027",
+        "day": "SAT",
+        "event": "Loyola Hostel Day (Men & Women)",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 13,
+        "day_order": null
+    },
+    {
+        "date": "07.03.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 13,
+        "day_order": null
+    },
+    {
+        "date": "08.03.2027",
+        "day": "MON",
+        "event": "International Women's Day",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 4
+    },
+    {
+        "date": "09.03.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 5
+    },
+    {
+        "date": "10.03.2027",
+        "day": "WED",
+        "event": "Ramzan",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 13,
+        "day_order": null
+    },
+    {
+        "date": "11.03.2027",
+        "day": "THU",
+        "event": "Last Date for Online Registration of Semester Exams with fine",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 13,
+        "day_order": 6
+    },
+    {
+        "date": "12.03.2027",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 1
+    },
+    {
+        "date": "13.03.2027",
+        "day": "SAT",
+        "event": "College Day",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 2
+    },
+    {
+        "date": "14.03.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 14,
+        "day_order": null
+    },
+    {
+        "date": "15.03.2027",
+        "day": "MON",
+        "event": "Exit Poll /Online Staff Assessment",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 3
+    },
+    {
+        "date": "16.03.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 4
+    },
+    {
+        "date": "17.03.2027",
+        "day": "WED",
+        "event": "Second CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 5
+    },
+    {
+        "date": "18.03.2027",
+        "day": "THU",
+        "event": "Second CIA / Academic Council Meeting",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 14,
+        "day_order": 6
+    },
+    {
+        "date": "19.03.2027",
+        "day": "FRI",
+        "event": "Second CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 1
+    },
+    {
+        "date": "20.03.2027",
+        "day": "SAT",
+        "event": "Second CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 2
+    },
+    {
+        "date": "21.03.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 15,
+        "day_order": null
+    },
+    {
+        "date": "22.03.2027",
+        "day": "MON",
+        "event": "Second CIA",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 3
+    },
+    {
+        "date": "23.03.2027",
+        "day": "TUE",
+        "event": "Second CIA/ College Council Meeting",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 4
+    },
+    {
+        "date": "24.03.2027",
+        "day": "WED",
+        "event": "Release of Retest and One Test List",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 5
+    },
+    {
+        "date": "25.03.2027",
+        "day": "THU",
+        "event": "Maundy Thursday",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 15,
+        "day_order": null
+    },
+    {
+        "date": "26.03.2027",
+        "day": "FRI",
+        "event": "Good Friday",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 15,
+        "day_order": null
+    },
+    {
+        "date": "27.03.2027",
+        "day": "SAT",
+        "event": "Holy Saturday",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 15,
+        "day_order": null
+    },
+    {
+        "date": "28.03.2027",
+        "day": "SUN",
+        "event": "Easter Sunday",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 15,
+        "day_order": null
+    },
+    {
+        "date": "29.03.2027",
+        "day": "MON",
+        "event": "Retest / Practical Examination UG \u2013 AL / PG / Stock Verification",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 15,
+        "day_order": 6
+    },
+    {
+        "date": "30.03.2027",
+        "day": "TUE",
+        "event": "Retest / Practical Examination UG \u2013 AL / PG",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": 1
+    },
+    {
+        "date": "31.03.2027",
+        "day": "WED",
+        "event": "Retest / Practical Examination UG \u2013 AL / PG /",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": 2
+    },
+    {
+        "date": "01.04.2027",
+        "day": "THU",
+        "event": "General Staff Meeting & Last Signing Day / Practical Examination UG \u2013 Major / PG",
+        "is_working_day": true,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": 3
+    },
+    {
+        "date": "02.04.2027",
+        "day": "FRI",
+        "event": "Practical Examination UG \u2013 Major / PG",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "03.04.2027",
+        "day": "SAT",
+        "event": "Practical Examination UG \u2013 Major / PG / Release of Hall Ticket",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "04.04.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "05.04.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "06.04.2027",
+        "day": "TUE",
+        "event": "Semester Examinations Begin",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "07.04.2027",
+        "day": "WED",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "08.04.2027",
+        "day": "THU",
+        "event": "Telugu New Year",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "09.04.2027",
+        "day": "FRI",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "10.04.2027",
+        "day": "SAT",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "11.04.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "12.04.2027",
+        "day": "MON",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "13.04.2027",
+        "day": "TUE",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "14.04.2027",
+        "day": "WED",
+        "event": "Tamil New Year / Dr. Ambedkar Jayanthi",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "15.04.2027",
+        "day": "THU",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "16.04.2027",
+        "day": "FRI",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "17.04.2027",
+        "day": "SAT",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "18.04.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "19.04.2027",
+        "day": "MON",
+        "event": "Mahavir Jayanti",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "20.04.2027",
+        "day": "TUE",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "21.04.2027",
+        "day": "WED",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "22.04.2027",
+        "day": "THU",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "23.04.2027",
+        "day": "FRI",
+        "event": "Semester Examinations",
+        "is_working_day": false,
+        "is_holiday": false,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "24.04.2027",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "25.04.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "26.04.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "27.04.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "28.04.2027",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "29.04.2027",
+        "day": "THU",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "30.04.2027",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "01.05.2027",
+        "day": "SAT",
+        "event": "May Day",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "02.05.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "03.05.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "04.05.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "05.05.2027",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "06.05.2027",
+        "day": "THU",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "07.05.2027",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "08.05.2027",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "09.05.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "10.05.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "11.05.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "12.05.2027",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "13.05.2027",
+        "day": "THU",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "14.05.2027",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "15.05.2027",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "16.05.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "17.05.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "18.05.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "19.05.2027",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "20.05.2027",
+        "day": "THU",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "21.05.2027",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "22.05.2027",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "23.05.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "24.05.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "25.05.2027",
+        "day": "TUE",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "26.05.2027",
+        "day": "WED",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "27.05.2027",
+        "day": "THU",
+        "event": "Bakrid (Eid-al-Adha)",
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "28.05.2027",
+        "day": "FRI",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "29.05.2027",
+        "day": "SAT",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "30.05.2027",
+        "day": "SUN",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    },
+    {
+        "date": "31.05.2027",
+        "day": "MON",
+        "event": null,
+        "is_working_day": false,
+        "is_holiday": true,
+        "week": 16,
+        "day_order": null
+    }
+]
