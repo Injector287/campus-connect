@@ -111,7 +111,22 @@ export default function LeaveApplicationPage() {
             </div>
         </div>
 
-        <div className="glass-panel" style={{ maxWidth: '650px', margin: '0 auto', padding: '2.5rem', borderRadius: '24px', background: 'rgba(20, 20, 30, 0.4)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+        <div className="responsive-split">
+            {/* Left Column: Form Info / Status */}
+            <div className="desktop-only" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="glass-panel" style={{ padding: '2rem', borderRadius: '24px', background: 'rgba(74, 180, 196, 0.05)', border: '1px solid rgba(74, 180, 196, 0.2)' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>Guidelines</h3>
+                    <ul style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', lineHeight: '1.6', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <li>Ensure you select the correct leave type.</li>
+                        <li>For Medical Leave (ML) exceeding 3 days, a medical certificate must be submitted to the HOD.</li>
+                        <li>On Duty (OD) requires prior approval from the respective faculty-in-charge.</li>
+                        <li>Provide accurate assessment details if you are missing any lab or continuous assessments.</li>
+                    </ul>
+                </div>
+            </div>
+
+            {/* Right Column: Form */}
+            <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: '24px', background: 'rgba(20, 20, 30, 0.4)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
             {error && (
                 <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem 1.25rem', borderRadius: '12px', color: '#fca5a5', marginBottom: '2rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -210,7 +225,7 @@ export default function LeaveApplicationPage() {
                         value={reason}
                         onChange={(e) => {
                             setReason(e.target.value);
-                            e.target.style.height = 'inherit';
+                            e.target.style.height = 'auto';
                             e.target.style.height = `${e.target.scrollHeight}px`;
                         }}
                         required
@@ -233,7 +248,7 @@ export default function LeaveApplicationPage() {
                         value={assignment}
                         onChange={(e) => {
                             setAssignment(e.target.value);
-                            e.target.style.height = 'inherit';
+                            e.target.style.height = 'auto';
                             e.target.style.height = `${e.target.scrollHeight}px`;
                         }}
                         placeholder="What assessments or assignments will take place during your absence? (Optional)"
@@ -295,6 +310,7 @@ export default function LeaveApplicationPage() {
                     )}
                 </button>
             </form>
+            </div>
         </div>
     </main>
   )

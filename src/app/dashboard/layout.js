@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '@/utils/fetcher'
+import CalendarPage from '@/components/Calendar'
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -149,7 +150,12 @@ export default function DashboardLayout({ children }) {
 
       {/* Page Content */}
       <div className="layout-content" style={{ paddingBottom: '80px', width: '100%' }}>
-        {children}
+        <div style={{ display: pathname === '/dashboard/calendar' ? 'block' : 'none' }}>
+            <CalendarPage />
+        </div>
+        <div style={{ display: pathname === '/dashboard/calendar' ? 'none' : 'block' }}>
+            {children}
+        </div>
       </div>
 
       {/* Mobile Drawer (Overlay) */}
