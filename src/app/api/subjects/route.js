@@ -1,25 +1,12 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
+import { fetchWithReauth } from '@/utils/erpFetch';
 import * as cheerio from 'cheerio';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
   try {
-    const jsessionId = request.cookies.get('JSESSIONID')?.value;
-
-    if (!jsessionId) {
-      return NextResponse.json({ error: 'Unauthorized. No session found.' }, { status: 401 });
-    }
-
-    const res = await axios.get(`${BASE_URL}/loyolaonline/students/report/studentWiseSubjects.jsp`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
-        'Cookie': `JSESSIONID=${jsessionId}`
-      }
-    });
-
-    const html = res.data;
+    const { data: html, newSessionCookie } = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentWiseSubjects.jsp`);
     const $ = cheerio.load(html);
 
     const categories = [];
@@ -70,7 +57,11 @@ export async function GET(request) {
         categories.push(currentCategory);
     }
 
-    return NextResponse.json({ success: true, categories });
+    const response = NextResponse.json({ success: true, categories });
+    if (newSessionCookie) {
+        response.cookies.set(newSessionCookie);
+    }
+    return response;
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to fetch subjects data' }, { status: 500 });

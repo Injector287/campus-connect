@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
+import { fetchWithReauth } from '@/utils/erpFetch';
 import * as cheerio from 'cheerio';
 import fs from 'fs';
 
@@ -7,24 +7,12 @@ const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
   try {
-    const jsessionId = request.cookies.get('JSESSIONID')?.value;
-
-    if (!jsessionId) {
-      return NextResponse.json({ error: 'Unauthorized. No session found.' }, { status: 401 });
-    }
-
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Cookie': `JSESSIONID=${jsessionId}`
-    };
-
-    const res = await axios.get(`${BASE_URL}/loyolaonline/students/report/studentHourWiseAttendance.jsp`, { headers });
+    const { data: html, newSessionCookie, jsessionId } = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentHourWiseAttendance.jsp`);
     
-    // Fetch Subject Wise Attendance
-    const resSubj = await axios.get(`${BASE_URL}/loyolaonline/students/report/studentSubjectWiseAttendance.jsp`, { headers });
+    // Fetch Subject Wise Attendance, passing the active jsessionId
+    const { data: subjHtml } = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentSubjectWiseAttendance.jsp`, { overrideJsessionId: jsessionId });
 
     // 1. Parse Hour Wise Attendance
-    const html = res.data;
     const $ = cheerio.load(html);
 
     // Extract stats for pie chart
@@ -60,7 +48,6 @@ export async function GET(request) {
     });
 
     // 2. Parse Subject Wise Attendance
-    const subjHtml = resSubj.data;
     const $subj = cheerio.load(subjHtml);
     const subjectWise = [];
 
@@ -84,7 +71,11 @@ export async function GET(request) {
         }
     });
 
-    return NextResponse.json({ success: true, stats, allDays, subjectWise });
+    const response = NextResponse.json({ success: true, stats, allDays, subjectWise });
+    if (newSessionCookie) {
+        response.cookies.set(newSessionCookie);
+    }
+    return response;
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 });

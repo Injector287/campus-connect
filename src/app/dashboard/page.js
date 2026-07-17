@@ -267,12 +267,6 @@ export default function DashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Attendance</h1>
-        <button onClick={() => {
-            import('@/utils/fetchWithCache').then(m => m.clearCache());
-            router.push('/');
-        }} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.875rem' }}>
-          Logout
-        </button>
       </div>
 
       {/* Tabs */}

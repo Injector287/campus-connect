@@ -1,26 +1,14 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
+import { fetchWithReauth } from '@/utils/erpFetch';
 import * as cheerio from 'cheerio';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
   try {
-    const jsessionId = request.cookies.get('JSESSIONID')?.value;
-
-    if (!jsessionId) {
-      return NextResponse.json({ error: 'Unauthorized. No session found.' }, { status: 401 });
-    }
-
-    const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
-        'Cookie': `JSESSIONID=${jsessionId}`
-    };
-
-    const [resInternal, resExam] = await Promise.all([
-        axios.get(`${BASE_URL}/loyolaonline/students/report/studentInternalMarkDetails.jsp`, { headers }),
-        axios.get(`${BASE_URL}/loyolaonline/students/report/studentExamResultsDetails.jsp`, { headers })
-    ]);
+    const resInternal = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentInternalMarkDetails.jsp`);
+    const activeJsessionId = resInternal.jsessionId || request.cookies.get('JSESSIONID')?.value;
+    const resExam = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentExamResultsDetails.jsp`, { overrideJsessionId: activeJsessionId });
 
     // Parse Internal Marks
     const $int = cheerio.load(resInternal.data);
@@ -96,7 +84,7 @@ export async function GET(request) {
         if (text.includes('Remaining Credits:')) remainingCredits = $ex(row).find('td').last().text().trim();
     });
 
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
         success: true, 
         grades: { 
             internalMarks, 
@@ -104,6 +92,10 @@ export async function GET(request) {
             summary: { totalCredits, acquiredCredits, remainingCredits }
         } 
     });
+    if (resInternal.newSessionCookie) {
+        response.cookies.set(resInternal.newSessionCookie);
+    }
+    return response;
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to fetch grades data' }, { status: 500 });

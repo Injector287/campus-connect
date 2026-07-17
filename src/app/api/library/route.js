@@ -1,28 +1,26 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
+import { fetchWithReauth } from '@/utils/erpFetch';
 import * as cheerio from 'cheerio';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
   try {
-    const jsessionId = request.cookies.get('JSESSIONID')?.value;
-
-    if (!jsessionId) {
-      return NextResponse.json({ error: 'Unauthorized. No session found.' }, { status: 401 });
-    }
-
     const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
-        'Cookie': `JSESSIONID=${jsessionId}`,
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };
 
-    // Fetch all three tabs concurrently
-    const [res1, res2, res3] = await Promise.all([
-        axios.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=1&filter=', { headers }),
-        axios.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=2&filter=', { headers }),
-        axios.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=3&filter=', { headers })
+    // Fetch all three tabs, serializing the first to handle any session re-auth safely
+    const res1 = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, {
+        method: 'POST',
+        data: 'ids=1&filter=',
+        headers
+    });
+    const activeJsessionId = res1.jsessionId || request.cookies.get('JSESSIONID')?.value;
+
+    const [res2, res3] = await Promise.all([
+        fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, { method: 'POST', data: 'ids=2&filter=', headers, overrideJsessionId: activeJsessionId }),
+        fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, { method: 'POST', data: 'ids=3&filter=', headers, overrideJsessionId: activeJsessionId })
     ]);
 
     const parseTable = (html, tableId) => {
@@ -60,10 +58,14 @@ export async function GET(request) {
         accessionNo: row[0], title: row[1], borrowedDate: row[2], dueDate: row[3], returnedDate: row[4], fineAmount: row[5], status: row[6]
     }));
 
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
         success: true, 
         library: { booksInHand, activities, fines } 
     });
+    if (res1.newSessionCookie) {
+        response.cookies.set(res1.newSessionCookie);
+    }
+    return response;
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to fetch library data' }, { status: 500 });

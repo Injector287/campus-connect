@@ -84,9 +84,23 @@ export async function POST(request) {
       cookieOptions.maxAge = 30 * 24 * 60 * 60;
     }
 
-    // Set the cookie securely on the Next.js response
-    // We make it HttpOnly so JavaScript on the client can't read it (secure!)
+    // Set the JSESSIONID cookie
     response.cookies.set(cookieOptions);
+
+    // Encrypt and set the credentials cookie for background re-authentication
+    const { encrypt } = require('@/utils/crypto');
+    const encryptedCreds = encrypt(`${username}:${password}`);
+    if (encryptedCreds) {
+        response.cookies.set({
+            name: 'ERP_CREDS',
+            value: encryptedCreds,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: stayLoggedIn ? 30 * 24 * 60 * 60 : undefined
+        });
+    }
 
     return response;
 

@@ -1,30 +1,19 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
-import { wrapper } from 'axios-cookiejar-support';
-import { CookieJar } from 'tough-cookie';
+import { fetchWithReauth } from '@/utils/erpFetch';
 import * as cheerio from 'cheerio';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
   try {
-    const jsessionId = request.cookies.get('JSESSIONID')?.value;
-    if (!jsessionId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const dueRes = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentFeeDueDetails.jsp`);
+    const activeJsessionId = dueRes.jsessionId || request.cookies.get('JSESSIONID')?.value;
 
-    const jar = new CookieJar();
-    jar.setCookieSync(`JSESSIONID=${jsessionId}`, BASE_URL);
-    const client = wrapper(axios.create({ jar }));
-
-    const [dueRes, paidRes, txRes, leaveRes] = await Promise.all([
-      client.get(`${BASE_URL}/loyolaonline/students/report/studentFeeDueDetails.jsp`),
-      client.get(`${BASE_URL}/loyolaonline/students/report/studentFinanceDetails.jsp`),
-      client.get(`${BASE_URL}/loyolaonline/students/report/studentOnlinePaymentAcknowledgements.jsp`),
-      client.get(`${BASE_URL}/loyolaonline/students/report/studentLeaveApplication.jsp`)
+    const [paidRes, txRes, leaveRes] = await Promise.all([
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentFinanceDetails.jsp`, { overrideJsessionId: activeJsessionId }),
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentOnlinePaymentAcknowledgements.jsp`, { overrideJsessionId: activeJsessionId }),
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLeaveApplication.jsp`, { overrideJsessionId: activeJsessionId })
     ]);
-
-    require('fs').writeFileSync('leaves.html', leaveRes.data);
 
     const parseTables = (html) => {
         const $ = cheerio.load(html);
@@ -142,7 +131,11 @@ export async function GET(request) {
 
     const result = { due: dueDetails, history: paidHistory, transactions };
 
-    return NextResponse.json({ success: true, ...result });
+    const response = NextResponse.json({ success: true, ...result });
+    if (dueRes.newSessionCookie) {
+        response.cookies.set(dueRes.newSessionCookie);
+    }
+    return response;
   } catch (error) {
     console.error('Finance API Error:', error);
     return NextResponse.json({ error: 'Failed to fetch finance data' }, { status: 500 });

@@ -1,17 +1,37 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import useSWR from 'swr'
+import { fetcher } from '@/utils/fetcher'
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Background prefetch all pages once layout mounts
+  useSWR('/api/dashboard', fetcher, { revalidateOnFocus: false });
+  useSWR('/api/subjects', fetcher, { revalidateOnFocus: false });
+  useSWR('/api/grades', fetcher, { revalidateOnFocus: false });
+  useSWR('/api/library', fetcher, { revalidateOnFocus: false });
+  useSWR('/api/finance', fetcher, { revalidateOnFocus: false });
+  useSWR('/api/profile', fetcher, { revalidateOnFocus: false });
 
   // Close drawer on path change
   useEffect(() => {
       setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  const handleLogout = async () => {
+      try {
+          await fetch('/api/logout', { method: 'POST' });
+      } catch (e) {}
+      localStorage.removeItem('erp_sessions');
+      import('@/utils/fetchWithCache').then(m => m.clearCache());
+      router.push('/');
+  };
   
   const navGroups = [
     {
@@ -105,6 +125,26 @@ export default function DashboardLayout({ children }) {
                 </div>
             ))}
         </div>
+        
+        <div style={{ marginTop: 'auto', paddingTop: '2rem', display: 'flex', justifyContent: 'center' }}>
+            <button onClick={handleLogout} style={{ 
+                background: 'rgba(239, 68, 68, 0.1)', 
+                border: '1px solid rgba(239, 68, 68, 0.3)', 
+                color: '#ef4444', 
+                padding: '0.75rem 2rem', 
+                borderRadius: '999px',
+                cursor: 'pointer', 
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                transition: 'all 0.2s ease',
+                width: 'calc(100% - 2rem)'
+            }}
+            onMouseOver={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)'; }}
+            onMouseOut={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; }}
+            >
+              Logout
+            </button>
+        </div>
       </nav>
 
       {/* Page Content */}
@@ -186,6 +226,23 @@ export default function DashboardLayout({ children }) {
                         </div>
                     </div>
                 ))}
+              </div>
+
+              <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+                  <button onClick={handleLogout} style={{ 
+                      background: 'rgba(239, 68, 68, 0.1)', 
+                      border: '1px solid rgba(239, 68, 68, 0.3)', 
+                      color: '#ef4444', 
+                      padding: '0.75rem 2rem', 
+                      borderRadius: '999px',
+                      cursor: 'pointer', 
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      width: '100%'
+                  }}>
+                    Logout
+                  </button>
               </div>
           </div>
       </div>

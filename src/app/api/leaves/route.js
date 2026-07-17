@@ -1,20 +1,10 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
-import { wrapper } from 'axios-cookiejar-support';
-import { CookieJar } from 'tough-cookie';
+import { fetchWithReauth } from '@/utils/erpFetch';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function POST(request) {
   try {
-    const jsessionId = request.cookies.get('JSESSIONID')?.value;
-    if (!jsessionId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const jar = new CookieJar();
-    jar.setCookieSync(`JSESSIONID=${jsessionId}`, BASE_URL);
-    const client = wrapper(axios.create({ jar }));
 
     const body = await request.json();
     
@@ -31,10 +21,12 @@ export async function POST(request) {
     formData.append('hdnLeaveType', body.hdnLeaveType);
     formData.append('cmdGenChallan', 'Print');
 
-    const response = await client.post(
+    const { data: responseData, newSessionCookie, headers } = await fetchWithReauth(
+      request,
       `${BASE_URL}/loyolaonline/students/report/printLeaveApplication.jsp`,
-      formData,
       {
+        method: 'POST',
+        data: formData.toString(),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Referer': `${BASE_URL}/loyolaonline/students/report/studentLeaveApplication.jsp`
@@ -44,9 +36,9 @@ export async function POST(request) {
     );
 
     // Pass along the contentType (usually application/pdf or text/html)
-    const contentType = response.headers['content-type'] || 'application/pdf';
+    const contentType = headers['content-type'] || 'application/pdf';
 
-    return new NextResponse(response.data, {
+    const response = new NextResponse(responseData, {
       status: 200,
       headers: {
         'Content-Type': contentType,
@@ -54,6 +46,12 @@ export async function POST(request) {
         // 'Content-Disposition': 'inline; filename="Leave_Application.pdf"'
       }
     });
+
+    if (newSessionCookie) {
+        response.cookies.set(newSessionCookie);
+    }
+    
+    return response;
 
   } catch (error) {
     console.error('Leave API Error:', error);

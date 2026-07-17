@@ -1,25 +1,12 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
+import { fetchWithReauth } from '@/utils/erpFetch';
 import * as cheerio from 'cheerio';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
   try {
-    const jsessionId = request.cookies.get('JSESSIONID')?.value;
-
-    if (!jsessionId) {
-      return NextResponse.json({ error: 'Unauthorized. No session found.' }, { status: 401 });
-    }
-
-    const res = await axios.get(`${BASE_URL}/loyolaonline/students/report/studentProfile.jsp`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
-        'Cookie': `JSESSIONID=${jsessionId}`
-      }
-    });
-
-    const html = res.data;
+    const { data: html, newSessionCookie, jsessionId: activeJsessionId } = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentProfile.jsp`);
     const $ = cheerio.load(html);
 
     // Helper to find the td containing a specific label and return the text of the NEXT td
@@ -60,15 +47,12 @@ export async function GET(request) {
     let photoBase64 = null;
     if (imgSrc) {
         try {
-            const imgRes = await axios.get(imgSrc, {
+            const { data: imgData, headers: imgHeaders } = await fetchWithReauth(request, imgSrc, {
                 responseType: 'arraybuffer',
-                headers: {
-                    'User-Agent': 'Mozilla/5.0',
-                    'Cookie': `JSESSIONID=${jsessionId}`
-                }
+                overrideJsessionId: activeJsessionId
             });
-            const buffer = Buffer.from(imgRes.data, 'binary');
-            const mimeType = imgRes.headers['content-type'] || 'image/jpeg';
+            const buffer = Buffer.from(imgData, 'binary');
+            const mimeType = imgHeaders['content-type'] || 'image/jpeg';
             photoBase64 = `data:${mimeType};base64,${buffer.toString('base64')}`;
         } catch (e) {
             console.error("Failed to fetch profile image", e.message);
@@ -77,7 +61,11 @@ export async function GET(request) {
     
     profileData.photo = photoBase64;
 
-    return NextResponse.json({ success: true, profile: profileData });
+    const response = NextResponse.json({ success: true, profile: profileData });
+    if (newSessionCookie) {
+        response.cookies.set(newSessionCookie);
+    }
+    return response;
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to fetch profile data' }, { status: 500 });
