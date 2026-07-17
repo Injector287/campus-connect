@@ -6,6 +6,7 @@ import useSWR from 'swr'
 import { useRouter } from 'next/navigation'
 import { fetcher } from '@/utils/fetcher'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
+import CurrentPeriod from '@/components/CurrentPeriod'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -324,6 +325,9 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Attendance</h1>
       </div>
+
+      {/* Current Time and Period */}
+      <CurrentPeriod />
 
       {/* Tabs */}
       <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', marginBottom: '1.5rem' }}>
