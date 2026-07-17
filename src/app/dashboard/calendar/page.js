@@ -5,8 +5,10 @@ import calendarData from '../../../../calendar.json';
 
 export default function CalendarPage() {
     const [currentMonthStr, setCurrentMonthStr] = useState('06.2026');
-    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+    // Set default viewMode to 'list' so mobile users don't see a flash of grid.
+    const [viewMode, setViewMode] = useState('list'); // 'grid' or 'list'
     const [todayStr, setTodayStr] = useState('');
+    const [hasScrolled, setHasScrolled] = useState(false);
 
     useEffect(() => {
         const today = new Date();
@@ -17,12 +19,13 @@ export default function CalendarPage() {
     }, []);
 
     useEffect(() => {
-        if (viewMode === 'list') {
+        if (viewMode === 'list' && todayStr && !hasScrolled) {
             setTimeout(() => {
-                document.getElementById('today-row')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
+                document.getElementById('today-row')?.scrollIntoView({ behavior: 'auto', block: 'center' });
+                setHasScrolled(true);
+            }, 50);
         }
-    }, [viewMode, todayStr]);
+    }, [viewMode, todayStr, hasScrolled]);
 
     const months = [
         { label: 'June 2026', value: '06.2026' },
@@ -64,9 +67,7 @@ export default function CalendarPage() {
         const handleResize = () => {
             const mobile = window.innerWidth <= 768;
             setIsMobile(mobile);
-            if (mobile) {
-                setViewMode('list');
-            }
+            // Only force list mode on initial load if mobile, but we already default to list now
             if (topHeaderRef.current) {
                 setTopHeaderHeight(topHeaderRef.current.offsetHeight);
             }
