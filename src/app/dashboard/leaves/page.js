@@ -83,17 +83,19 @@ export default function LeaveApplicationPage() {
           const blob = await res.blob();
           const url = window.URL.createObjectURL(blob);
           
-          // Open in new tab for printing
-          const newWindow = window.open(url, '_blank');
-          if (newWindow) {
-              newWindow.focus();
-          } else {
-              // If popup blocked, force download
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `Leave_Application_${getLeaveTypeText(leaveType)}.pdf`;
-              a.click();
-          }
+          // Force direct download to the device
+          const now = new Date();
+          const dd = String(now.getDate()).padStart(2, '0');
+          const mm = String(now.getMonth() + 1).padStart(2, '0');
+          const ddmm = dd + mm;
+          
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Leave_${getLeaveTypeText(leaveType)}_${ddmm}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
           
       } catch (err) {
           console.error(err);
