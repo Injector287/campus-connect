@@ -8,7 +8,7 @@ export function normalizeUsername(username) {
 }
 
 export function isAllowedUsername(username) {
-  return normalizeUsername(username) === ALLOWED_USERNAME;
+  return normalizeUsername(username).toUpperCase() === ALLOWED_USERNAME.toUpperCase();
 }
 
 export function hasValidWhitelistedSession(request) {

@@ -16,7 +16,7 @@ export async function POST(request) {
     }
 
     if (!isAllowedUsername(normalizedUsername)) {
-      return clearAuthCookies(NextResponse.json({ error: `Only ${ALLOWED_USERNAME} is allowed to login.` }, { status: 403 }));
+      return clearAuthCookies(NextResponse.json({ error: 'Access denied' }, { status: 403 }));
     }
 
     const jar = new CookieJar();
