@@ -29,6 +29,6 @@ export function clearAuthCookies(response) {
   return response;
 }
 
-export function unauthorizedResponse(message = `Only ${ALLOWED_USERNAME} is allowed to access this ERP app.`) {
+export function unauthorizedResponse(message = 'Access denied.') {
   return clearAuthCookies(NextResponse.json({ error: message }, { status: 401 }));
 }
