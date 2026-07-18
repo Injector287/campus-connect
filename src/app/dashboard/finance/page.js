@@ -17,7 +17,10 @@ export default function FinancePage() {
     
     try {
         const res = await fetch(`/api/finance/receipt?url=${encodeURIComponent(ackUrl)}`);
-        if (!res.ok) throw new Error('Failed to download receipt');
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.details || errData.error || 'Failed to download receipt');
+        }
         
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
@@ -31,7 +34,7 @@ export default function FinancePage() {
         window.URL.revokeObjectURL(url);
     } catch (err) {
         console.error(err);
-        alert('Failed to download receipt.');
+        alert(`Error downloading receipt: ${err.message}`);
     } finally {
         setDownloadingReceipt(null);
     }

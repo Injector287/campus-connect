@@ -33,7 +33,10 @@ export async function GET(request) {
         const injectedHtml = htmlString.replace('<head>', '<head><base href="https://erp.loyolacollege.edu/loyolaonline/students/report/" />');
 
         // Generate PDF using Puppeteer
-        const browser = await puppeteer.launch({ headless: 'new' });
+        const browser = await puppeteer.launch({ 
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
         const page = await browser.newPage();
         await page.setContent(injectedHtml, { waitUntil: 'networkidle0' });
         const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
@@ -52,6 +55,6 @@ export async function GET(request) {
         return response;
     } catch (error) {
         console.error('Receipt API Error:', error);
-        return NextResponse.json({ error: 'Failed to fetch receipt' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch receipt', details: error.message, stack: error.stack }, { status: 500 });
     }
 }
