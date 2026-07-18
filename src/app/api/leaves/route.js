@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { fetchWithReauth } from '@/utils/erpFetch';
+import { hasValidWhitelistedSession, unauthorizedResponse } from '@/utils/auth';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function POST(request) {
   try {
+    if (!hasValidWhitelistedSession(request)) {
+      return unauthorizedResponse();
+    }
+
 
     const body = await request.json();
     

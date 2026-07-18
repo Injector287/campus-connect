@@ -2,15 +2,21 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
+import { ALLOWED_USERNAME, AUTH_SESSION_VERSION, clearAuthCookies, isAllowedUsername } from '@/utils/auth';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function POST(request) {
   try {
     const { username, password, stayLoggedIn } = await request.json();
+    const normalizedUsername = typeof username === 'string' ? username.trim() : '';
 
-    if (!username || !password) {
+    if (!normalizedUsername || !password) {
       return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
+    }
+
+    if (!isAllowedUsername(normalizedUsername)) {
+      return clearAuthCookies(NextResponse.json({ error: `Only ${ALLOWED_USERNAME} is allowed to login.` }, { status: 403 }));
     }
 
     const jar = new CookieJar();
@@ -35,7 +41,7 @@ export async function POST(request) {
     // 3. Construct the highly specific login payload
     const payload = new URLSearchParams();
     payload.append('txtSK', encodeURIComponent(password));
-    payload.append('txtAN', encodeURIComponent(username));
+    payload.append('txtAN', encodeURIComponent(normalizedUsername));
     payload.append('_tries', '1');
     payload.append('_md5', '');
     payload.append('txtPageAction', '1');
@@ -87,9 +93,29 @@ export async function POST(request) {
     // Set the JSESSIONID cookie
     response.cookies.set(cookieOptions);
 
+    response.cookies.set({
+      name: 'ERP_USERNAME',
+      value: normalizedUsername,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: stayLoggedIn ? 30 * 24 * 60 * 60 : undefined
+    });
+
+    response.cookies.set({
+      name: 'ERP_AUTH_VERSION',
+      value: AUTH_SESSION_VERSION,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: stayLoggedIn ? 30 * 24 * 60 * 60 : undefined
+    });
+
     // Encrypt and set the credentials cookie for background re-authentication
     const { encrypt } = require('@/utils/crypto');
-    const encryptedCreds = encrypt(`${username}:${password}`);
+    const encryptedCreds = encrypt(`${normalizedUsername}:${password}`);
     if (encryptedCreds) {
         response.cookies.set({
             name: 'ERP_CREDS',

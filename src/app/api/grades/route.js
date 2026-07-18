@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { fetchWithReauth } from '@/utils/erpFetch';
+import { hasValidWhitelistedSession, unauthorizedResponse } from '@/utils/auth';
 import * as cheerio from 'cheerio';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
   try {
+        if (!hasValidWhitelistedSession(request)) {
+            return unauthorizedResponse();
+        }
+
     const resInternal = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentInternalMarkDetails.jsp`);
     const activeJsessionId = resInternal.jsessionId || request.cookies.get('JSESSIONID')?.value;
     const resExam = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentExamResultsDetails.jsp`, { overrideJsessionId: activeJsessionId });

@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { fetchWithReauth } from '@/utils/erpFetch';
+import { hasValidWhitelistedSession, unauthorizedResponse } from '@/utils/auth';
 import * as cheerio from 'cheerio';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
   try {
+        if (!hasValidWhitelistedSession(request)) {
+            return unauthorizedResponse();
+        }
+
     const { data: html, newSessionCookie } = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentWiseSubjects.jsp`);
     const $ = cheerio.load(html);
 
