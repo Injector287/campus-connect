@@ -8,6 +8,17 @@ import { fetcher } from '@/utils/fetcher'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import CurrentPeriod from '@/components/CurrentPeriod'
 
+const formatSubjectName = (name) => {
+    if (!name) return '';
+    const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    return name.toLowerCase().split(' ').map(word => {
+        const upperWord = word.toUpperCase();
+        // Keep roman numerals uppercase, otherwise capitalize first letter
+        if (romanNumerals.includes(upperWord)) return upperWord;
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+};
+
 export default function DashboardPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('hourWise') // 'hourWise', 'subjectWise'
@@ -278,7 +289,7 @@ export default function DashboardPage() {
             <div key={idx} className="glass-panel" style={{ padding: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                     <div style={{ flex: 1, paddingRight: '1rem' }}>
-                        <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '0.25rem' }}>{subj.desc}</h3>
+                        <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '0.25rem' }}>{formatSubjectName(subj.desc)}</h3>
                         <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>{subj.code}</span>
                     </div>
                     <div style={{ textAlign: 'right' }}>

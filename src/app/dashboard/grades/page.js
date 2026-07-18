@@ -9,6 +9,17 @@ export default function GradesPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('internal') // 'internal', 'exam'
   const [expandedInternal, setExpandedInternal] = useState(null)
+  
+  const formatSubjectName = (name) => {
+      if (!name) return '';
+      const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+      return name.toLowerCase().split(' ').map(word => {
+          const upperWord = word.toUpperCase();
+          // Keep roman numerals uppercase, otherwise capitalize first letter
+          if (romanNumerals.includes(upperWord)) return upperWord;
+          return word.charAt(0).toUpperCase() + word.slice(1);
+      }).join(' ');
+  };
   const { data: json, error, isLoading } = useSWR('/api/grades', fetcher)
 
   if (error) {
@@ -54,7 +65,7 @@ export default function GradesPage() {
                     style={{ padding: '1.25rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
                     <div style={{ flex: 1, paddingRight: '1rem' }}>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '0.25rem', textTransform: 'capitalize' }}>{subj.desc.toLowerCase()}</h3>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '0.25rem' }}>{formatSubjectName(subj.desc)}</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: '600' }}>{subj.code}</span>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -85,11 +96,24 @@ export default function GradesPage() {
   const renderExam = () => {
       // Group by semester
       const grouped = {};
+      let totalCreditPoints = 0;
+      let totalCreditsForCgpa = 0;
+      
       (grades.examMarks || []).forEach(subj => {
           const sem = subj.semester || 'Other';
           if (!grouped[sem]) grouped[sem] = [];
           grouped[sem].push(subj);
+          
+          const credit = parseFloat(subj.credit);
+          const points = parseFloat(subj.points);
+          
+          if (!isNaN(credit) && !isNaN(points) && credit > 0) {
+              totalCreditPoints += (credit * points);
+              totalCreditsForCgpa += credit;
+          }
       });
+      
+      const currentCgpa = totalCreditsForCgpa > 0 ? (totalCreditPoints / totalCreditsForCgpa).toFixed(2) : 'N/A';
 
       // Sort semesters descending
       const semesters = Object.keys(grouped).sort((a, b) => {
@@ -120,7 +144,7 @@ export default function GradesPage() {
       return (
           <>
              {grades.summary && grades.summary.totalCredits && (
-                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--glass-border)' }}>
+                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', padding: '1rem', marginBottom: '1rem', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--glass-border)' }}>
                      <div style={{ textAlign: 'center' }}>
                          <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white' }}>{grades.summary.acquiredCredits}</div>
                          <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Acquired</div>
@@ -135,6 +159,18 @@ export default function GradesPage() {
                      </div>
                  </div>
              )}
+             
+             {currentCgpa !== 'N/A' && (
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', marginBottom: '2.5rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.05))', borderRadius: '16px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                     <div>
+                         <h3 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', letterSpacing: '1px', marginBottom: '0.25rem', fontWeight: '600' }}>Current CGPA</h3>
+                         <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>Based on acquired credits</p>
+                     </div>
+                     <div style={{ fontSize: '2.25rem', fontWeight: '800', color: 'white' }}>
+                         {currentCgpa}
+                     </div>
+                 </div>
+             )}
 
              {semesters.map(sem => (
                  <div key={sem} style={{ marginBottom: '2.5rem' }}>
@@ -145,7 +181,7 @@ export default function GradesPage() {
                              <div key={idx} className="glass-panel" style={{ padding: '1.25rem' }}>
                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                                      <div style={{ flex: 1, paddingRight: '1rem' }}>
-                                         <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '0.25rem', textTransform: 'capitalize' }}>{subj.desc.toLowerCase()}</h3>
+                                         <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '0.25rem' }}>{formatSubjectName(subj.desc)}</h3>
                                          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>{subj.code} • {subj.category || 'Course'}</span>
                                      </div>
                                      <div style={{ textAlign: 'right' }}>

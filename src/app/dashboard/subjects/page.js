@@ -7,6 +7,18 @@ import { fetcher } from '@/utils/fetcher'
 
 export default function SubjectsPage() {
   const router = useRouter()
+  
+  const formatSubjectName = (name) => {
+      if (!name) return '';
+      const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+      return name.toLowerCase().split(' ').map(word => {
+          const upperWord = word.toUpperCase();
+          // Keep roman numerals uppercase, otherwise capitalize first letter
+          if (romanNumerals.includes(upperWord)) return upperWord;
+          return word.charAt(0).toUpperCase() + word.slice(1);
+      }).join(' ');
+  };
+  
   const { data: json, error, isLoading } = useSWR('/api/subjects', fetcher)
 
   if (error) {
@@ -58,8 +70,8 @@ export default function SubjectsPage() {
                 {category.subjects.map((subject, idx) => (
                     <div key={idx} className="glass-panel" style={{ padding: '1.25rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', lineHeight: '1.4', paddingRight: '1rem', textTransform: 'capitalize' }}>
-                                {subject.description.toLowerCase()}
+                            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', lineHeight: '1.4', paddingRight: '1rem' }}>
+                                {formatSubjectName(subject.description)}
                             </h3>
                             <span style={{ 
                                 background: 'rgba(255,255,255,0.1)', 

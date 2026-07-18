@@ -94,7 +94,7 @@ export default function CurrentPeriod() {
     const borderColor = isBreakBg ? 'rgba(245, 159, 0, 0.2)' : 'rgba(59, 130, 246, 0.2)';
 
     return (
-        <div className="glass-panel" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: bgGradient, border: `1px solid ${borderColor}` }}>
+        <div className="glass-panel current-period-bar" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: bgGradient, border: `1px solid ${borderColor}` }}>
             <div>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '500' }}>
                     Period Timings

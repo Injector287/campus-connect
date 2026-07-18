@@ -11,6 +11,37 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [customMobileNav, setCustomMobileNav] = useState(['/dashboard', '/dashboard/calendar', '/dashboard/profile']);
+  const [isEditNavMode, setIsEditNavMode] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('erp_mobile_nav');
+    if (saved) {
+      try {
+        setCustomMobileNav(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, []);
+
+  const handleNavChange = (href, isAdding) => {
+      if (isAdding) {
+          if (customMobileNav.length >= 4) {
+              if (navigator.vibrate) navigator.vibrate(50);
+              return;
+          }
+          const newNav = [...customMobileNav, href];
+          setCustomMobileNav(newNav);
+          localStorage.setItem('erp_mobile_nav', JSON.stringify(newNav));
+      } else {
+          if (customMobileNav.length <= 2) {
+              if (navigator.vibrate) navigator.vibrate(50);
+              return;
+          }
+          const newNav = customMobileNav.filter(item => item !== href);
+          setCustomMobileNav(newNav);
+          localStorage.setItem('erp_mobile_nav', JSON.stringify(newNav));
+      }
+  };
 
   // Background prefetch all pages once layout mounts
   useSWR('/api/dashboard', fetcher, { revalidateOnFocus: false });
@@ -23,6 +54,7 @@ export default function DashboardLayout({ children }) {
   // Close drawer on path change
   useEffect(() => {
       setIsMobileMenuOpen(false);
+      setIsEditNavMode(false);
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -65,6 +97,17 @@ export default function DashboardLayout({ children }) {
     { href: '/dashboard/calendar', label: 'Calendar', icon: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></> },
     { href: '/dashboard/profile', label: 'Profile', icon: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></> }
   ];
+
+  // Helper to get item details
+  const getNavItem = (href) => {
+      if (href === '/dashboard') return mobilePrimaryNav[0]; // Prefer Home icon
+      
+      for (const group of navGroups) {
+          const found = group.items.find(item => item.href === href);
+          if (found) return found;
+      }
+      return null;
+  };
 
   return (
     <div className="layout-wrapper" style={{ position: 'relative' }}>
@@ -190,13 +233,24 @@ export default function DashboardLayout({ children }) {
               overflowY: 'auto'
           }} onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'white', fontWeight: 'bold' }}>Menu</h3>
-                  <button onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                  </button>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'white', fontWeight: 'bold' }}>
+                      {isEditNavMode ? 'Edit Navigation' : 'Menu'}
+                  </h3>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => setIsEditNavMode(!isEditNavMode)} style={{ background: isEditNavMode ? 'var(--primary)' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', transition: 'all 0.2s ease' }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                          </svg>
+                      </button>
+                      <button onClick={() => { setIsMobileMenuOpen(false); setIsEditNavMode(false); }} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      </button>
+                  </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem' }}>
+              {!isEditNavMode ? (
+                  <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem' }}>
                 {navGroups.map((group, idx) => (
                     <div key={idx}>
                         <h4 style={{ 
@@ -250,6 +304,84 @@ export default function DashboardLayout({ children }) {
                     Logout
                   </button>
               </div>
+              </>
+              ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem' }}>
+                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: '-1rem 0 0 0' }}>
+                          Select 2 to 4 items for quick access in the bottom bar.
+                      </p>
+                      {navGroups.map((group, idx) => (
+                          <div key={idx}>
+                              <h4 style={{ 
+                                  fontSize: '0.75rem', 
+                                  textTransform: 'uppercase', 
+                                  letterSpacing: '1px', 
+                                  color: 'rgba(255,255,255,0.4)', 
+                                  margin: '0 0 1rem 0',
+                                  fontWeight: '600'
+                              }}>
+                                  {group.title}
+                              </h4>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                  {group.items.map((item) => {
+                                      const isSelected = customMobileNav.includes(item.href);
+                                      const atMax = customMobileNav.length >= 4;
+                                      const atMin = customMobileNav.length <= 2;
+                                      
+                                      const disabled = (isSelected && atMin) || (!isSelected && atMax);
+                                      
+                                      return (
+                                          <div key={item.href} style={{ 
+                                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                              padding: '0.75rem 1rem', borderRadius: '12px',
+                                              background: 'rgba(255,255,255,0.03)',
+                                              border: '1px solid rgba(255,255,255,0.05)'
+                                          }}>
+                                              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: isSelected ? 'white' : 'rgba(255,255,255,0.6)' }}>
+                                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                      {item.href === '/dashboard' ? mobilePrimaryNav[0].icon : item.icon}
+                                                  </svg>
+                                                  <span style={{ fontSize: '0.9rem', fontWeight: isSelected ? '600' : '500' }}>
+                                                      {item.href === '/dashboard' ? 'Home' : item.label}
+                                                  </span>
+                                              </div>
+                                              
+                                              <button 
+                                                  onClick={() => !disabled && handleNavChange(item.href, !isSelected)}
+                                                  style={{
+                                                      background: isSelected ? (atMin ? 'rgba(255,255,255,0.1)' : 'rgba(239, 68, 68, 0.2)') : (atMax ? 'rgba(255,255,255,0.1)' : 'rgba(74, 222, 128, 0.2)'),
+                                                      color: isSelected ? (atMin ? 'rgba(255,255,255,0.3)' : '#ef4444') : (atMax ? 'rgba(255,255,255,0.3)' : '#4ade80'),
+                                                      border: 'none',
+                                                      borderRadius: '8px',
+                                                      padding: '0.5rem',
+                                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                      cursor: disabled ? 'not-allowed' : 'pointer',
+                                                      transition: 'all 0.2s ease',
+                                                      opacity: disabled ? 0.5 : 1
+                                                  }}
+                                              >
+                                                  {isSelected ? (
+                                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                                  ) : (
+                                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                                  )}
+                                              </button>
+                                          </div>
+                                      );
+                                  })}
+                              </div>
+                          </div>
+                      ))}
+                      
+                      <div style={{ marginTop: '1rem' }}>
+                          <button onClick={() => setIsEditNavMode(false)} style={{
+                              width: '100%', padding: '0.85rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', cursor: 'pointer'
+                          }}>
+                              Done Editing
+                          </button>
+                      </div>
+                  </div>
+              )}
           </div>
       </div>
 
@@ -269,10 +401,12 @@ export default function DashboardLayout({ children }) {
         padding: '0 0.5rem',
         zIndex: 90
       }}>
-        {mobilePrimaryNav.map((item) => {
+        {customMobileNav.map((href) => {
+            const item = getNavItem(href);
+            if (!item) return null;
             const isActive = pathname === item.href && !isMobileMenuOpen;
             return (
-                <Link key={item.href} href={item.href} style={{ 
+                <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} style={{ 
                     display: 'flex', flexDirection: 'column', alignItems: 'center', 
                     textDecoration: 'none', 
                     color: isActive ? 'var(--primary)' : 'rgba(255,255,255,0.5)',

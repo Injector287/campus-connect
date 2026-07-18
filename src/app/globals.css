@@ -26,6 +26,7 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -74,6 +75,14 @@ body {
     max-width: 1200px;
     padding: 3rem 2rem;
   }
+}
+
+/* Placeholder styling */
+::placeholder {
+  font-family: 'Inter', sans-serif;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 /* Forms */
@@ -258,4 +267,61 @@ body {
     flex: 1;
     margin-left: 250px; /* Width of sidebar */
   }
+}
+
+/* Mobile UI Adjustments */
+@media (max-width: 767px) {
+  .current-period-bar {
+    padding: 1rem 1.2rem !important;
+    gap: 0.5rem !important;
+  }
+  .current-period-bar h2 {
+    font-size: 1.4rem !important;
+  }
+  .current-period-bar h3 {
+    font-size: 1.15rem !important;
+  }
+  .current-period-bar p {
+    font-size: 0.75rem !important;
+  }
+  .current-period-bar svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  .leave-form-panel {
+    padding: 1.25rem !important;
+    border-radius: 20px !important;
+  }
+  .leave-dates-row {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+}
+
+/* Recharts Fixes */
+.recharts-wrapper, 
+.recharts-surface, 
+.recharts-responsive-container, 
+.recharts-sector, 
+.recharts-layer,
+.recharts-wrapper *,
+.recharts-surface * {
+  outline: none !important;
+}
+.recharts-wrapper:focus, 
+.recharts-surface:focus, 
+.recharts-responsive-container:focus, 
+.recharts-sector:focus, 
+.recharts-layer:focus,
+.recharts-wrapper *:focus,
+.recharts-surface *:focus {
+  outline: none !important;
+}
+
+/* Date Picker Icon Styling */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+  display: none !important;
+  -webkit-appearance: none !important;
 }
