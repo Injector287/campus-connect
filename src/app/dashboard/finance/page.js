@@ -16,26 +16,25 @@ export default function FinancePage() {
     setDownloadingReceipt(receiptNo);
     
     try {
-        const res = await fetch(`/api/finance/receipt?url=${encodeURIComponent(ackUrl)}`);
-        if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.details || errData.error || 'Failed to download receipt');
-        }
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/api/finance/receipt?url=${encodeURIComponent(ackUrl)}`;
+        document.body.appendChild(iframe);
         
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Receipt_${receiptNo}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        // Wait a bit for the iframe to load and trigger its own onload print event
+        setTimeout(() => {
+            setDownloadingReceipt(null);
+            // We leave the iframe in the DOM so the print dialog stays functional,
+            // or remove it after a longer delay (e.g., 10 minutes).
+            setTimeout(() => {
+                if (document.body.contains(iframe)) {
+                    document.body.removeChild(iframe);
+                }
+            }, 600000); 
+        }, 3000);
     } catch (err) {
         console.error(err);
-        alert(`Error downloading receipt: ${err.message}`);
-    } finally {
+        alert(`Error opening receipt: ${err.message}`);
         setDownloadingReceipt(null);
     }
   }
