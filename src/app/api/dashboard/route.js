@@ -12,10 +12,14 @@ export async function GET(request) {
       return unauthorizedResponse();
     }
 
-    const { data: html, newSessionCookie, jsessionId } = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentHourWiseAttendance.jsp`);
-    
-    // Fetch Subject Wise Attendance, passing the active jsessionId
-    const { data: subjHtml } = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentSubjectWiseAttendance.jsp`, { overrideJsessionId: jsessionId });
+    const [hourWiseRes, subjectWiseRes] = await Promise.all([
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentHourWiseAttendance.jsp`),
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentSubjectWiseAttendance.jsp`)
+    ]);
+
+    const html = hourWiseRes.data;
+    const newSessionCookie = hourWiseRes.newSessionCookie || subjectWiseRes.newSessionCookie;
+    const subjHtml = subjectWiseRes.data;
 
     // 1. Parse Hour Wise Attendance
     const $ = cheerio.load(html);

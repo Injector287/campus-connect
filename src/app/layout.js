@@ -3,8 +3,14 @@ import './globals.css'
 export const metadata = {
   title: 'Loyola ERP',
   description: 'A modern, fast wrapper for Loyola College ERP',
+}
+
+export const viewport = {
   themeColor: '#0f172a',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({ children }) {

@@ -4,10 +4,11 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import { useRouter } from 'next/navigation'
 import { fetcher } from '@/utils/fetcher'
+import { useTabState } from '@/hooks/useTabState'
 
 export default function GradesPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('internal') // 'internal', 'exam'
+  const [activeTab, setActiveTab] = useTabState('tab', 'internal') // 'internal', 'exam'
   const [expandedInternal, setExpandedInternal] = useState(null)
   
   const formatSubjectName = (name) => {
@@ -47,7 +48,7 @@ export default function GradesPage() {
     )
   }
 
-  const grades = json?.grades
+  const grades = json?.grades || {}
   if (!json) return null
 
 

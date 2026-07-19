@@ -15,17 +15,10 @@ export async function GET(request) {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };
 
-    // Fetch all three tabs, serializing the first to handle any session re-auth safely
-    const res1 = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, {
-        method: 'POST',
-        data: 'ids=1&filter=',
-        headers
-    });
-    const activeJsessionId = res1.jsessionId || request.cookies.get('JSESSIONID')?.value;
-
-    const [res2, res3] = await Promise.all([
-        fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, { method: 'POST', data: 'ids=2&filter=', headers, overrideJsessionId: activeJsessionId }),
-        fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, { method: 'POST', data: 'ids=3&filter=', headers, overrideJsessionId: activeJsessionId })
+    const [res1, res2, res3] = await Promise.all([
+        fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, { method: 'POST', data: 'ids=1&filter=', headers }),
+        fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, { method: 'POST', data: 'ids=2&filter=', headers }),
+        fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, { method: 'POST', data: 'ids=3&filter=', headers })
     ]);
 
     const parseTable = (html, tableId) => {

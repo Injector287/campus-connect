@@ -11,9 +11,10 @@ export async function GET(request) {
             return unauthorizedResponse();
         }
 
-    const resInternal = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentInternalMarkDetails.jsp`);
-    const activeJsessionId = resInternal.jsessionId || request.cookies.get('JSESSIONID')?.value;
-    const resExam = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentExamResultsDetails.jsp`, { overrideJsessionId: activeJsessionId });
+    const [resInternal, resExam] = await Promise.all([
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentInternalMarkDetails.jsp`),
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentExamResultsDetails.jsp`)
+    ]);
 
     // Parse Internal Marks
     const $int = cheerio.load(resInternal.data);

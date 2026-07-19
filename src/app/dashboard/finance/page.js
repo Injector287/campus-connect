@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { useRouter } from 'next/navigation'
 import { fetcher } from '@/utils/fetcher'
+import { useTabState } from '@/hooks/useTabState'
 
 export default function FinancePage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('due') // 'due', 'history', 'transactions'
+  const [activeTab, setActiveTab] = useTabState('tab', 'due') // 'due', 'history', 'transactions'
   const [isMobile, setIsMobile] = useState(false)
   const [downloadingReceipt, setDownloadingReceipt] = useState(null)
   
@@ -75,7 +76,7 @@ export default function FinancePage() {
 
   if (!json) return null
 
-  const { due, history, transactions } = json
+  const { due = {}, history = [], transactions = [] } = json || {}
 
   const renderDue = () => {
     if (due.status === 'no_dues' || !due.data || due.data.length === 0) {

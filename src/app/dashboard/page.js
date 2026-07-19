@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import useSWR from 'swr'
+import { useTabState } from '@/hooks/useTabState'
 import { useRouter } from 'next/navigation'
 import { fetcher } from '@/utils/fetcher'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
@@ -21,7 +22,7 @@ const formatSubjectName = (name) => {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('hourWise') // 'hourWise', 'subjectWise'
+  const [activeTab, setActiveTab] = useTabState('tab', 'hourWise') // 'hourWise', 'subjectWise'
   const { data: json, error, isLoading } = useSWR('/api/dashboard', fetcher)
 
   if (error) {
@@ -54,7 +55,7 @@ export default function DashboardPage() {
 
 
 
-  const { stats, allDays, subjectWise } = data;
+  const { stats = {}, allDays = [], subjectWise = [] } = data || {};
   
   const getStatusColor = (status) => {
     if (status === 'P') return '#4db8ff'; // vibrant blue

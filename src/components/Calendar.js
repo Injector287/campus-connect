@@ -3,12 +3,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import calendarData from '../../calendar.json';
 import timetableData from '../utils/timetable.json';
+import { useTabState } from '@/hooks/useTabState'
 
 export default function CalendarPage() {
     const [todayStr, setTodayStr] = useState('');
     const [showPast, setShowPast] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [activeView, setActiveView] = useState('calendar');
+    const [activeView, setActiveView] = useTabState('view', 'calendar');
     const [selectedDayOrder, setSelectedDayOrder] = useState('1');
     const [selectedMonth, setSelectedMonth] = useState('06.2026');
     const topHeaderRef = React.useRef(null);
@@ -46,6 +47,23 @@ export default function CalendarPage() {
             observer.disconnect();
         };
     }, []);
+
+    const handleShowPastDates = () => {
+        const todayEl = document.getElementById('today-marker');
+        let offset = 0;
+        if (todayEl) {
+             offset = todayEl.getBoundingClientRect().top;
+        }
+        setShowPast(true);
+        // After render, maintain the exact visual scroll position relative to today's date
+        setTimeout(() => {
+            const newTodayEl = document.getElementById('today-marker');
+            if (newTodayEl) {
+                const newY = newTodayEl.getBoundingClientRect().top + window.scrollY;
+                window.scrollTo({ top: newY - offset, behavior: 'auto' });
+            }
+        }, 50);
+    };
 
     const listData = useMemo(() => {
         if (showPast || !todayStr) return calendarData;
@@ -148,7 +166,7 @@ export default function CalendarPage() {
                     {!showPast && todayStr && (
                         <div className="mobile-view" style={{ padding: '1rem', justifyContent: 'center' }}>
                             <button 
-                                onClick={() => setShowPast(true)}
+                                onClick={handleShowPastDates}
                                 style={{ 
                                     background: 'rgba(255,255,255,0.05)', 
                                     border: '1px solid rgba(255,255,255,0.1)', 
@@ -209,18 +227,20 @@ export default function CalendarPage() {
                                 return (
                                     <React.Fragment key={dayData.date}>
                                         {header}
-                                        <div style={{ 
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            padding: '1rem 0.75rem', 
-                                            border: isToday ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)',
-                                            borderRadius: '12px',
-                                            background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)',
-                                            transition: 'all 0.2s',
-                                            gap: '0.75rem'
-                                        }}
-                                        onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                                        onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)' }}
+                                        <div 
+                                            id={isToday ? 'today-marker' : undefined}
+                                            style={{ 
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                padding: '1rem 0.75rem', 
+                                                border: isToday ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)',
+                                                borderRadius: '12px',
+                                                background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)',
+                                                transition: 'all 0.2s',
+                                                gap: '0.75rem'
+                                            }}
+                                            onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                                            onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)' }}
                                         >
                                             {/* Date & Day Badge */}
                                             <div style={{ 

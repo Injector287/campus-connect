@@ -11,13 +11,11 @@ export async function GET(request) {
             return unauthorizedResponse();
         }
 
-    const dueRes = await fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentFeeDueDetails.jsp`);
-    const activeJsessionId = dueRes.jsessionId || request.cookies.get('JSESSIONID')?.value;
-
-    const [paidRes, txRes, leaveRes] = await Promise.all([
-      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentFinanceDetails.jsp`, { overrideJsessionId: activeJsessionId }),
-      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentOnlinePaymentAcknowledgements.jsp`, { overrideJsessionId: activeJsessionId }),
-      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLeaveApplication.jsp`, { overrideJsessionId: activeJsessionId })
+    const [dueRes, paidRes, txRes, leaveRes] = await Promise.all([
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentFeeDueDetails.jsp`),
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentFinanceDetails.jsp`),
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentOnlinePaymentAcknowledgements.jsp`),
+      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentLeaveApplication.jsp`)
     ]);
 
     const parseTables = (html) => {

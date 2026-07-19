@@ -2,10 +2,12 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '@/utils/fetcher'
-import CalendarPage from '@/components/Calendar'
+import dynamic from 'next/dynamic'
+
+const CalendarPage = dynamic(() => import('@/components/Calendar'))
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -194,10 +196,14 @@ export default function DashboardLayout({ children }) {
       {/* Page Content */}
       <div className="layout-content" style={{ paddingBottom: '80px', width: '100%' }}>
         <div style={{ display: pathname === '/dashboard/calendar' ? 'block' : 'none' }}>
-            <CalendarPage />
+            <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>Loading calendar...</div>}>
+                <CalendarPage />
+            </Suspense>
         </div>
         <div style={{ display: pathname === '/dashboard/calendar' ? 'none' : 'block' }}>
-            {children}
+            <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>Loading...</div>}>
+                {children}
+            </Suspense>
         </div>
       </div>
 

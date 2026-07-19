@@ -4,9 +4,10 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import { useRouter } from 'next/navigation'
 import { fetcher } from '@/utils/fetcher'
+import { useTabState } from '@/hooks/useTabState'
 
 export default function LibraryPage() {
-  const [activeTab, setActiveTab] = useState('hand') // 'hand', 'activities', 'fines'
+  const [activeTab, setActiveTab] = useTabState('tab', 'hand') // 'hand', 'activities', 'fines'
   const router = useRouter()
   const { data: json, error, isLoading } = useSWR('/api/library', fetcher)
 
@@ -35,7 +36,7 @@ export default function LibraryPage() {
     )
   }
 
-  const library = json?.library
+  const library = json?.library || {}
   if (!json) return null
 
   const renderBooks = (books) => {

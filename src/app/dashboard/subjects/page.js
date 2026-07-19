@@ -46,7 +46,7 @@ export default function SubjectsPage() {
     )
   }
 
-  const categories = json?.categories
+  const categories = json?.categories || []
   if (!categories) return null
 
 
