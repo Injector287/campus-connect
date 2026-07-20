@@ -39,7 +39,7 @@ export default function ProfilePage() {
 
 
   return (
-    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start', paddingBottom: '6rem' }}>
+    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
       
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>

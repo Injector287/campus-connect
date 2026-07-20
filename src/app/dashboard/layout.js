@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }) {
     const saved = localStorage.getItem('erp_mobile_nav');
     if (saved) {
       try {
-        setCustomMobileNav(JSON.parse(saved));
+        setTimeout(() => setCustomMobileNav(JSON.parse(saved)), 0);
       } catch (e) {}
     }
   }, []);
@@ -55,8 +55,10 @@ export default function DashboardLayout({ children }) {
 
   // Close drawer on path change
   useEffect(() => {
-      setIsMobileMenuOpen(false);
-      setIsEditNavMode(false);
+      setTimeout(() => {
+          setIsMobileMenuOpen(false);
+          setIsEditNavMode(false);
+      }, 0);
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -126,15 +128,20 @@ export default function DashboardLayout({ children }) {
         WebkitBackdropFilter: 'blur(16px)',
         borderRight: '1px solid rgba(255,255,255,0.05)',
         flexDirection: 'column',
-        padding: '2rem 1rem',
+        padding: '1.5rem 1rem',
         zIndex: 50,
-        overflowY: 'auto'
+        overflowY: 'auto',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none'
       }}>
-        <div style={{ marginBottom: '2.5rem', paddingLeft: '1rem' }}>
+        <style>{`
+          .desktop-only::-webkit-scrollbar { display: none; }
+        `}</style>
+        <div style={{ marginBottom: '1.5rem', paddingLeft: '1rem' }}>
            <h2 className="text-gradient" style={{ fontSize: '1.5rem', margin: 0 }}>Loyola ERP</h2>
         </div>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {navGroups.map((group, idx) => (
                 <div key={idx}>
                     <h3 style={{ 
@@ -142,18 +149,18 @@ export default function DashboardLayout({ children }) {
                         textTransform: 'uppercase', 
                         letterSpacing: '1px', 
                         color: 'rgba(255,255,255,0.4)', 
-                        margin: '0 0 0.75rem 1rem',
+                        margin: '0 0 0.5rem 1rem',
                         fontWeight: '600'
                     }}>
                         {group.title}
                     </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                         {group.items.map((item) => {
                             const isActive = pathname === item.href;
                             return (
                                 <Link key={item.href} href={item.href} style={{ 
-                                    display: 'flex', alignItems: 'center', gap: '1rem', 
-                                    padding: '0.85rem 1rem', borderRadius: '12px',
+                                    display: 'flex', alignItems: 'center', gap: '0.85rem', 
+                                    padding: '0.65rem 1rem', borderRadius: '12px',
                                     textDecoration: 'none', 
                                     color: isActive ? 'white' : 'rgba(255,255,255,0.6)',
                                     background: isActive ? 'var(--primary)' : 'transparent',
@@ -172,12 +179,12 @@ export default function DashboardLayout({ children }) {
             ))}
         </div>
         
-        <div style={{ marginTop: 'auto', paddingTop: '2rem', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ marginTop: 'auto', paddingTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
             <button onClick={handleLogout} style={{ 
                 background: 'rgba(239, 68, 68, 0.1)', 
                 border: '1px solid rgba(239, 68, 68, 0.3)', 
                 color: '#ef4444', 
-                padding: '0.75rem 2rem', 
+                padding: '0.65rem 2rem', 
                 borderRadius: '999px',
                 cursor: 'pointer', 
                 fontSize: '0.875rem',

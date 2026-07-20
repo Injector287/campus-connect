@@ -17,8 +17,10 @@ export default function LeaveApplicationPage() {
 
   useEffect(() => {
       const today = new Date().toISOString().split('T')[0]
-      setFromDate(today)
-      setToDate(today)
+      setTimeout(() => {
+          setFromDate(today)
+          setToDate(today)
+      }, 0)
   }, [])
 
   const calculateDays = () => {
@@ -106,7 +108,7 @@ export default function LeaveApplicationPage() {
   }
 
   return (
-    <main className="main-container animate-slide-up" style={{ paddingBottom: '6rem' }}>
+    <main className="main-container animate-slide-up">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <div>
                 <h1 className="text-gradient" style={{ fontSize: '2.5rem', fontWeight: '800', margin: 0, letterSpacing: '-0.02em' }}>Leave Application</h1>
@@ -115,15 +117,112 @@ export default function LeaveApplicationPage() {
 
         <div className="responsive-split">
             {/* Left Column: Form Info / Status */}
-            <div className="desktop-only" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div className="glass-panel" style={{ padding: '2rem', borderRadius: '24px', background: 'rgba(74, 180, 196, 0.05)', border: '1px solid rgba(74, 180, 196, 0.2)' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '1rem' }}>Guidelines</h3>
-                    <ul style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', lineHeight: '1.6', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <li>Ensure you select the correct leave type.</li>
-                        <li>For Medical Leave (ML) exceeding 3 days, a medical certificate must be submitted to the HOD.</li>
-                        <li>On Duty (OD) requires prior approval from the respective faculty-in-charge.</li>
-                        <li>Provide accurate assessment details if you are missing any lab or continuous assessments.</li>
-                    </ul>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: '1' }}>
+                <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '24px', background: 'rgba(74, 180, 196, 0.05)', border: '1px solid rgba(74, 180, 196, 0.2)', maxHeight: '800px', overflowY: 'auto' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', margin: 0 }}>Guidelines</h3>
+                    </div>
+
+                    {/* Desktop Accordion */}
+                    <div className="desktop-only" style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.95rem', lineHeight: '1.6', flexDirection: 'column', gap: '1rem' }}>
+                        {/* Timings */}
+                        <details open style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
+                            <summary style={{ cursor: 'pointer', fontWeight: '600', color: 'var(--primary)', padding: '1rem', outline: 'none', userSelect: 'none' }}>
+                                Submission Timings
+                            </summary>
+                            <div style={{ padding: '0 1rem 1rem 1rem' }}>
+                                <ul style={{ paddingLeft: '1.25rem', margin: '0 0 1rem 0', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                    <li><strong>11:30 AM - 01:00 PM:</strong> Medical Leave, Prior Information Letters, and Certificates.</li>
+                                    <li><strong>04:15 PM - 04:40 PM:</strong> Casual Leave, Prior Information Letters, and Certificates.</li>
+                                    <li><strong>06:30 PM - 07:00 PM:</strong> Medical Leave and On-Duty applications.</li>
+                                </ul>
+                                <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem', borderRadius: '8px', color: '#fca5a5', fontSize: '0.85rem' }}>
+                                    <strong>Students must strictly adhere to the designated timings.</strong> Submissions will not be accepted during class hours.
+                                </div>
+                            </div>
+                        </details>
+
+                        {/* General Rules */}
+                        <details style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
+                            <summary style={{ cursor: 'pointer', fontWeight: '600', color: 'var(--primary)', padding: '1rem', outline: 'none', userSelect: 'none' }}>
+                                General Rules
+                            </summary>
+                            <div style={{ padding: '0 1rem 1rem 1rem' }}>
+                                <ul style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                    <li>All leave applications must be submitted within <strong>three days</strong> of returning to college. Late submissions will be rejected.</li>
+                                    <li>Any student absent continuously for more than 15 days without prior notification will be removed from the college rolls.</li>
+                                </ul>
+                            </div>
+                        </details>
+
+                        {/* Medical Leave */}
+                        <details style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
+                            <summary style={{ cursor: 'pointer', fontWeight: '600', color: 'var(--primary)', padding: '1rem', outline: 'none', userSelect: 'none' }}>
+                                Medical Leave (ML)
+                            </summary>
+                            <div style={{ padding: '0 1rem 1rem 1rem' }}>
+                                <ul style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                    <li><strong>Absence exceeding 5 days:</strong> A prior information letter must reach the Vice Principal&apos;s office by the 3rd day of illness. The formal application, along with a medical fitness certificate and relevant reports, must be submitted within 3 days of returning.</li>
+                                    <li><strong>Absence under 5 days:</strong> The medical leave application and any supporting medical reports must be submitted within 3 days of returning.</li>
+                                </ul>
+                            </div>
+                        </details>
+
+                        {/* On-Duty */}
+                        <details style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
+                            <summary style={{ cursor: 'pointer', fontWeight: '600', color: 'var(--primary)', padding: '1rem', outline: 'none', userSelect: 'none' }}>
+                                On-Duty (OD) Leave
+                            </summary>
+                            <div style={{ padding: '0 1rem 1rem 1rem' }}>
+                                <ul style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                    <li>Prior information must be sent to the Vice Principal&apos;s office at least 1-2 days before the event by the respective authorities.</li>
+                                    <li>The formal OD application and supporting participation certificates must be submitted within three working days after the event concludes.</li>
+                                    <li>All OD forms must be exclusively forwarded through the Dean of Students.</li>
+                                </ul>
+                            </div>
+                        </details>
+                    </div>
+
+                    {/* Mobile Swipable Cards */}
+                    <div className="mobile-only" style={{ overflowX: 'auto', gap: '0.5rem', paddingBottom: '0.25rem', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <div style={{ flex: '0 0 85%', scrollSnapAlign: 'start', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.85rem', display: 'flex', flexDirection: 'column' }}>
+                            <h4 style={{ color: 'var(--primary)', fontWeight: '600', marginBottom: '0.5rem', marginTop: 0, fontSize: '1rem' }}>Submission Timings</h4>
+                            <ul style={{ paddingLeft: '0.75rem', margin: '0 0 0.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.4rem', color: 'rgba(255,255,255,0.85)', fontSize: '0.85rem' }}>
+                                <li><strong>11:30 AM - 01:00 PM:</strong> Medical Leave, Prior Information Letters, and Certificates.</li>
+                                <li><strong>04:15 PM - 04:40 PM:</strong> Casual Leave, Prior Information Letters, and Certificates.</li>
+                                <li><strong>06:30 PM - 07:00 PM:</strong> Medical Leave and On-Duty applications.</li>
+                            </ul>
+                            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.5rem', borderRadius: '8px', color: '#fca5a5', fontSize: '0.75rem', marginTop: 'auto' }}>
+                                <strong>Students must strictly adhere to the designated timings.</strong> Submissions will not be accepted during class hours.
+                            </div>
+                        </div>
+
+                        <div style={{ flex: '0 0 85%', scrollSnapAlign: 'start', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.85rem', display: 'flex', flexDirection: 'column' }}>
+                            <h4 style={{ color: 'var(--primary)', fontWeight: '600', marginBottom: '0.5rem', marginTop: 0, fontSize: '1rem' }}>General Rules</h4>
+                            <ul style={{ paddingLeft: '0.75rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem', color: 'rgba(255,255,255,0.85)', fontSize: '0.85rem' }}>
+                                <li>All leave applications must be submitted within <strong>three days</strong> of returning to college. Late submissions will be rejected.</li>
+                                <li>Any student absent continuously for more than 15 days without prior notification will be removed from the college rolls.</li>
+                            </ul>
+                        </div>
+
+                        <div style={{ flex: '0 0 85%', scrollSnapAlign: 'start', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.85rem', display: 'flex', flexDirection: 'column' }}>
+                            <h4 style={{ color: 'var(--primary)', fontWeight: '600', marginBottom: '0.5rem', marginTop: 0, fontSize: '1rem' }}>Medical Leave (ML)</h4>
+                            <ul style={{ paddingLeft: '0.75rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem', color: 'rgba(255,255,255,0.85)', fontSize: '0.85rem' }}>
+                                <li><strong>Absence exceeding 5 days:</strong> A prior information letter must reach the Vice Principal&apos;s office by the 3rd day of illness. The formal application, along with a medical fitness certificate and relevant reports, must be submitted within 3 days of returning.</li>
+                                <li><strong>Absence under 5 days:</strong> The medical leave application and any supporting medical reports must be submitted within 3 days of returning.</li>
+                            </ul>
+                        </div>
+
+                        <div style={{ flex: '0 0 85%', scrollSnapAlign: 'start', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.85rem', display: 'flex', flexDirection: 'column' }}>
+                            <h4 style={{ color: 'var(--primary)', fontWeight: '600', marginBottom: '0.5rem', marginTop: 0, fontSize: '1rem' }}>On-Duty (OD) Leave</h4>
+                            <ul style={{ paddingLeft: '0.75rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem', color: 'rgba(255,255,255,0.85)', fontSize: '0.85rem' }}>
+                                <li>Prior information must be sent to the Vice Principal&apos;s office at least 1-2 days before the event by the respective authorities.</li>
+                                <li>The formal OD application and supporting participation certificates must be submitted within three working days after the event concludes.</li>
+                                <li>All OD forms must be exclusively forwarded through the Dean of Students.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
 

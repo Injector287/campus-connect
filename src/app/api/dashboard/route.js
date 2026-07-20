@@ -56,9 +56,69 @@ export async function GET(request) {
        });
     });
 
+    // Extract Outreach Attendance (if available)
+    let outreachData = null;
+    const outreachHeader = $('td').filter(function() {
+        return $(this).text().trim().toUpperCase() === 'OUTREACH';
+    }).first();
+    if (outreachHeader.length > 0) {
+        const outreachTable = outreachHeader.closest('table');
+        const teamNameRow = outreachTable.find('tr').eq(1); // "School Teaching Team"
+        const teamName = teamNameRow.text().trim();
+        
+        const records = [];
+        let total = 0;
+        let present = 0;
+        let absent = 0;
+        
+        outreachTable.find('tr').each((i, row) => {
+            const tr = $(row);
+            const tds = tr.find('td');
+            // Data rows don't have the 'subheader' class on the tr, but they have 2 tds
+            if (tds.length === 2 && !tr.hasClass('subheader')) {
+                const date = $(tds[0]).text().trim();
+                const status = $(tds[1]).text().trim();
+                if (date && status) {
+                    records.push({ date, status });
+                    total++;
+                    if (status === 'P') present++;
+                    else if (status === 'A') absent++;
+                }
+            }
+        });
+        
+        if (total > 0) {
+            outreachData = {
+                team: teamName,
+                total,
+                present,
+                absent,
+                percentage: ((present / total) * 100).toFixed(1),
+                records
+            };
+        }
+    }
+
     // 2. Parse Subject Wise Attendance
     const $subj = cheerio.load(subjHtml);
     const subjectWise = [];
+    
+    // First, find the header row to dynamically determine column indices
+    let colIndices = { code: 0, desc: 1, total: 2, absent: 3, present: 4, ml: 5, od: -1, pct: 6 };
+    $subj('#tblSubjectWiseAttendance > tbody > tr').each((i, row) => {
+        const tr = $subj(row);
+        if (tr.hasClass('subheader') || tr.hasClass('header')) {
+            tr.find('td, th').each((j, col) => {
+                const text = $subj(col).text().trim().toUpperCase();
+                if (text === 'TOTAL') colIndices.total = j;
+                else if (text === 'ABSENT') colIndices.absent = j;
+                else if (text === 'PRESENT') colIndices.present = j;
+                else if (text === 'ML') colIndices.ml = j;
+                else if (text === 'OD') colIndices.od = j;
+                else if (text.includes('%') || text.includes('PERCENTAGE')) colIndices.pct = j;
+            });
+        }
+    });
 
     $subj('#tblSubjectWiseAttendance > tbody > tr').each((i, row) => {
         const tr = $subj(row);
@@ -66,21 +126,29 @@ export async function GET(request) {
         
         const tds = tr.find('td');
         if (tds.length >= 7) {
-            const code = $subj(tds[0]).text().trim();
-            const desc = $subj(tds[1]).text().trim();
-            const total = parseInt($subj(tds[2]).text().trim().replace(/&nbsp;/g, '')) || 0;
-            const absent = parseInt($subj(tds[3]).text().trim().replace(/&nbsp;/g, '')) || 0;
-            const present = parseInt($subj(tds[4]).text().trim().replace(/&nbsp;/g, '')) || 0;
-            const ml = parseInt($subj(tds[5]).text().trim().replace(/&nbsp;/g, '')) || 0;
-            const percentage = $subj(tds[6]).text().trim();
+            const code = $subj(tds[colIndices.code]).text().trim();
+            const desc = $subj(tds[colIndices.desc]).text().trim();
+            const total = parseInt($subj(tds[colIndices.total]).text().trim().replace(/&nbsp;/g, '')) || 0;
+            const absent = parseInt($subj(tds[colIndices.absent]).text().trim().replace(/&nbsp;/g, '')) || 0;
+            const present = parseInt($subj(tds[colIndices.present]).text().trim().replace(/&nbsp;/g, '')) || 0;
+            
+            const mlText = colIndices.ml !== -1 && tds[colIndices.ml] ? $subj(tds[colIndices.ml]).text().trim().replace(/&nbsp;/g, '') : '0';
+            const ml = parseInt(mlText) || 0;
+            
+            const odText = colIndices.od !== -1 && tds[colIndices.od] ? $subj(tds[colIndices.od]).text().trim().replace(/&nbsp;/g, '') : '0';
+            const od = parseInt(odText) || 0;
+            
+            const percentage = $subj(tds[colIndices.pct]).text().trim();
 
             if (code && desc) {
-                subjectWise.push({ code, desc, total, absent, present, ml, percentage });
+                subjectWise.push({ code, desc, total, absent, present, ml, od, percentage });
             }
         }
     });
 
-    const response = NextResponse.json({ success: true, stats, allDays, subjectWise });
+    const hasODColumn = colIndices.od !== -1;
+
+    const response = NextResponse.json({ success: true, stats, allDays, subjectWise, outreachData, hasODColumn });
     if (newSessionCookie) {
         response.cookies.set(newSessionCookie);
     }

@@ -21,14 +21,14 @@ export default function CurrentPeriod() {
 
         const todayData = calendarData.find(d => d.date === dateStr);
         if (!todayData || todayData.is_holiday || !todayData.is_working_day || !todayData.day_order) {
-            setCurrentPeriodInfo({ isOff: true, message: 'No classes today' });
+            setTimeout(() => setCurrentPeriodInfo({ isOff: true, message: 'No classes today' }), 0);
             return;
         }
 
         const dayOrder = todayData.day_order.toString();
         const dayTimetable = timetableData.timetable[dayOrder];
         if (!dayTimetable) {
-            setCurrentPeriodInfo({ isOff: true, message: 'No timetable found for today' });
+            setTimeout(() => setCurrentPeriodInfo({ isOff: true, message: 'No timetable found for today' }), 0);
             return;
         }
 
@@ -67,21 +67,23 @@ export default function CurrentPeriod() {
             const lastEndMinutes = lastEndH * 60 + lastEndM;
 
             if (nowMinutes < firstStartMinutes) {
-                setCurrentPeriodInfo({ isOff: true, message: 'Classes have not started yet' });
+                setTimeout(() => setCurrentPeriodInfo({ isOff: true, message: 'Classes have not started yet' }), 0);
             } else if (nowMinutes >= lastEndMinutes) {
-                setCurrentPeriodInfo({ isOff: true, message: 'Classes are over for today' });
+                setTimeout(() => setCurrentPeriodInfo({ isOff: true, message: 'Classes are over for today' }), 0);
             } else {
-                setCurrentPeriodInfo({ isOff: true, message: 'Transitioning...' }); // Between periods
+                setTimeout(() => setCurrentPeriodInfo({ isOff: true, message: 'Transitioning...' }), 0); // Between periods
             }
         } else {
-            setCurrentPeriodInfo({ 
-                isOff: false, 
-                isBreak, 
-                period: currentPeriod, 
-                periodName, 
-                dayOrder,
-                timeStr: timetableData.timings[isBreak ? 'Break' : currentPeriod]
-            });
+            setTimeout(() => {
+                setCurrentPeriodInfo({ 
+                    isOff: false, 
+                    isBreak, 
+                    period: currentPeriod, 
+                    periodName, 
+                    dayOrder,
+                    timeStr: timetableData.timings[isBreak ? 'Break' : currentPeriod]
+                });
+            }, 0);
         }
     }, [currentTime]);
 

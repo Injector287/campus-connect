@@ -15,18 +15,53 @@ export default function CalendarPage() {
     const topHeaderRef = React.useRef(null);
     const [topHeaderHeight, setTopHeaderHeight] = useState(0);
 
+    const groupedByMonth = useMemo(() => {
+        const groups = {};
+        calendarData.forEach(day => {
+            const [dd, mm, yyyy] = day.date.split('.');
+            const monthYear = `${mm}.${yyyy}`;
+            if (!groups[monthYear]) {
+                const labelObj = [
+                    { label: 'June 2026', value: '06.2026' },
+                    { label: 'July 2026', value: '07.2026' },
+                    { label: 'August 2026', value: '08.2026' },
+                    { label: 'September 2026', value: '09.2026' },
+                    { label: 'October 2026', value: '10.2026' },
+                    { label: 'November 2026', value: '11.2026' },
+                    { label: 'December 2026', value: '12.2026' },
+                    { label: 'January 2027', value: '01.2027' },
+                    { label: 'February 2027', value: '02.2027' },
+                    { label: 'March 2027', value: '03.2027' },
+                    { label: 'April 2027', value: '04.2027' },
+                    { label: 'May 2027', value: '05.2027' },
+                ].find(m => m.value === monthYear);
+                
+                groups[monthYear] = {
+                    label: labelObj ? labelObj.label : monthYear,
+                    year: parseInt(yyyy, 10),
+                    month: parseInt(mm, 10) - 1,
+                    days: []
+                };
+            }
+            groups[monthYear].days.push(day);
+        });
+        return groups;
+    }, []);
+
     useEffect(() => {
         const today = new Date();
         const dd = String(today.getDate()).padStart(2, '0');
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const yyyy = today.getFullYear();
         const tStr = `${dd}.${mm}.${yyyy}`;
-        setTodayStr(tStr);
-        setSelectedMonth(`${mm}.${yyyy}`);
+        setTimeout(() => {
+            setTodayStr(tStr);
+            setSelectedMonth(`${mm}.${yyyy}`);
+        }, 0);
 
         const todayData = calendarData.find(d => d.date === tStr);
         if (todayData && todayData.is_working_day && todayData.day_order) {
-            setSelectedDayOrder(todayData.day_order.toString());
+            setTimeout(() => setSelectedDayOrder(todayData.day_order.toString()), 0);
         }
     }, []);
 
@@ -90,7 +125,7 @@ export default function CalendarPage() {
     ];
 
     return (
-        <div className="animate-slide-up responsive-padding-container" style={{ paddingBottom: '6rem', maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="animate-slide-up responsive-padding-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <style>{`
                 .mobile-view { display: none !important; }
                 .desktop-view { display: flex !important; }
@@ -106,48 +141,33 @@ export default function CalendarPage() {
                 }
             `}</style>
             <div ref={topHeaderRef} style={{ 
-                display: 'flex', flexDirection: 'column', gap: '1rem', 
-                marginBottom: '0',
-                position: 'sticky',
-                top: '0',
-                zIndex: 20,
-                background: 'rgba(15, 23, 42, 0.95)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                padding: '1rem',
-                borderTopLeftRadius: '16px',
-                borderTopRightRadius: '16px',
-                borderBottomLeftRadius: '0',
-                borderBottomRightRadius: '0',
-                border: '1px solid rgba(255,255,255,0.05)',
-                borderBottom: 'none'
+                display: 'flex', flexDirection: 'column', gap: '1.5rem', 
+                marginBottom: '1rem',
+                padding: '1rem 0'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <h1 className="text-gradient" style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 'bold', margin: 0 }}>
+                    <h1 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>
                         {activeView === 'calendar' ? 'Calendar' : 'Timetable'}
                     </h1>
                 </div>
                 
-                <div style={{ 
-                    display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '4px', width: '100%',
-                    border: '1px solid rgba(255,255,255,0.05)'
-                }}>
+                <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', width: '100%' }}>
                     <button 
                         onClick={() => setActiveView('calendar')}
                         style={{
-                            flex: 1, padding: '0.6rem', borderRadius: '10px', fontSize: '0.9rem', fontWeight: '600',
-                            background: activeView === 'calendar' ? 'rgba(255,255,255,0.1)' : 'transparent',
-                            color: activeView === 'calendar' ? 'white' : 'rgba(255,255,255,0.5)',
-                            transition: 'all 0.2s', border: 'none', cursor: 'pointer'
+                            flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', 
+                            background: activeView === 'calendar' ? 'var(--primary)' : 'transparent', 
+                            color: activeView === 'calendar' ? '#fff' : 'rgba(255,255,255,0.6)', 
+                            fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer'
                         }}
                     >Events</button>
                     <button 
                         onClick={() => setActiveView('timetable')}
                         style={{
-                            flex: 1, padding: '0.6rem', borderRadius: '10px', fontSize: '0.9rem', fontWeight: '600',
-                            background: activeView === 'timetable' ? 'rgba(255,255,255,0.1)' : 'transparent',
-                            color: activeView === 'timetable' ? 'white' : 'rgba(255,255,255,0.5)',
-                            transition: 'all 0.2s', border: 'none', cursor: 'pointer'
+                            flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', 
+                            background: activeView === 'timetable' ? 'var(--primary)' : 'transparent', 
+                            color: activeView === 'timetable' ? '#fff' : 'rgba(255,255,255,0.6)', 
+                            fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer'
                         }}
                     >Timetable</button>
                 </div>
@@ -201,7 +221,7 @@ export default function CalendarPage() {
                                     header = (
                                         <div key={`header-${monthYear}`} style={{
                                             position: 'sticky',
-                                            top: topHeaderHeight > 0 ? `${topHeaderHeight}px` : '62px', 
+                                            top: '0',
                                             zIndex: 10,
                                             background: 'rgba(15, 23, 42, 0.95)', 
                                             backdropFilter: 'blur(16px)',
@@ -295,20 +315,7 @@ export default function CalendarPage() {
                     <div className="desktop-view" style={{ flexDirection: 'column', gap: '1.5rem' }}>
                     {(() => {
                             // Desktop Calendar Grid Grouped by Month
-                            const groupedByMonth = {};
-                            calendarData.forEach(day => {
-                                const [dd, mm, yyyy] = day.date.split('.');
-                                const monthYear = `${mm}.${yyyy}`;
-                                if (!groupedByMonth[monthYear]) {
-                                    groupedByMonth[monthYear] = {
-                                        label: months.find(m => m.value === monthYear)?.label || monthYear,
-                                        year: parseInt(yyyy, 10),
-                                        month: parseInt(mm, 10) - 1,
-                                        days: []
-                                    };
-                                }
-                                groupedByMonth[monthYear].days.push(day);
-                            });
+
 
                             const activeMonthKey = selectedMonth && groupedByMonth[selectedMonth] ? selectedMonth : Object.keys(groupedByMonth)[0];
                             const monthObj = groupedByMonth[activeMonthKey];
@@ -475,7 +482,6 @@ export default function CalendarPage() {
                                                 { id: '1', type: 'class' },
                                                 { id: '2', type: 'class' },
                                                 { id: '3', type: 'class' },
-                                                { id: 'Break', type: 'break' },
                                                 { id: '4', type: 'class' },
                                                 { id: '5', type: 'class' }
                                             ];
@@ -519,12 +525,12 @@ export default function CalendarPage() {
                                     overflow: 'hidden' 
                                 }}>
                                     <div style={{ 
-                                        display: 'grid', gridTemplateColumns: '100px repeat(6, 1fr)', 
+                                        display: 'grid', gridTemplateColumns: '100px repeat(5, 1fr)', 
                                         background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)',
                                         fontWeight: 'bold'
                                     }}>
                                         <div style={{ padding: '1rem', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Day</div>
-                                        {['1', '2', '3', 'Break', '4', '5'].map(p => (
+                                        {['1', '2', '3', '4', '5'].map(p => (
                                             <div key={p} style={{ padding: '1rem', borderRight: p !== '5' ? '1px solid rgba(255,255,255,0.1)' : 'none', textAlign: 'center' }}>
                                                 <div>{p}</div>
                                                 <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>{timetableData.timings[p]}</div>
@@ -534,7 +540,7 @@ export default function CalendarPage() {
                                     
                                     {[1, 2, 3, 4, 5, 6].map((day, rowIndex) => (
                                         <div key={day} style={{ 
-                                            display: 'grid', gridTemplateColumns: '100px repeat(6, 1fr)', 
+                                            display: 'grid', gridTemplateColumns: '100px repeat(5, 1fr)', 
                                             borderBottom: rowIndex !== 5 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                                             background: selectedDayOrder === day.toString() ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : 'transparent',
                                             transition: 'background 0.2s'
@@ -542,15 +548,15 @@ export default function CalendarPage() {
                                             <div style={{ padding: '1rem', borderRight: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
                                                 Day {day}
                                             </div>
-                                            {['1', '2', '3', 'Break', '4', '5'].map(p => {
-                                                const subject = p === 'Break' ? 'Break' : (timetableData.timetable[day] ? timetableData.timetable[day][p] : '-');
+                                            {['1', '2', '3', '4', '5'].map(p => {
+                                                const subject = timetableData.timetable[day] ? timetableData.timetable[day][p] : '-';
                                                 return (
                                                     <div key={p} style={{ 
                                                         padding: '1rem', 
                                                         borderRight: p !== '5' ? '1px solid rgba(255,255,255,0.05)' : 'none', 
                                                         textAlign: 'center',
                                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        color: p === 'Break' ? 'rgba(255,255,255,0.4)' : 'white',
+                                                        color: 'white',
                                                         fontWeight: '500'
                                                     }}>
                                                         {subject}

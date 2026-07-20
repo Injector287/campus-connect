@@ -129,9 +129,72 @@ export default function FinancePage() {
        return <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>No payment history found.</div>
     }
 
+    const sortedHistory = [...history].sort((a, b) => {
+        const parseDate = (dStr) => {
+            if (!dStr) return 0;
+            const parts = dStr.split(/[-./]/);
+            if (parts.length === 3 && parts[2].length === 4) {
+               return new Date(parts[2], parts[1]-1, parts[0]).getTime();
+            }
+            return new Date(dStr).getTime() || 0;
+        };
+        return parseDate(b.receiptDate) - parseDate(a.receiptDate);
+    });
+
     return (
-      <div className="responsive-grid animate-slide-up">
-        {history.map((item, idx) => (
+      <>
+      <style>{`
+        .mobile-view { display: none; }
+        .desktop-view { display: block; }
+        @media (max-width: 768px) {
+            .mobile-view { display: block; }
+            .desktop-view { display: none; }
+        }
+      `}</style>
+
+      {/* Desktop View */}
+      <div className="desktop-view glass-panel animate-slide-up" style={{ padding: '0', overflow: 'hidden', marginBottom: '2rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <th style={{ width: '35%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</th>
+                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Academic Year</th>
+                      <th style={{ width: '20%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Receipt No</th>
+                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Date</th>
+                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Amount</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {sortedHistory.map((item, idx) => (
+                      <tr key={idx} style={{ borderBottom: idx === sortedHistory.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}
+                          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                          <td style={{ padding: '1.25rem' }}>
+                              <span style={{ fontWeight: '700', color: 'white', fontSize: '0.95rem' }}>{item.category}</span>
+                              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>{item.paymentMode}</div>
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '500', color: 'rgba(255,255,255,0.8)' }}>
+                              {item.academicYear}
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '500', color: 'rgba(255,255,255,0.8)' }}>
+                              {item.receiptNo}
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '500', color: 'rgba(255,255,255,0.8)' }}>
+                              {item.receiptDate}
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'right', fontWeight: '800', color: '#4ade80' }}>
+                              ₹{item.receiptAmount}
+                          </td>
+                      </tr>
+                  ))}
+              </tbody>
+          </table>
+      </div>
+
+      {/* Mobile View */}
+      <div className="responsive-grid animate-slide-up mobile-view">
+        {sortedHistory.map((item, idx) => (
           <div key={idx} className="glass-panel" style={{ padding: '1.25rem' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                  <div style={{ flex: 1, paddingRight: '1rem' }}>
@@ -158,6 +221,7 @@ export default function FinancePage() {
           </div>
         ))}
       </div>
+      </>
     )
   }
 
@@ -230,7 +294,7 @@ export default function FinancePage() {
   }
 
   return (
-    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start', paddingBottom: '6rem' }}>
+    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
       
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>

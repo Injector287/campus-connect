@@ -55,7 +55,7 @@ export default function DashboardPage() {
 
 
 
-  const { stats = {}, allDays = [], subjectWise = [] } = data || {};
+  const { stats = {}, allDays = [], subjectWise = [], outreachData = null, hasODColumn = false } = data || {};
   
   const getStatusColor = (status) => {
     if (status === 'P') return '#4db8ff'; // vibrant blue
@@ -228,6 +228,52 @@ export default function DashboardPage() {
                  </div>
              );
          })()}
+
+         {/* Outreach Progress Widget (if applicable) */}
+         {outreachData && (
+             <div style={{
+                 marginTop: '2rem',
+                 padding: '1.25rem',
+                 background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.02))',
+                 borderRadius: '16px',
+                 border: '1px solid rgba(168, 85, 247, 0.2)',
+                 textAlign: 'left',
+                 boxShadow: '0 4px 20px rgba(168, 85, 247, 0.05)',
+                 display: 'flex',
+                 flexDirection: 'column',
+                 gap: '1rem'
+             }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                     <div style={{
+                         width: '32px', height: '32px',
+                         borderRadius: '8px',
+                         background: 'rgba(168, 85, 247, 0.15)',
+                         display: 'flex', alignItems: 'center', justifyContent: 'center',
+                         color: '#c084fc'
+                     }}>
+                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                     </div>
+                     <div>
+                         <h3 style={{ fontSize: '0.85rem', color: '#d8b4fe', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em', fontWeight: '700' }}>Outreach Progress</h3>
+                         <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>{outreachData.team}</span>
+                     </div>
+                 </div>
+
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
+                     <div style={{ display: 'flex', flexDirection: 'column' }}>
+                         <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Hours Completed</span>
+                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                             <span style={{ fontSize: '2.5rem', fontWeight: '800', color: '#c084fc', lineHeight: 1 }}>{outreachData.present}</span>
+                             <span style={{ fontSize: '1.25rem', fontWeight: '600', color: 'rgba(255,255,255,0.4)' }}>/ 90</span>
+                         </div>
+                     </div>
+                 </div>
+
+                 <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', overflow: 'hidden' }}>
+                     <div style={{ width: `${Math.min((outreachData.present / 90) * 100, 100)}%`, height: '100%', background: 'linear-gradient(90deg, #c084fc, #a855f7)', borderRadius: '4px', transition: 'width 1s ease-out' }}></div>
+                 </div>
+             </div>
+         )}
       </div>
 
       {/* Complete Attendance List Grouped by Month */}
@@ -280,7 +326,78 @@ export default function DashboardPage() {
     }
 
     return (
-      <div className="responsive-grid">
+      <>
+      {/* Desktop Data Grid View */}
+      <div className="desktop-view glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <th style={{ width: '35%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Subject</th>
+                      <th style={{ width: '10%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Total Hrs</th>
+                      <th style={{ width: '10%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Present</th>
+                      <th style={{ width: '8%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Absent</th>
+                      <th style={{ width: '8%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ML</th>
+                      {hasODColumn && <th style={{ width: '8%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>OD</th>}
+                      <th style={{ width: '25%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Progress</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {subjectWise.map((subj, idx) => {
+                      const pct = parseFloat(subj.percentage);
+                      const isDanger = pct < 75;
+                      const pctColor = isDanger ? '#ef4444' : '#4ade80';
+
+                      return (
+                          <tr key={idx} style={{ borderBottom: idx === subjectWise.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s', cursor: 'default' }}
+                              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                          >
+                              <td style={{ padding: '1.25rem' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                      <span style={{ fontWeight: '700', color: 'white', fontSize: '0.95rem', marginBottom: '0.2rem' }}>{formatSubjectName(subj.desc)}</span>
+                                      <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>{subj.code}</span>
+                                  </div>
+                              </td>
+                              <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: 'rgba(255,255,255,0.9)' }}>{subj.total}</td>
+                              <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: '#4ade80' }}>{subj.present}</td>
+                              <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: '#ef4444' }}>{subj.absent}</td>
+                              <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: '#facc15' }}>{subj.ml}</td>
+                              {hasODColumn && <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: '#60a5fa' }}>{subj.od || 0}</td>}
+                              <td style={{ padding: '1.25rem' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                      <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                          <div style={{ width: `${pct}%`, height: '100%', background: pctColor, borderRadius: '3px', transition: 'width 0.5s ease' }}></div>
+                                      </div>
+                                      <span style={{ fontWeight: '800', color: pctColor, fontSize: '1rem', minWidth: '60px', textAlign: 'right' }}>{subj.percentage}%</span>
+                                  </div>
+                              </td>
+                          </tr>
+                      );
+                  })}
+                  {/* Total Row */}
+                  <tr style={{ background: 'rgba(255,255,255,0.05)', borderTop: '2px solid rgba(255,255,255,0.1)' }}>
+                      <td style={{ padding: '1.25rem', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</td>
+                      <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: 'white' }}>{subjectWise.reduce((sum, s) => sum + s.total, 0)}</td>
+                      <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: '#4ade80' }}>{subjectWise.reduce((sum, s) => sum + s.present, 0)}</td>
+                      <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: '#ef4444' }}>{subjectWise.reduce((sum, s) => sum + s.absent, 0)}</td>
+                      <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: '#facc15' }}>{subjectWise.reduce((sum, s) => sum + s.ml, 0)}</td>
+                      {hasODColumn && <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: '#60a5fa' }}>{subjectWise.reduce((sum, s) => sum + (s.od || 0), 0)}</td>}
+                      <td style={{ padding: '1.25rem' }}>
+                          <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', textAlign: 'right' }}>
+                              {(() => {
+                                  const totalPresent = subjectWise.reduce((sum, s) => sum + s.present + s.ml + (s.od || 0), 0);
+                                  const totalScheduled = subjectWise.reduce((sum, s) => sum + s.total, 0);
+                                  return totalScheduled > 0 ? ((totalPresent / totalScheduled) * 100).toFixed(2) + '%' : '0.00%';
+                              })()}
+                          </div>
+                      </td>
+                  </tr>
+              </tbody>
+          </table>
+      </div>
+
+      {/* Mobile Cards View */}
+      <div className="responsive-grid mobile-view">
         {subjectWise.map((subj, idx) => {
           const pct = parseFloat(subj.percentage);
           const isDanger = pct < 75;
@@ -319,24 +436,76 @@ export default function DashboardPage() {
                         <div style={{ fontSize: '1rem', fontWeight: '600', color: '#ef4444' }}>{subj.absent}</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>ML/OD</div>
+                        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>ML</div>
                         <div style={{ fontSize: '1rem', fontWeight: '600', color: '#facc15' }}>{subj.ml}</div>
                     </div>
+                    {hasODColumn && (
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>OD</div>
+                            <div style={{ fontSize: '1rem', fontWeight: '600', color: '#60a5fa' }}>{subj.od || 0}</div>
+                        </div>
+                    )}
                 </div>
             </div>
           )
         })}
+        
+        {/* Mobile Total Card */}
+        <div className="glass-panel" style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', textAlign: 'center' }}>Overall Total</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Total</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white' }}>{subjectWise.reduce((sum, s) => sum + s.total, 0)}</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Present</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#4ade80' }}>{subjectWise.reduce((sum, s) => sum + s.present, 0)}</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Absent</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#ef4444' }}>{subjectWise.reduce((sum, s) => sum + s.absent, 0)}</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>ML</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#facc15' }}>{subjectWise.reduce((sum, s) => sum + s.ml, 0)}</div>
+                </div>
+                {hasODColumn && (
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>OD</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#60a5fa' }}>{subjectWise.reduce((sum, s) => sum + (s.od || 0), 0)}</div>
+                    </div>
+                )}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '2rem', fontWeight: '800', color: 'white' }}>
+                {(() => {
+                    const totalPresent = subjectWise.reduce((sum, s) => sum + s.present + s.ml + (s.od || 0), 0);
+                    const totalScheduled = subjectWise.reduce((sum, s) => sum + s.total, 0);
+                    return totalScheduled > 0 ? ((totalPresent / totalScheduled) * 100).toFixed(2) + '%' : '0.00%';
+                })()}
+            </div>
+        </div>
       </div>
+      </>
     )
   }
 
   return (
-    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start', paddingBottom: '6rem' }}>
+    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
       
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Attendance</h1>
       </div>
+
+      <style>{`
+        .mobile-view { display: none; }
+        .desktop-view { display: block; }
+        @media (max-width: 768px) {
+            .mobile-view { display: block; }
+            .desktop-view { display: none; }
+        }
+      `}</style>
 
       {/* Current Time and Period */}
       <CurrentPeriod />
