@@ -7,7 +7,6 @@ import { useTabState } from '@/hooks/useTabState'
 
 export default function CalendarPage() {
     const [todayStr, setTodayStr] = useState('');
-    const [showPast, setShowPast] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [activeView, setActiveView] = useTabState('view', 'calendar');
     const [selectedDayOrder, setSelectedDayOrder] = useState('1');
@@ -83,31 +82,71 @@ export default function CalendarPage() {
         };
     }, []);
 
-    const handleShowPastDates = () => {
-        const todayEl = document.getElementById('today-marker');
-        let offset = 0;
-        if (todayEl) {
-             offset = todayEl.getBoundingClientRect().top;
-        }
-        setShowPast(true);
-        // After render, maintain the exact visual scroll position relative to today's date
-        setTimeout(() => {
-            const newTodayEl = document.getElementById('today-marker');
-            if (newTodayEl) {
-                const newY = newTodayEl.getBoundingClientRect().top + window.scrollY;
-                window.scrollTo({ top: newY - offset, behavior: 'auto' });
+    const [hasScrolledToToday, setHasScrolledToToday] = useState(false);
+
+    useEffect(() => {
+        let timeout;
+        const handleScroll = (e) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                const target = e.target;
+                let st = 0;
+                if (target === document) {
+                    st = window.scrollY || document.documentElement.scrollTop;
+                } else if (target.scrollTop !== undefined) {
+                    if (target.scrollHeight <= target.clientHeight) return;
+                    st = target.scrollTop;
+                }
+                if (activeView === 'calendar') {
+                    sessionStorage.setItem('calendarScrollPos', st.toString());
+                }
+            }, 100);
+        };
+        window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+        return () => {
+            clearTimeout(timeout);
+            window.removeEventListener('scroll', handleScroll, { capture: true });
+        };
+    }, [activeView]);
+
+    useEffect(() => {
+        if (activeView === 'calendar') {
+            const savedScroll = sessionStorage.getItem('calendarScrollPos');
+            if (savedScroll) {
+                const pos = parseInt(savedScroll, 10);
+                const restore = () => window.scrollTo({ top: pos, behavior: 'instant' });
+                restore();
+                // Fire multiple times to override Next.js scroll resets on page navigation
+                setTimeout(restore, 10);
+                setTimeout(restore, 50);
+                setTimeout(restore, 100);
+                setHasScrolledToToday(true);
             }
-        }, 50);
-    };
+        }
+    }, [activeView]);
+
+    useEffect(() => {
+        const scrollToToday = () => {
+            if (window.innerWidth <= 768) {
+                const todayEl = document.getElementById('today-marker');
+                // Only snap to today if we haven't already restored a scroll position
+                if (todayEl && activeView === 'calendar' && !hasScrolledToToday && !sessionStorage.getItem('calendarScrollPos')) {
+                    todayEl.scrollIntoView({ behavior: 'auto', block: 'center' });
+                    setHasScrolledToToday(true);
+                }
+            }
+        };
+        // Fire when todayStr is set
+        if (todayStr && !hasScrolledToToday && !sessionStorage.getItem('calendarScrollPos')) {
+            scrollToToday();
+            setTimeout(scrollToToday, 50);
+            setTimeout(scrollToToday, 200);
+        }
+    }, [todayStr, activeView, hasScrolledToToday]);
 
     const listData = useMemo(() => {
-        if (showPast || !todayStr) return calendarData;
-        const todayIdx = calendarData.findIndex(d => d.date === todayStr);
-        if (todayIdx === -1) return calendarData;
-        
-        // Show from today onwards
-        return calendarData.slice(todayIdx);
-    }, [todayStr, showPast]);
+        return calendarData;
+    }, []);
 
     const months = [
         { label: 'June 2026', value: '06.2026' },
@@ -151,25 +190,37 @@ export default function CalendarPage() {
                     </h1>
                 </div>
                 
-                <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', width: '100%' }}>
-                    <button 
-                        onClick={() => setActiveView('calendar')}
-                        style={{
-                            flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', 
-                            background: activeView === 'calendar' ? 'var(--primary)' : 'transparent', 
-                            color: activeView === 'calendar' ? '#fff' : 'rgba(255,255,255,0.6)', 
-                            fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer'
-                        }}
-                    >Events</button>
-                    <button 
-                        onClick={() => setActiveView('timetable')}
-                        style={{
-                            flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', 
-                            background: activeView === 'timetable' ? 'var(--primary)' : 'transparent', 
-                            color: activeView === 'timetable' ? '#fff' : 'rgba(255,255,255,0.6)', 
-                            fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer'
-                        }}
-                    >Timetable</button>
+                <div style={{ display: 'flex', width: '100%' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
+                        <button 
+                            onClick={() => {
+                                if (activeView === 'calendar') sessionStorage.setItem('calendarScrollPos', window.scrollY.toString());
+                                setActiveView('calendar');
+                            }}
+                            style={{ 
+                                padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', 
+                                background: activeView === 'calendar' ? 'var(--primary)' : 'transparent',
+                                color: activeView === 'calendar' ? 'white' : 'rgba(255,255,255,0.6)',
+                                fontWeight: activeView === 'calendar' ? '600' : '500',
+                                cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem',
+                                width: '100%'
+                            }}
+                        >Calendar</button>
+                        <button 
+                            onClick={() => {
+                                if (activeView === 'calendar') sessionStorage.setItem('calendarScrollPos', window.scrollY.toString());
+                                setActiveView('timetable');
+                            }}
+                            style={{ 
+                                padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', 
+                                background: activeView === 'timetable' ? 'var(--primary)' : 'transparent',
+                                color: activeView === 'timetable' ? 'white' : 'rgba(255,255,255,0.6)',
+                                fontWeight: activeView === 'timetable' ? '600' : '500',
+                                cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem',
+                                width: '100%'
+                            }}
+                        >Timetable</button>
+                    </div>
                 </div>
             </div>
 
@@ -181,32 +232,8 @@ export default function CalendarPage() {
                 overflow: 'visible'
             }}>
                 <div style={{ padding: '0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {activeView === 'calendar' && (
-                        <>
-                    {!showPast && todayStr && (
-                        <div className="mobile-view" style={{ padding: '1rem', justifyContent: 'center' }}>
-                            <button 
-                                onClick={handleShowPastDates}
-                                style={{ 
-                                    background: 'rgba(255,255,255,0.05)', 
-                                    border: '1px solid rgba(255,255,255,0.1)', 
-                                    color: 'rgba(255,255,255,0.8)', 
-                                    padding: '0.75rem 1.5rem', 
-                                    borderRadius: '12px',
-                                    cursor: 'pointer',
-                                    fontWeight: '600',
-                                    transition: 'all 0.2s',
-                                    fontSize: '0.9rem'
-                                }}
-                                onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                                onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                            >
-                                &uarr; Show Past Dates
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Mobile View */}
+                    <div style={{ display: activeView === 'calendar' ? 'block' : 'none' }}>
+                        <>                    {/* Mobile View */}
                     <div className="mobile-view" style={{ flexDirection: 'column', gap: '1rem' }}>
                     {(() => {
                         let lastMonth = '';
@@ -315,35 +342,35 @@ export default function CalendarPage() {
                     <div className="desktop-view" style={{ flexDirection: 'column', gap: '1.5rem' }}>
                     {(() => {
                             // Desktop Calendar Grid Grouped by Month
-
-
-                            const activeMonthKey = selectedMonth && groupedByMonth[selectedMonth] ? selectedMonth : Object.keys(groupedByMonth)[0];
-                            const monthObj = groupedByMonth[activeMonthKey];
-                            
-                            if (!monthObj) return null;
-
-                            const startDayOfWeek = new Date(monthObj.year, monthObj.month, 1).getDay(); // 0 = Sun
-                            
-                            const emptyCells = Array.from({ length: startDayOfWeek }).map((_, i) => <div key={`empty-${i}`} style={{ padding: '1rem', background: 'rgba(0,0,0,0.1)', borderRight: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}></div>);
-                            
-                            const dayCells = monthObj.days.map((dayData, index) => {
-                                const dateNum = parseInt(dayData.date.split('.')[0], 10);
-                                const isToday = dayData.date === todayStr;
-                                
-                                // Calculate if this date is past
-                                let isPast = false;
-                                if (todayStr) {
-                                    const [tDD, tMM, tYYYY] = todayStr.split('.').map(Number);
-                                    const tDate = new Date(tYYYY, tMM - 1, tDD);
-                                    const [cDD, cMM, cYYYY] = dayData.date.split('.').map(Number);
-                                    const cDate = new Date(cYYYY, cMM - 1, cDD);
-                                    isPast = cDate < tDate;
+                            const groupedByMonth = {};
+                            calendarData.forEach(day => {
+                                const [dd, mm, yyyy] = day.date.split('.');
+                                const monthYear = `${mm}.${yyyy}`;
+                                if (!groupedByMonth[monthYear]) {
+                                    groupedByMonth[monthYear] = [];
                                 }
+                                groupedByMonth[monthYear].push(day);
+                            });
 
+                            const monthObj = months.find(m => m.value === selectedMonth) || months[0];
+                            const activeMonthKey = monthObj.value;
+                            const days = groupedByMonth[activeMonthKey] || [];
+                            
+                            // Generate grid cells
+                            const firstDay = days[0];
+                            const firstDayIndex = firstDay ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(firstDay.day) : 0;
+                            
+                            const emptyCells = Array.from({ length: firstDayIndex }).map((_, i) => <div key={`empty-${i}`} style={{ padding: '1rem', background: 'rgba(0,0,0,0.1)', borderRight: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}></div>);
+                            
+                            const dayCells = days.map(dayData => {
+                                const dateNum = dayData.date.split('.')[0];
+                                const isToday = dayData.date === todayStr;
+                                const isPast = new Date(dayData.date.split('.').reverse().join('-')) < new Date(todayStr.split('.').reverse().join('-'));
+                                
                                 return (
                                     <div key={dayData.date} style={{ 
                                         padding: '0.75rem', 
-                                        background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)'),
+                                        background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)'), 
                                         borderRight: '1px solid rgba(255,255,255,0.05)', 
                                         borderBottom: '1px solid rgba(255,255,255,0.05)',
                                         border: isToday ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)',
@@ -353,11 +380,11 @@ export default function CalendarPage() {
                                         transition: 'opacity 0.2s, background 0.2s',
                                     }}
                                     onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                                    onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)' }}
+                                    onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)' }}
                                     >
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                             <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isToday ? 'var(--primary)' : (dayData.is_holiday ? '#ef4444' : 'white') }}>
-                                                {dateNum}
+                                                {parseInt(dateNum, 10)}
                                             </span>
                                             {dayData.is_working_day && (
                                                 <span style={{ background: 'var(--primary)', color: 'white', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold' }}>
@@ -447,9 +474,9 @@ export default function CalendarPage() {
                     })()}
                     </div>
                         </>
-                    )}
+                    </div>
 
-                    {activeView === 'timetable' && (
+                    <div style={{ display: activeView === 'timetable' ? 'block' : 'none' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem 0' }}>
                             <div className="mobile-view" style={{ flexDirection: 'column' }}>
                                     {/* Day Selector */}
@@ -568,7 +595,7 @@ export default function CalendarPage() {
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

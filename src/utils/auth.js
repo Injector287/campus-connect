@@ -1,21 +1,39 @@
 import { NextResponse } from 'next/server';
 
-export const ALLOWED_USERNAME = '25-UCS-003';
-export const AUTH_SESSION_VERSION = '1';
 
 export function normalizeUsername(username) {
-  return typeof username === 'string' ? username.trim() : '';
+  return typeof username === 'string' ? username.trim().toUpperCase() : '';
 }
 
-export function isAllowedUsername(username) {
-  return normalizeUsername(username).toUpperCase() === ALLOWED_USERNAME.toUpperCase();
-}
+import { db } from '@/lib/db';
 
-export function hasValidWhitelistedSession(request) {
+export async function hasValidWhitelistedSession(request) {
   const username = normalizeUsername(request.cookies.get('ERP_USERNAME')?.value);
   const version = request.cookies.get('ERP_AUTH_VERSION')?.value;
 
-  return username === ALLOWED_USERNAME && version === AUTH_SESSION_VERSION;
+  if (!username || !version) return false;
+
+  try {
+    const user = await db.user.findUnique({ where: { registerNum: username } });
+    if (!user) {
+      console.log(`[Auth] User ${username} not found in DB`);
+      return false;
+    }
+    if (user.status === 'BLACKLISTED') {
+      console.log(`[Auth] User ${username} is BLACKLISTED`);
+      return false;
+    }
+    const dbVersion = user.sessionVersion ?? 1;
+    const cookieVersion = parseInt(version, 10);
+    if (cookieVersion !== dbVersion) {
+      console.log(`[Auth] Version mismatch for ${username}. Cookie: ${cookieVersion}, DB: ${dbVersion}`);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error(`[Auth] Error checking session:`, e);
+    return false;
+  }
 }
 
 export function clearAuthCookies(response) {

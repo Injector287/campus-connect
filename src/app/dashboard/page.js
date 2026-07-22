@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react';
 
 import { useState } from 'react'
 
@@ -24,10 +25,16 @@ export default function DashboardPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useTabState('tab', 'hourWise') // 'hourWise', 'subjectWise'
   const { data: json, error, isLoading } = useSWR('/api/dashboard', fetcher)
+  const { data: announcements } = useSWR('/api/announcements', fetcher)
+
+  useEffect(() => {
+    if (error && error.status === 401) {
+      router.push('/')
+    }
+  }, [error, router])
 
   if (error) {
     if (error.status === 401) {
-      router.push('/')
       return null
     }
     return (
@@ -506,6 +513,32 @@ export default function DashboardPage() {
             .desktop-view { display: none; }
         }
       `}</style>
+
+      {/* Announcements */}
+      {announcements && announcements.length > 0 && (
+        <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {announcements.map((ann) => (
+             <div key={ann.id} style={{ padding: '1rem 1.25rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05))', borderRadius: '12px', borderLeft: '4px solid #3b82f6', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                <div style={{ color: '#60a5fa', marginTop: '2px' }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </div>
+                <div>
+                   <h4 style={{ color: '#eff6ff', fontSize: '0.95rem', fontWeight: '600', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                     {ann.title}
+                     {ann.roleTarget && ann.roleTarget !== 'ALL' && (
+                       <span style={{ fontSize: '0.65rem', background: 'rgba(59, 130, 246, 0.2)', padding: '0.15rem 0.4rem', borderRadius: '4px', color: '#93c5fd' }}>
+                         {ann.roleTarget}
+                       </span>
+                     )}
+                   </h4>
+                   <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', lineHeight: '1.4', margin: 0, whiteSpace: 'pre-wrap' }}>{ann.content}</p>
+                </div>
+             </div>
+          ))}
+        </div>
+      )}
 
       {/* Current Time and Period */}
       <CurrentPeriod />

@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react';
 
 import { useState } from 'react'
 import useSWR from 'swr'
@@ -11,9 +12,14 @@ export default function LibraryPage() {
   const router = useRouter()
   const { data: json, error, isLoading } = useSWR('/api/library', fetcher)
 
+  useEffect(() => {
+    if (error && error.status === 401) {
+      router.push('/')
+    }
+  }, [error, router])
+
   if (error) {
     if (error.status === 401) {
-      router.push('/')
       return null
     }
     return (

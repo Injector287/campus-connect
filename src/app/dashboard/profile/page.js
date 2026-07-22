@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react';
 
 import useSWR from 'swr'
 import { useRouter } from 'next/navigation'
@@ -8,9 +9,14 @@ export default function ProfilePage() {
   const router = useRouter()
   const { data: json, error, isLoading } = useSWR('/api/profile', fetcher)
 
+  useEffect(() => {
+    if (error && error.status === 401) {
+      router.push('/')
+    }
+  }, [error, router])
+
   if (error) {
     if (error.status === 401) {
-      router.push('/')
       return null
     }
     return (

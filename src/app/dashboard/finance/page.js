@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react'
 
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
@@ -49,9 +50,14 @@ export default function FinancePage() {
 
   const { data: json, error, isLoading } = useSWR('/api/finance', fetcher)
 
+  useEffect(() => {
+    if (error && error.status === 401) {
+      router.push('/')
+    }
+  }, [error, router])
+
   if (error) {
     if (error.status === 401) {
-      router.push('/')
       return null
     }
     return (

@@ -1,12 +1,9 @@
-import { ALLOWED_USERNAME } from '@/utils/auth'
-
 export const fetcher = async (url) => {
   let res = await fetch(url)
   
   if (res.status === 401) {
     try {
-      const sessions = JSON.parse(localStorage.getItem('erp_sessions') || '[]').filter((session) => session.username === ALLOWED_USERNAME)
-      localStorage.setItem('erp_sessions', JSON.stringify(sessions))
+      const sessions = JSON.parse(localStorage.getItem('erp_sessions') || '[]')
       if (sessions.length > 0) {
         const lastSession = sessions[sessions.length - 1]
         const loginRes = await fetch('/api/login', {

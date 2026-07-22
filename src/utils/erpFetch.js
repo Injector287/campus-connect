@@ -5,6 +5,55 @@ import { decrypt } from './crypto';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
+export async function loginToERP(username, password) {
+    const jar = new CookieJar();
+    const client = wrapper(axios.create({ jar }));
+
+    await client.get(`${BASE_URL}/loyolaonline/students/loginManager/youLogin.jsp`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    });
+
+    const captchaRes = await client.post(`${BASE_URL}/loyolaonline/captchas`, {}, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    });
+    
+    const captchaText = captchaRes.data.trim();
+
+    const payload = new URLSearchParams();
+    payload.append('txtSK', encodeURIComponent(password));
+    payload.append('txtAN', encodeURIComponent(username));
+    payload.append('_tries', '1');
+    payload.append('_md5', '');
+    payload.append('txtPageAction', '1');
+    payload.append('hdnContextPath', 'https://erp.loyolacollege.edu/loyolaonline/students/loginManager/studentslRegistrationtMailVerification.jsp');
+    payload.append('login', 'iamalsouser');
+    payload.append('passwd', 'haveaniceday');
+    payload.append('ccode', captchaText);
+    payload.append('hdnId', '0');
+    payload.append('_save', 'Log In');
+
+    const loginRes = await client.post(`${BASE_URL}/loyolaonline/students/loginManager/youLogin.jsp`, payload.toString(), {
+        headers: { 
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    });
+
+    const responseHtml = loginRes.data;
+    if (responseHtml.includes('Invalid') || responseHtml.includes('incorrect') || responseHtml.includes('Wrong')) {
+        throw new Error('Invalid credentials during background re-authentication.');
+    }
+
+    const cookies = await jar.getCookies(`${BASE_URL}/loyolaonline`);
+    const jsessionIdCookie = cookies.find(c => c.key === 'JSESSIONID');
+
+    if (!jsessionIdCookie) {
+        throw new Error('Failed to establish a new session.');
+    }
+
+    return jsessionIdCookie.value;
+}
+
 /**
  * Perform a GET or POST request to the ERP, automatically re-authenticating if the session is invalid.
  * @param {Request} request The Next.js API Request object (to read cookies)
@@ -61,53 +110,7 @@ export async function fetchWithReauth(request, url, options = { method: 'GET' })
         throw new Error('Malformed credentials.');
     }
 
-    // Perform Login Flow
-    const jar = new CookieJar();
-    const client = wrapper(axios.create({ jar }));
-
-    await client.get(`${BASE_URL}/loyolaonline/students/loginManager/youLogin.jsp`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    });
-
-    const captchaRes = await client.post(`${BASE_URL}/loyolaonline/captchas`, {}, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    });
-    
-    const captchaText = captchaRes.data.trim();
-
-    const payload = new URLSearchParams();
-    payload.append('txtSK', encodeURIComponent(password));
-    payload.append('txtAN', encodeURIComponent(username));
-    payload.append('_tries', '1');
-    payload.append('_md5', '');
-    payload.append('txtPageAction', '1');
-    payload.append('hdnContextPath', 'https://erp.loyolacollege.edu/loyolaonline/students/loginManager/studentslRegistrationtMailVerification.jsp');
-    payload.append('login', 'iamalsouser');
-    payload.append('passwd', 'haveaniceday');
-    payload.append('ccode', captchaText);
-    payload.append('hdnId', '0');
-    payload.append('_save', 'Log In');
-
-    const loginRes = await client.post(`${BASE_URL}/loyolaonline/students/loginManager/youLogin.jsp`, payload.toString(), {
-        headers: { 
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    });
-
-    const responseHtml = loginRes.data;
-    if (responseHtml.includes('Invalid') || responseHtml.includes('incorrect') || responseHtml.includes('Wrong')) {
-        throw new Error('Invalid credentials during background re-authentication.');
-    }
-
-    const cookies = await jar.getCookies(`${BASE_URL}/loyolaonline`);
-    const jsessionIdCookie = cookies.find(c => c.key === 'JSESSIONID');
-
-    if (!jsessionIdCookie) {
-        throw new Error('Failed to establish a new session.');
-    }
-
-    const newJsessionId = jsessionIdCookie.value;
+    const newJsessionId = await loginToERP(username, password);
 
     // Retry the original request with the new JSESSIONID
     const retryHeaders = {

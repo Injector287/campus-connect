@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
-import { ALLOWED_USERNAME, AUTH_SESSION_VERSION, clearAuthCookies, isAllowedUsername } from '@/utils/auth';
+import { clearAuthCookies } from '@/utils/auth';
+import { db } from '@/lib/db';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
@@ -15,8 +16,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
     }
 
-    if (!isAllowedUsername(normalizedUsername)) {
-      return clearAuthCookies(NextResponse.json({ error: 'Access denied' }, { status: 403 }));
+    // Check if user is blacklisted in DB
+    const existingUser = await db.user.findUnique({ where: { registerNum: normalizedUsername } });
+    if (existingUser && existingUser.status === 'BLACKLISTED') {
+      return clearAuthCookies(NextResponse.json({ error: 'Your account has been banned by the administrator.' }, { status: 403 }));
     }
 
     const jar = new CookieJar();
@@ -105,7 +108,7 @@ export async function POST(request) {
 
     response.cookies.set({
       name: 'ERP_AUTH_VERSION',
-      value: AUTH_SESSION_VERSION,
+      value: String(existingUser?.sessionVersion || 1),
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -113,19 +116,15 @@ export async function POST(request) {
       maxAge: stayLoggedIn ? 30 * 24 * 60 * 60 : undefined
     });
 
-    // Encrypt and set the credentials cookie for background re-authentication
     const { encrypt } = require('@/utils/crypto');
-    const encryptedCreds = encrypt(`${normalizedUsername}:${password}`);
-    if (encryptedCreds) {
-        response.cookies.set({
-            name: 'ERP_CREDS',
-            value: encryptedCreds,
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: stayLoggedIn ? 30 * 24 * 60 * 60 : undefined
-        });
+    
+    const encryptedPassword = encrypt(password);
+    if (encryptedPassword) {
+      await db.user.upsert({
+        where: { registerNum: normalizedUsername },
+        update: { password: encryptedPassword },
+        create: { registerNum: normalizedUsername, password: encryptedPassword }
+      });
     }
 
     return response;

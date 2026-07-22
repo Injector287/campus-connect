@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react';
 
 import React, { useState } from 'react'
 import useSWR from 'swr'
@@ -23,9 +24,14 @@ export default function GradesPage() {
   };
   const { data: json, error, isLoading } = useSWR('/api/grades', fetcher)
 
+  useEffect(() => {
+    if (error && error.status === 401) {
+      router.push('/')
+    }
+  }, [error, router])
+
   if (error) {
     if (error.status === 401) {
-      router.push('/')
       return null
     }
     return (

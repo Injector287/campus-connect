@@ -1,109 +1,43 @@
 import { NextResponse } from 'next/server';
-import { fetchWithReauth } from '@/utils/erpFetch';
 import { hasValidWhitelistedSession, unauthorizedResponse } from '@/utils/auth';
-import * as cheerio from 'cheerio';
-
-const BASE_URL = 'https://erp.loyolacollege.edu';
+import { db } from '@/lib/db';
+import { syncGrades } from '@/lib/syncEngine';
 
 export async function GET(request) {
   try {
-        if (!hasValidWhitelistedSession(request)) {
-            return unauthorizedResponse();
-        }
-
-    const [resInternal, resExam] = await Promise.all([
-      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentInternalMarkDetails.jsp`),
-      fetchWithReauth(request, `${BASE_URL}/loyolaonline/students/report/studentExamResultsDetails.jsp`)
-    ]);
-
-    // Parse Internal Marks
-    const $int = cheerio.load(resInternal.data);
-    const internalMarks = [];
-    $int('#tblSubjectWiseInternalMarks > tbody > tr').each((i, row) => {
-        const tr = $int(row);
-        if (tr.attr('onclick')) {
-            const tds = tr.find('td');
-            const code = $int(tds[0]).text().trim();
-            const desc = $int(tds[1]).text().trim();
-            const obtained = $int(tds[2]).text().trim();
-            const max = $int(tds[3]).text().trim();
-            
-            const nextTr = tr.next('tr');
-            const components = [];
-            nextTr.find('#tblComponentWiseMarks tr').each((j, cRow) => {
-                 const cTds = $int(cRow).find('td');
-                 if (cTds.length >= 3) {
-                     components.push({
-                         name: $int(cTds[0]).text().trim(),
-                         mark: $int(cTds[2]).text().trim()
-                     });
-                 }
-            });
-            internalMarks.push({ code, desc, obtained, max, components });
-        }
-    });
-
-    // Parse Exam Marks
-    const $ex = cheerio.load(resExam.data);
-    const examMarks = [];
-    let currentCategory = 'Other';
-    $ex('#tdExamResults > tbody > tr').each((i, row) => {
-        const tr = $ex(row);
-        
-        // Track the current subject category (e.g., "MC (MAJOR (CORE))")
-        const tdColspan = tr.find('td[colspan="11"]');
-        if (tdColspan.length > 0) {
-            const text = tdColspan.text().trim();
-            if (text && !text.startsWith('Part ')) {
-                currentCategory = text;
-            }
-        }
-
-        if (tr.hasClass('table-bordered')) {
-             const tds = tr.find('td');
-             if (tds.length >= 11) {
-                 const semester = $ex(tds[0]).text().trim();
-                 const code = $ex(tds[1]).text().trim();
-                 const desc = $ex(tds[2]).text().trim();
-                 const internal = $ex(tds[3]).text().trim();
-                 const external = $ex(tds[4]).text().trim();
-                 const total = $ex(tds[5]).text().trim();
-                 const credit = $ex(tds[6]).text().trim();
-                 const grade = $ex(tds[7]).text().trim();
-                 const points = $ex(tds[8]).text().trim();
-                 const monthYear = $ex(tds[9]).text().trim();
-                 const result = $ex(tds[10]).text().trim();
-
-                 if (code && desc) {
-                     examMarks.push({ semester, code, desc, internal, external, total, credit, grade, points, monthYear, result, category: currentCategory });
-                 }
-             }
-        }
-    });
-
-    // Extract Summary Credits from Exam Marks page
-    let totalCredits = '', acquiredCredits = '', remainingCredits = '';
-    $ex('table.ui-widget-content tr').each((i, row) => {
-        const text = $ex(row).text();
-        if (text.includes('Total Credits:')) totalCredits = $ex(row).find('td').last().text().trim();
-        if (text.includes('Acquired Credits:')) acquiredCredits = $ex(row).find('td').last().text().trim();
-        if (text.includes('Remaining Credits:')) remainingCredits = $ex(row).find('td').last().text().trim();
-    });
-
-    const response = NextResponse.json({ 
-        success: true, 
-        grades: { 
-            internalMarks, 
-            examMarks,
-            summary: { totalCredits, acquiredCredits, remainingCredits }
-        } 
-    });
-    if (resInternal.newSessionCookie) {
-        response.cookies.set(resInternal.newSessionCookie);
+    if (!(await hasValidWhitelistedSession(request))) {
+      return unauthorizedResponse();
     }
-    return response;
+
+    const registerNum = request.cookies.get('ERP_USERNAME')?.value;
+    if (!registerNum) {
+      return unauthorizedResponse();
+    }
+
+    const user = await db.user.findUnique({
+      where: { registerNum },
+      select: { gradesCache: true }
+    });
+
+    if (user && user.gradesCache) {
+      const cachedData = JSON.parse(user.gradesCache);
+
+      syncGrades(registerNum).catch(err => {
+        console.error('[Background Sync] Failed for grades:', err.message);
+      });
+
+      const gradesData = cachedData.grades ? cachedData : { ...cachedData, grades: cachedData };
+      return NextResponse.json({ success: true, ...gradesData, isCached: true });
+    } else {
+      console.log(`[Grades API] No cache found for ${registerNum}. Performing initial sync...`);
+      const freshData = await syncGrades(registerNum);
+
+      const gradesData = freshData.grades ? freshData : { ...freshData, grades: freshData };
+      return NextResponse.json({ success: true, ...gradesData, isCached: false });
+    }
   } catch (error) {
-    console.error(error);
+    console.error('[Grades API] Error:', error);
     return NextResponse.json({ error: 'Failed to fetch grades data' }, { status: 500 });
   }
 }
+

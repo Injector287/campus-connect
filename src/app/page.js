@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ALLOWED_USERNAME } from '@/utils/auth'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -15,13 +14,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     const sessions = JSON.parse(localStorage.getItem('erp_sessions') || '[]')
-    const allowedSessions = sessions.filter((session) => session.username === ALLOWED_USERNAME)
 
-    if (allowedSessions.length !== sessions.length) {
-      localStorage.setItem('erp_sessions', JSON.stringify(allowedSessions))
-    }
-
-    if (allowedSessions.length > 0) {
+    if (sessions.length > 0) {
       router.push('/dashboard')
     }
   }, [router])
@@ -57,12 +51,12 @@ export default function LoginPage() {
 
       if (res.ok) {
         if (stayLog) {
-         const currentSessions = JSON.parse(localStorage.getItem('erp_sessions') || '[]').filter((session) => session.username === ALLOWED_USERNAME)
-          const existingIndex = currentSessions.findIndex(s => s.username === ALLOWED_USERNAME)
+          const currentSessions = JSON.parse(localStorage.getItem('erp_sessions') || '[]')
+          const existingIndex = currentSessions.findIndex(s => s.username === user)
           if (existingIndex >= 0) {
              currentSessions[existingIndex].password = pass // update password
           } else {
-           currentSessions.push({ username: ALLOWED_USERNAME, password: pass })
+           currentSessions.push({ username: user, password: pass })
           }
           localStorage.setItem('erp_sessions', JSON.stringify(currentSessions))
         }

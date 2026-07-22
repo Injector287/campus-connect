@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  registerNum     String   @unique
+  password        String
+  lastSync        DateTime @default(now())
+  
+  // Admin & Rate Limit
+  role            String   @default("USER") // "USER" or "ADMIN"
+  status          String   @default("ACTIVE") // "ACTIVE", "BLACKLISTED", "WHITELISTED"
+  sessionVersion  Int      @default(1)
+  customRateLimit Int?
+  
+  // JSON blobs to cache the data for each section
+  dashboardCache  String?
+  financeCache    String?
+  gradesCache     String?
+  libraryCache    String?
+  subjectsCache   String?
+  profileCache    String?
+  leavesCache     String?
+
+  // Relations
+  scrapeLogs      ScrapeLog[]
+  suggestions     Suggestion[]
+}
+
+model ScrapeLog {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint     String
+  status       String   // "SUCCESS" or "ERROR"
+  fullLog      String?  // Optional payload for failures
+  createdAt    DateTime @default(now())
+}
+
+model Setting {
+  id           String   @id @default(uuid())
+  key          String   @unique
+  value        String
+  updatedAt    DateTime @updatedAt
+}
+
+model Announcement {
+  id           String   @id @default(uuid())
+  title        String
+  content      String
+  targetRole   String?  @default("ALL") // "ALL", "USER", "ADMIN"
+  createdAt    DateTime @default(now())
+}
+
+model Suggestion {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      String
+  adminReply   String?
+  createdAt    DateTime @default(now())
+  repliedAt    DateTime?
+}

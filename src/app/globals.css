@@ -207,7 +207,7 @@ body {
   display: flex !important;
 }
 
-.desktop-only {
+.desktop-only, .desktop-view, .desktop-block, .desktop-grid {
   display: none !important;
 }
 
@@ -234,8 +234,14 @@ body {
     display: none !important;
   }
 
-  .desktop-only {
+  .desktop-only, .desktop-view {
     display: flex !important;
+  }
+  .desktop-block {
+    display: block !important;
+  }
+  .desktop-grid {
+    display: grid !important;
   }
 
   .responsive-grid {

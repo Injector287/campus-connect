@@ -6,7 +6,7 @@ const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function GET(request) {
     try {
-        if (!hasValidWhitelistedSession(request)) {
+        if (!(await hasValidWhitelistedSession(request))) {
             return unauthorizedResponse();
         }
 
