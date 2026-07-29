@@ -4,6 +4,7 @@ import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { clearAuthCookies } from '@/utils/auth';
 import { db } from '@/lib/db';
+import { encrypt } from '@/utils/crypto';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
@@ -128,8 +129,6 @@ export async function POST(request) {
       maxAge: stayLoggedIn ? 30 * 24 * 60 * 60 : undefined
     });
 
-    const { encrypt } = require('@/utils/crypto');
-    
     const encryptedPassword = encrypt(password);
     if (encryptedPassword) {
       await db.user.upsert({
@@ -142,7 +141,7 @@ export async function POST(request) {
     return response;
 
   } catch (error) {
-    console.error('Login Error:', error.message);
-    return NextResponse.json({ error: 'An unexpected error occurred communicating with the ERP.' }, { status: 500 });
+    console.error('Login Error:', error);
+    return NextResponse.json({ error: `An unexpected error occurred communicating with the ERP: ${error.message}` }, { status: 500 });
   }
 }
