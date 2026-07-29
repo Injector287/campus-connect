@@ -1,25 +1,12 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
+import { fetcher } from '@/utils/fetcher';
 
 export default function HealthPage() {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetch('/api/admin/logs')
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) throw new Error(data.error);
-        setLogs(data.logs || []);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const { data: logsData, error, isLoading: loading } = useSWR('/api/admin/logs', fetcher);
+  const logs = logsData?.logs || [];
 
   if (loading) {
     return (
@@ -34,7 +21,7 @@ export default function HealthPage() {
       <main className="main-container">
         <div className="glass-panel" style={{ textAlign: 'center' }}>
            <h2 className="text-gradient">Error</h2>
-           <p style={{ marginTop: '1rem', color: '#f87171' }}>{error}</p>
+           <p style={{ marginTop: '1rem', color: '#f87171' }}>{error?.message || 'Error loading logs'}</p>
         </div>
       </main>
     );

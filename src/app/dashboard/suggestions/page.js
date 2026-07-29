@@ -1,25 +1,15 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import useSWR from 'swr';
+import { fetcher } from '@/utils/fetcher';
 
 export default function UserSuggestionsPage() {
-  const [suggestions, setSuggestions] = useState([]);
+  const { data: suggestionsData, error, isLoading: loading, mutate: fetchSuggestions } = useSWR('/api/suggestions', fetcher);
+  const suggestions = suggestionsData?.error ? [] : (suggestionsData || []);
+  
   const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(true);
   const textareaRef = useRef(null);
-
-  const fetchSuggestions = () => {
-    fetch('/api/suggestions')
-      .then(res => res.json())
-      .then(data => {
-        setSuggestions(data.error ? [] : data);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    fetchSuggestions();
-  }, []);
 
   useEffect(() => {
     if (textareaRef.current) {

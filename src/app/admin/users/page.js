@@ -1,37 +1,23 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
+import { fetcher } from '@/utils/fetcher';
 
 export default function UsersPage() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: usersData, error, isLoading: loading, mutate: fetchUsers } = useSWR('/api/admin/users', fetcher);
+  const users = usersData?.users || [];
+  
+  const { data: settingsData, mutate: fetchSettings } = useSWR('/api/admin/settings', fetcher);
   const [accessMode, setAccessMode] = useState('BLACKLIST'); // 'WHITELIST' or 'BLACKLIST'
+  
+  // Update local accessMode state when settings load
+  if (settingsData?.ACCESS_MODE && settingsData.ACCESS_MODE !== accessMode) {
+     setAccessMode(settingsData.ACCESS_MODE);
+  }
+
   const [newUserNum, setNewUserNum] = useState('');
   const [addingUser, setAddingUser] = useState(false);
-
-  const fetchUsers = () => {
-    fetch('/api/admin/users')
-      .then(res => res.json())
-      .then(data => {
-        setUsers(data.users || []);
-        setLoading(false);
-      });
-  };
-
-  const fetchSettings = () => {
-    fetch('/api/admin/settings')
-      .then(res => res.json())
-      .then(data => {
-        if (data.ACCESS_MODE) {
-          setAccessMode(data.ACCESS_MODE);
-        }
-      });
-  };
-
-  useEffect(() => {
-    fetchUsers();
-    fetchSettings();
-  }, []);
 
   const toggleAccessMode = async (newMode) => {
     setAccessMode(newMode);

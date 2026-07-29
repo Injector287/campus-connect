@@ -47,6 +47,8 @@ model ScrapeLog {
   status       String   // "SUCCESS" or "ERROR"
   fullLog      String?  // Optional payload for failures
   createdAt    DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model Setting {
@@ -72,4 +74,6 @@ model Suggestion {
   adminReply   String?
   createdAt    DateTime @default(now())
   repliedAt    DateTime?
+
+  @@index([createdAt])
 }

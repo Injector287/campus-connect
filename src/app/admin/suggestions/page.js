@@ -1,26 +1,16 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
+import { fetcher } from '@/utils/fetcher';
 
 export default function AdminSuggestionsPage() {
-  const [suggestions, setSuggestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: suggestionsData, error, isLoading: loading, mutate: fetchSuggestions } = useSWR('/api/admin/suggestions', fetcher);
+  const suggestions = suggestionsData || [];
+  
   const [replyText, setReplyText] = useState({});
   const [editing, setEditing] = useState({});
   const [activeTab, setActiveTab] = useState('pending'); // 'pending' or 'solved'
-
-  const fetchSuggestions = () => {
-    fetch('/api/admin/suggestions')
-      .then(res => res.json())
-      .then(data => {
-        setSuggestions(data);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    fetchSuggestions();
-  }, []);
 
   const submitReply = async (id) => {
     if (!replyText[id]) return;
