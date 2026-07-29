@@ -49,7 +49,7 @@ export async function syncDashboard(registerNum) {
             where: { registerNum },
             data: { 
                 dashboardCache: JSON.stringify(parsedData),
-                lastSync: new Date()
+                lastSyncDashboard: new Date()
             }
         });
 
@@ -94,7 +94,7 @@ export async function syncFinance(registerNum) {
             where: { registerNum },
             data: { 
                 financeCache: JSON.stringify(parsedData),
-                lastSync: new Date()
+                lastSyncFinance: new Date()
             }
         });
 
@@ -138,7 +138,7 @@ export async function syncGrades(registerNum) {
             where: { registerNum },
             data: {
                 gradesCache: JSON.stringify(parsedData),
-                lastSync: new Date()
+                lastSyncGrades: new Date()
             }
         });
 
@@ -184,7 +184,7 @@ export async function syncLibrary(registerNum) {
             where: { registerNum },
             data: {
                 libraryCache: JSON.stringify(parsedData),
-                lastSync: new Date()
+                lastSyncLibrary: new Date()
             }
         });
 
@@ -225,7 +225,7 @@ export async function syncSubjects(registerNum) {
             where: { registerNum },
             data: {
                 subjectsCache: JSON.stringify(parsedData),
-                lastSync: new Date()
+                lastSyncSubjects: new Date()
             }
         });
 
@@ -284,7 +284,7 @@ export async function syncProfile(registerNum) {
             where: { registerNum },
             data: {
                 profileCache: JSON.stringify(parsedData),
-                lastSync: new Date()
+                lastSyncProfile: new Date()
             }
         });
 
@@ -325,7 +325,7 @@ export async function syncLeaves(registerNum) {
             where: { registerNum },
             data: {
                 leavesCache: JSON.stringify(parsedData),
-                lastSync: new Date()
+                lastSyncLeaves: new Date()
             }
         });
 

@@ -51,7 +51,9 @@ export default function DashboardLayout({ children }) {
   useSWR('/api/grades', fetcher, { revalidateOnFocus: false });
   useSWR('/api/library', fetcher, { revalidateOnFocus: false });
   useSWR('/api/finance', fetcher, { revalidateOnFocus: false });
-  useSWR('/api/profile', fetcher, { revalidateOnFocus: false });
+  const { data: profile } = useSWR('/api/profile', fetcher, { revalidateOnFocus: false });
+  
+  const isAdmin = profile?.role === 'ADMIN';
 
   // Close drawer on path change
   useEffect(() => {
@@ -86,6 +88,7 @@ export default function DashboardLayout({ children }) {
         { href: '/dashboard/library', label: 'Library', icon: <><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></> },
         { href: '/dashboard/finance', label: 'Finance', icon: <><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></> },
         { href: '/dashboard/leaves', label: 'Leaves', icon: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></> },
+        ...(isAdmin ? [{ href: '/admin', label: 'Admin Panel', icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></> }] : [])
       ]
     },
     {

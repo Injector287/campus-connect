@@ -19,9 +19,19 @@ export async function hasValidWhitelistedSession(request) {
       console.log(`[Auth] User ${username} not found in DB`);
       return false;
     }
-    if (user.status === 'BLACKLISTED') {
-      console.log(`[Auth] User ${username} is BLACKLISTED`);
-      return false;
+    const modeSetting = await db.setting.findUnique({ where: { key: 'ACCESS_MODE' } });
+    const accessMode = modeSetting?.value || 'BLACKLIST';
+
+    if (accessMode === 'WHITELIST') {
+      if (user.status !== 'APPROVED' && user.role !== 'ADMIN') {
+        console.log(`[Auth] Whitelist mode active. User ${username} denied.`);
+        return false;
+      }
+    } else {
+      if (user.status === 'BANNED') {
+        console.log(`[Auth] User ${username} is BANNED`);
+        return false;
+      }
     }
     const dbVersion = user.sessionVersion ?? 1;
     const cookieVersion = parseInt(version, 10);

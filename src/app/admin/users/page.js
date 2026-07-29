@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react';
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [accessMode, setAccessMode] = useState('BLACKLIST'); // 'WHITELIST' or 'BLACKLIST'
+  const [newUserNum, setNewUserNum] = useState('');
+  const [addingUser, setAddingUser] = useState(false);
 
   const fetchUsers = () => {
     fetch('/api/admin/users')
@@ -15,9 +18,54 @@ export default function UsersPage() {
       });
   };
 
+  const fetchSettings = () => {
+    fetch('/api/admin/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.ACCESS_MODE) {
+          setAccessMode(data.ACCESS_MODE);
+        }
+      });
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchSettings();
   }, []);
+
+  const toggleAccessMode = async (newMode) => {
+    setAccessMode(newMode);
+    await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'ACCESS_MODE', value: newMode })
+    });
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    if (!newUserNum) return;
+    
+    setAddingUser(true);
+    try {
+      const res = await fetch('/api/admin/users/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registerNum: newUserNum })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNewUserNum('');
+        fetchUsers();
+      } else {
+        alert(data.error || 'Failed to add user');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Network error');
+    }
+    setAddingUser(false);
+  };
 
   const updateUser = async (id, updates) => {
     try {
@@ -32,6 +80,24 @@ export default function UsersPage() {
     }
   };
 
+  const deleteUser = async (id) => {
+    if (!confirm('Are you sure you want to permanently delete this user?')) return;
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        fetchUsers();
+      } else {
+        alert(data.error || 'Failed to delete user');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Network error');
+    }
+  };
+
   if (loading) {
     return (
       <main className="main-container" style={{ alignItems: 'center' }}>
@@ -43,9 +109,52 @@ export default function UsersPage() {
 
   return (
     <main className="main-container animate-slide-up" style={{ paddingBottom: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>User Management</h1>
+        
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', width: 'fit-content' }}>
+          <button 
+              onClick={() => toggleAccessMode('BLACKLIST')}
+              style={{ padding: '0.5rem 1.5rem', borderRadius: '8px', border: 'none', background: accessMode === 'BLACKLIST' ? '#ef4444' : 'transparent', color: accessMode === 'BLACKLIST' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.85rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              title="Blacklist Mode: Anyone can enter, EXCEPT banned users."
+          >
+              Blacklist Mode
+          </button>
+          <button 
+              onClick={() => toggleAccessMode('WHITELIST')}
+              style={{ padding: '0.5rem 1.5rem', borderRadius: '8px', border: 'none', background: accessMode === 'WHITELIST' ? '#10b981' : 'transparent', color: accessMode === 'WHITELIST' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.85rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              title="Whitelist Mode: Only approved users can enter."
+          >
+              Whitelist Mode
+          </button>
+        </div>
       </div>
+
+      {accessMode === 'WHITELIST' && (
+        <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h3 style={{ margin: '0 0 0.25rem 0', color: 'white' }}>Pre-Register User</h3>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Add a user&apos;s register number so they can log in during Whitelist mode.</p>
+          </div>
+          <form onSubmit={handleAddUser} style={{ display: 'flex', gap: '0.75rem' }}>
+            <input 
+              type="text" 
+              placeholder="e.g. 24-UCS-001" 
+              value={newUserNum}
+              onChange={e => setNewUserNum(e.target.value)}
+              style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }}
+              required
+            />
+            <button 
+              type="submit" 
+              disabled={addingUser}
+              style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '0 1.5rem', borderRadius: '8px', fontWeight: '600', cursor: addingUser ? 'not-allowed' : 'pointer', opacity: addingUser ? 0.7 : 1 }}
+            >
+              Add User
+            </button>
+          </form>
+        </div>
+      )}
       
       <div className="desktop-view glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -82,13 +191,12 @@ export default function UsersPage() {
                     onChange={e => updateUser(user.id, { status: e.target.value })}
                     style={{ background: 'rgba(0,0,0,0.5)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem 0.6rem', borderRadius: '8px', outline: 'none', cursor: 'pointer' }}
                   >
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="WHITELISTED">WHITELISTED</option>
-                    <option value="BLACKLISTED">BLACKLISTED</option>
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="BANNED">BANNED</option>
                   </select>
                 </td>
                 <td style={{ padding: '1.25rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>{user.customRateLimit || 'Default'}</td>
-                <td style={{ padding: '1.25rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>{new Date(user.lastSync).toLocaleString()}</td>
+                <td style={{ padding: '1.25rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>{user.lastSyncDashboard ? new Date(user.lastSyncDashboard).toLocaleString() : 'Never'}</td>
                 <td style={{ padding: '1.25rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <button 
@@ -102,12 +210,21 @@ export default function UsersPage() {
                     </button>
                     <button 
                       style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}
-                      onClick={() => updateUser(user.id, { status: 'BLACKLISTED' })}
-                      title="Force Logout / Blacklist"
+                      onClick={() => updateUser(user.id, { status: 'BANNED' })}
+                      title="Force Logout / Ban"
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)' }}
                       onMouseOut={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)' }}
                     >
                       Ban
+                    </button>
+                    <button 
+                      style={{ background: 'rgba(220, 38, 38, 0.2)', color: '#f87171', border: '1px solid rgba(220, 38, 38, 0.4)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                      onClick={() => deleteUser(user.id)}
+                      title="Permanently Delete User"
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(220, 38, 38, 0.3)' }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(220, 38, 38, 0.2)' }}
+                    >
+                      Delete
                     </button>
                   </div>
                 </td>
@@ -136,9 +253,15 @@ export default function UsersPage() {
                    </button>
                    <button 
                       style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.3rem 0.6rem', borderRadius: '6px', fontWeight: '600', fontSize: '0.75rem' }}
-                      onClick={() => updateUser(user.id, { status: 'BLACKLISTED' })}
+                      onClick={() => updateUser(user.id, { status: 'BANNED' })}
                    >
                       Ban
+                   </button>
+                   <button 
+                      style={{ background: 'rgba(220, 38, 38, 0.2)', color: '#f87171', border: '1px solid rgba(220, 38, 38, 0.4)', padding: '0.3rem 0.6rem', borderRadius: '6px', fontWeight: '600', fontSize: '0.75rem' }}
+                      onClick={() => deleteUser(user.id)}
+                   >
+                      Delete
                    </button>
                </div>
             </div>
@@ -161,14 +284,13 @@ export default function UsersPage() {
                       onChange={e => updateUser(user.id, { status: e.target.value })}
                       style={{ background: 'rgba(0,0,0,0.5)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '8px', width: '100%' }}
                     >
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="WHITELISTED">WHITELISTED</option>
-                      <option value="BLACKLISTED">BLACKLISTED</option>
+                      <option value="APPROVED">APPROVED</option>
+                      <option value="BANNED">BANNED</option>
                     </select>
                 </div>
             </div>
             <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.5rem' }}>
-                Last Sync: {new Date(user.lastSync).toLocaleString()}
+                Last Sync (Dashboard): {user.lastSyncDashboard ? new Date(user.lastSyncDashboard).toLocaleString() : 'Never'}
             </div>
           </div>
         ))}

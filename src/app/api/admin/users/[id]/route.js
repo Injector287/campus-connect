@@ -53,3 +53,33 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }
+
+export async function DELETE(request, { params }) {
+  const admin = await checkAdmin();
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  if (id === admin.id) {
+    return NextResponse.json({ error: 'You cannot delete yourself' }, { status: 400 });
+  }
+
+  try {
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (!targetUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    if (targetUser.registerNum === '25-UCS-003') {
+      return NextResponse.json({ error: 'The primary admin account cannot be deleted' }, { status: 400 });
+    }
+
+    await prisma.user.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Failed to delete user:', error);
+    return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
+  }
+}

@@ -24,7 +24,7 @@ export async function GET(request) {
           role: true,
           status: true,
           customRateLimit: true,
-          lastSync: true,
+          lastSyncDashboard: true,
         },
         orderBy: {
           registerNum: 'asc',

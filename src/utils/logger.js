@@ -14,12 +14,21 @@ export async function logScrape(username, endpoint, status, fullLog = null) {
       }
     });
 
-    // Also update user's lastSync
+    // Also update user's lastSync for the specific endpoint
     if (status === 'SUCCESS') {
-      await db.user.update({
-        where: { id: user.id },
-        data: { lastSync: new Date() }
-      });
+      const fieldName = 'lastSync' + endpoint.charAt(0).toUpperCase() + endpoint.slice(1);
+      const updateData = {};
+      updateData[fieldName] = new Date();
+      
+      try {
+        await db.user.update({
+          where: { id: user.id },
+          data: updateData
+        });
+      } catch (e) {
+        // Fallback in case endpoint doesn't match a specific lastSync field
+        console.warn(`Failed to update lastSync field: ${fieldName}`, e.message);
+      }
     }
 
     // Keep log table size manageable by deleting old logs if necessary (e.g. older than 7 days)

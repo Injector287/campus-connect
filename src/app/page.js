@@ -1,30 +1,35 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function LoginPage() {
+function LoginContent() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [stayLoggedIn, setStayLoggedIn] = useState(false)
-  const [savedSessions, setSavedSessions] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    const sessions = JSON.parse(localStorage.getItem('erp_sessions') || '[]')
+    const errorParam = searchParams.get('error')
+    
+    // If the dashboard kicked them out, wipe their saved sessions so they don't auto-login and loop
+    if (errorParam === '401') {
+      localStorage.removeItem('erp_sessions')
+      setTimeout(() => {
+        setError('Your session has expired or you have been logged out. Please log in again.')
+      }, 0)
+      return
+    }
 
+    const sessions = JSON.parse(localStorage.getItem('erp_sessions') || '[]')
     if (sessions.length > 0) {
+      // Safely auto-login
       router.push('/dashboard')
     }
-  }, [router])
-
-  const handleQuickLogin = (sessionUsername, sessionPassword) => {
-    setUsername(sessionUsername)
-    setPassword(sessionPassword)
-    handleLoginAction(sessionUsername, sessionPassword, true)
-  }
+  }, [router, searchParams])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -54,7 +59,7 @@ export default function LoginPage() {
           const currentSessions = JSON.parse(localStorage.getItem('erp_sessions') || '[]')
           const existingIndex = currentSessions.findIndex(s => s.username === user)
           if (existingIndex >= 0) {
-             currentSessions[existingIndex].password = pass // update password
+             currentSessions[existingIndex].password = pass
           } else {
            currentSessions.push({ username: user, password: pass })
           }
@@ -141,5 +146,13 @@ export default function LoginPage() {
         </form>
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="main-container" style={{ alignItems: 'center' }}><div className="spinner" style={{ width: '40px', height: '40px', borderWidth: '3px' }}></div></div>}>
+      <LoginContent />
+    </Suspense>
   )
 }

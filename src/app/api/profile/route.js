@@ -16,8 +16,10 @@ export async function GET(request) {
 
     const user = await db.user.findUnique({
       where: { registerNum },
-      select: { profileCache: true }
+      select: { profileCache: true, role: true }
     });
+
+    const userRole = user?.role || 'USER';
 
     if (user && user.profileCache) {
       const cachedData = JSON.parse(user.profileCache);
@@ -26,12 +28,12 @@ export async function GET(request) {
         console.error('[Background Sync] Failed for profile:', err.message);
       });
 
-      return NextResponse.json({ success: true, ...cachedData, isCached: true });
+      return NextResponse.json({ success: true, role: userRole, ...cachedData, isCached: true });
     } else {
       console.log(`[Profile API] No cache found for ${registerNum}. Performing initial sync...`);
       const freshData = await syncProfile(registerNum);
 
-      return NextResponse.json({ success: true, ...freshData, isCached: false });
+      return NextResponse.json({ success: true, role: userRole, ...freshData, isCached: false });
     }
   } catch (error) {
     console.error('[Profile API] Error:', error);

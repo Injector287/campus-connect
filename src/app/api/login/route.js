@@ -16,10 +16,22 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
     }
 
-    // Check if user is blacklisted in DB
+    // 1. Fetch Global Access Mode
+    const modeSetting = await db.setting.findUnique({ where: { key: 'ACCESS_MODE' } });
+    const accessMode = modeSetting?.value || 'BLACKLIST'; // Default is Blacklist Mode
+
     const existingUser = await db.user.findUnique({ where: { registerNum: normalizedUsername } });
-    if (existingUser && existingUser.status === 'BLACKLISTED') {
-      return clearAuthCookies(NextResponse.json({ error: 'Your account has been banned by the administrator.' }, { status: 403 }));
+
+    // 2. Enforce Access Rules
+    if (accessMode === 'WHITELIST') {
+      if (!existingUser || (existingUser.status !== 'APPROVED' && existingUser.role !== 'ADMIN')) {
+        return clearAuthCookies(NextResponse.json({ error: 'System is in Whitelist mode. You are not authorized.' }, { status: 403 }));
+      }
+    } else {
+      // BLACKLIST Mode
+      if (existingUser && existingUser.status === 'BANNED') {
+        return clearAuthCookies(NextResponse.json({ error: 'Your account has been banned by the administrator.' }, { status: 403 }));
+      }
     }
 
     const jar = new CookieJar();

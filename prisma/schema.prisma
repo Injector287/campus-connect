@@ -11,7 +11,13 @@ model User {
   id              String   @id @default(uuid())
   registerNum     String   @unique
   password        String
-  lastSync        DateTime @default(now())
+  lastSyncDashboard DateTime?
+  lastSyncFinance   DateTime?
+  lastSyncGrades    DateTime?
+  lastSyncLibrary   DateTime?
+  lastSyncSubjects  DateTime?
+  lastSyncProfile   DateTime?
+  lastSyncLeaves    DateTime?
   
   // Admin & Rate Limit
   role            String   @default("USER") // "USER" or "ADMIN"

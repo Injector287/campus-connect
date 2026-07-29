@@ -1,14 +1,11 @@
 'use client'
-import { useEffect } from 'react';
-
-import { useState } from 'react'
-
-import useSWR from 'swr'
-import { useTabState } from '@/hooks/useTabState'
-import { useRouter } from 'next/navigation'
-import { fetcher } from '@/utils/fetcher'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
-import CurrentPeriod from '@/components/CurrentPeriod'
+import { useState, useEffect } from 'react';
+import useSWR from 'swr';
+import { useTabState } from '@/hooks/useTabState';
+import { useRouter } from 'next/navigation';
+import { fetcher } from '@/utils/fetcher';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import CurrentPeriod from '@/components/CurrentPeriod';
 
 const formatSubjectName = (name) => {
     if (!name) return '';
@@ -24,12 +21,39 @@ const formatSubjectName = (name) => {
 export default function DashboardPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useTabState('tab', 'hourWise') // 'hourWise', 'subjectWise'
-  const { data: json, error, isLoading } = useSWR('/api/dashboard', fetcher)
+  
+  // Detect if the page was hard reloaded (e.g. native pull-to-refresh or F5)
+  const isReload = typeof window !== 'undefined' && 
+                   window.performance && 
+                   window.performance.getEntriesByType("navigation").length > 0 && 
+                   window.performance.getEntriesByType("navigation")[0].type === 'reload';
+                   
+  const apiUrl = isReload ? '/api/dashboard?force=true' : '/api/dashboard';
+  const { data: json, error, isLoading } = useSWR(apiUrl, fetcher)
   const { data: announcements } = useSWR('/api/announcements', fetcher)
+
+  const [liveMins, setLiveMins] = useState(null);
+  const [liveCooldown, setLiveCooldown] = useState(null);
+
+  useEffect(() => {
+    if (json) {
+      setTimeout(() => {
+          setLiveMins(json.lastSyncMinutesAgo);
+          setLiveCooldown(json.cooldownRemaining);
+      }, 0);
+      
+      const interval = setInterval(() => {
+        setLiveMins(prev => (prev !== undefined && prev !== null) ? prev + 1 : prev);
+        setLiveCooldown(prev => (prev && prev > 0) ? Math.max(0, prev - 1) : prev);
+      }, 60000); // tick every minute
+
+      return () => clearInterval(interval);
+    }
+  }, [json]);
 
   useEffect(() => {
     if (error && error.status === 401) {
-      router.push('/')
+      router.push('/?error=401')
     }
   }, [error, router])
 
@@ -503,6 +527,31 @@ export default function DashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Attendance</h1>
+        {data.isCached !== undefined && (
+            <div 
+               style={{ 
+                   background: 'rgba(255,255,255,0.05)', 
+                   border: '1px solid rgba(255,255,255,0.1)', 
+                   padding: '0.25rem 0.75rem', 
+                   borderRadius: '999px',
+                   fontSize: '0.75rem',
+                   color: 'rgba(255,255,255,0.6)',
+                   display: 'flex',
+                   alignItems: 'center',
+                   gap: '0.35rem'
+               }}
+            >
+               <span style={{ 
+                   width: 6, 
+                   height: 6, 
+                   background: (liveCooldown && liveCooldown > 0) ? '#facc15' : (data.isCached ? '#4ade80' : '#60a5fa'), 
+                   borderRadius: '50%', 
+                   display: 'inline-block',
+                   boxShadow: (liveCooldown && liveCooldown > 0) ? '0 0 8px rgba(250,204,21,0.5)' : 'none'
+               }}></span>
+               {data.isCached ? `Synced ${liveMins}m ago` : 'Just synced'}
+            </div>
+        )}
       </div>
 
       <style>{`
