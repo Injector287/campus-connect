@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 export function useTabState(key, defaultValue) {
@@ -5,13 +6,13 @@ export function useTabState(key, defaultValue) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     
-    const activeTab = searchParams.get(key) || defaultValue;
-    
+    const [activeTab, setLocalTab] = useState(searchParams.get(key) || defaultValue);
+
     const setActiveTab = (newTab) => {
+        setLocalTab(newTab);
         const params = new URLSearchParams(searchParams.toString());
         params.set(key, newTab);
-        // use router.replace to avoid cluttering history
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        window.history.replaceState(null, '', `${pathname}?${params.toString()}`);
     };
     
     return [activeTab, setActiveTab];
