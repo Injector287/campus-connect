@@ -75,15 +75,15 @@ export function parseDashboard(hourWiseHtml, subjHtml) {
     const $subj = cheerio.load(subjHtml);
     const subjectWise = [];
     
-    let colIndices = { code: 0, desc: 1, total: 2, absent: 3, present: 4, ml: 5, od: -1, pct: 6 };
+    let colIndices = { code: 0, desc: 1, total: 2, absent: 3, present: 4, ml: -1, od: -1, pct: 5 };
     $subj('#tblSubjectWiseAttendance > tbody > tr').each((i, row) => {
         const tr = $subj(row);
         if (tr.hasClass('subheader') || tr.hasClass('header')) {
             tr.find('td, th').each((j, col) => {
                 const text = $subj(col).text().trim().toUpperCase();
-                if (text === 'TOTAL') colIndices.total = j;
-                else if (text === 'ABSENT') colIndices.absent = j;
-                else if (text === 'PRESENT') colIndices.present = j;
+                if (text.includes('TOTAL')) colIndices.total = j;
+                else if (text.includes('ABSENT')) colIndices.absent = j;
+                else if (text.includes('PRESENT')) colIndices.present = j;
                 else if (text === 'ML') colIndices.ml = j;
                 else if (text === 'OD') colIndices.od = j;
                 else if (text.includes('%') || text.includes('PERCENTAGE')) colIndices.pct = j;
@@ -96,20 +96,17 @@ export function parseDashboard(hourWiseHtml, subjHtml) {
         if (tr.hasClass('header') || tr.hasClass('subheader1') || tr.hasClass('subheader') || tr.hasClass('subtotal')) return;
         
         const tds = tr.find('td');
-        if (tds.length >= 7) {
-            const code = $subj(tds[colIndices.code]).text().trim();
-            const desc = $subj(tds[colIndices.desc]).text().trim();
-            const total = parseInt($subj(tds[colIndices.total]).text().trim().replace(/&nbsp;/g, '')) || 0;
-            const absent = parseInt($subj(tds[colIndices.absent]).text().trim().replace(/&nbsp;/g, '')) || 0;
-            const present = parseInt($subj(tds[colIndices.present]).text().trim().replace(/&nbsp;/g, '')) || 0;
+        if (tds.length > 2) {
+            const getText = (index) => (index !== -1 && tds[index]) ? $subj(tds[index]).text().trim().replace(/&nbsp;/g, '') : '';
             
-            const mlText = colIndices.ml !== -1 && tds[colIndices.ml] ? $subj(tds[colIndices.ml]).text().trim().replace(/&nbsp;/g, '') : '0';
-            const ml = parseInt(mlText) || 0;
-            
-            const odText = colIndices.od !== -1 && tds[colIndices.od] ? $subj(tds[colIndices.od]).text().trim().replace(/&nbsp;/g, '') : '0';
-            const od = parseInt(odText) || 0;
-            
-            const percentage = $subj(tds[colIndices.pct]).text().trim();
+            const code = getText(colIndices.code);
+            const desc = getText(colIndices.desc);
+            const total = parseInt(getText(colIndices.total)) || 0;
+            const absent = parseInt(getText(colIndices.absent)) || 0;
+            const present = parseInt(getText(colIndices.present)) || 0;
+            const ml = parseInt(getText(colIndices.ml)) || 0;
+            const od = parseInt(getText(colIndices.od)) || 0;
+            const percentage = getText(colIndices.pct);
 
             if (code && desc) {
                 subjectWise.push({ code, desc, total, absent, present, ml, od, percentage });
