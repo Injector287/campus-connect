@@ -2,11 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import calendarData from '../../calendar.json';
-import timetableData from '../utils/timetable.json';
 
 export default function CurrentPeriod() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [currentPeriodInfo, setCurrentPeriodInfo] = useState(null);
+    const [dynamicTimetable, setDynamicTimetable] = useState(null);
+
+    useEffect(() => {
+        fetch('/api/timetable')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) setDynamicTimetable(data);
+            })
+            .catch(err => console.error('Failed to load timetable:', err));
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -20,13 +29,13 @@ export default function CurrentPeriod() {
         const dateStr = `${dd}.${mm}.${yyyy}`;
 
         const todayData = calendarData.find(d => d.date === dateStr);
-        if (!todayData || todayData.is_holiday || !todayData.is_working_day || !todayData.day_order) {
+        if (!todayData || todayData.is_holiday || !todayData.is_working_day || !todayData.day_order || !dynamicTimetable) {
             setTimeout(() => setCurrentPeriodInfo({ isOff: true, message: 'No classes today' }), 0);
             return;
         }
 
         const dayOrder = todayData.day_order.toString();
-        const dayTimetable = timetableData.timetable[dayOrder];
+        const dayTimetable = dynamicTimetable.timetable[dayOrder];
         if (!dayTimetable) {
             setTimeout(() => setCurrentPeriodInfo({ isOff: true, message: 'No timetable found for today' }), 0);
             return;
@@ -38,7 +47,7 @@ export default function CurrentPeriod() {
         let isBreak = false;
         let periodName = '';
 
-        for (const [periodStr, timeStr] of Object.entries(timetableData.timings)) {
+        for (const [periodStr, timeStr] of Object.entries(dynamicTimetable.timings)) {
             const [startStr, endStr] = timeStr.split(' - ');
             const [sh, sm] = startStr.split(':').map(Number);
             const [eh, em] = endStr.split(':').map(Number);
@@ -52,7 +61,8 @@ export default function CurrentPeriod() {
                     periodName = 'Break';
                 } else {
                     currentPeriod = periodStr;
-                    periodName = dayTimetable[periodStr];
+                    const rawSubject = dayTimetable[periodStr];
+                    periodName = rawSubject !== '-' && dynamicTimetable.aliases && dynamicTimetable.aliases[rawSubject] ? dynamicTimetable.aliases[rawSubject] : rawSubject;
                 }
                 break;
             }
@@ -60,10 +70,10 @@ export default function CurrentPeriod() {
 
         if (!currentPeriod && !isBreak) {
             // Check if before classes
-            const [firstStartH, firstStartM] = timetableData.timings['1'].split(' - ')[0].split(':').map(Number);
+            const [firstStartH, firstStartM] = dynamicTimetable.timings['1'].split(' - ')[0].split(':').map(Number);
             const firstStartMinutes = firstStartH * 60 + firstStartM;
             
-            const [lastEndH, lastEndM] = timetableData.timings['5'].split(' - ')[1].split(':').map(Number);
+            const [lastEndH, lastEndM] = dynamicTimetable.timings['5'].split(' - ')[1].split(':').map(Number);
             const lastEndMinutes = lastEndH * 60 + lastEndM;
 
             if (nowMinutes < firstStartMinutes) {
@@ -81,11 +91,11 @@ export default function CurrentPeriod() {
                     period: currentPeriod, 
                     periodName, 
                     dayOrder,
-                    timeStr: timetableData.timings[isBreak ? 'Break' : currentPeriod]
+                    timeStr: dynamicTimetable.timings[isBreak ? 'Break' : currentPeriod]
                 });
             }, 0);
         }
-    }, [currentTime]);
+    }, [currentTime, dynamicTimetable]);
 
     if (!currentPeriodInfo || currentPeriodInfo.isOff) return null;
 

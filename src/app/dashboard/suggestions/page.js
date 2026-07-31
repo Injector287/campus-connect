@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import useSWR from 'swr';
 import { fetcher } from '@/utils/fetcher';
+import SkeletonPage from '@/components/SkeletonPage';
 
 export default function UserSuggestionsPage() {
   const { data: suggestionsData, error, isLoading: loading, mutate: fetchSuggestions } = useSWR('/api/suggestions', fetcher);
@@ -34,12 +35,7 @@ export default function UserSuggestionsPage() {
   };
 
   if (loading) {
-    return (
-      <main className="main-container" style={{ alignItems: 'center' }}>
-        <div className="spinner" style={{ width: '40px', height: '40px', borderWidth: '3px' }}></div>
-        <p style={{ marginTop: '1rem', color: 'rgba(255,255,255,0.7)' }}>Loading Suggestions...</p>
-      </main>
-    );
+    return <SkeletonPage />;
   }
 
   return (

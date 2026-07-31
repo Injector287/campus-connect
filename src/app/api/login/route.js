@@ -5,16 +5,18 @@ import { CookieJar } from 'tough-cookie';
 import { clearAuthCookies } from '@/utils/auth';
 import { db } from '@/lib/db';
 import { encrypt } from '@/utils/crypto';
+import { sanitizeString } from '@/utils/validation';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function POST(request) {
   try {
     const { username, password, stayLoggedIn } = await request.json();
-    const normalizedUsername = typeof username === 'string' ? username.trim() : '';
+    const normalizedUsername = sanitizeString(username, 100);
+    const validPassword = sanitizeString(password, 255);
 
-    if (!normalizedUsername || !password) {
-      return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
+    if (!normalizedUsername || !validPassword) {
+      return NextResponse.json({ error: 'Valid username and password required' }, { status: 400 });
     }
 
     // 1. Fetch Global Access Mode
@@ -56,7 +58,7 @@ export async function POST(request) {
 
     // 3. Construct the highly specific login payload
     const payload = new URLSearchParams();
-    payload.append('txtSK', encodeURIComponent(password));
+    payload.append('txtSK', encodeURIComponent(validPassword));
     payload.append('txtAN', encodeURIComponent(normalizedUsername));
     payload.append('_tries', '1');
     payload.append('_md5', '');
@@ -129,7 +131,7 @@ export async function POST(request) {
       maxAge: stayLoggedIn ? 30 * 24 * 60 * 60 : undefined
     });
 
-    const encryptedPassword = encrypt(password);
+    const encryptedPassword = encrypt(validPassword);
     if (encryptedPassword) {
       await db.user.upsert({
         where: { registerNum: normalizedUsername },

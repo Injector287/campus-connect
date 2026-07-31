@@ -2,45 +2,40 @@ import { db } from '@/lib/db';
 
 export async function logScrape(username, endpoint, status, fullLog = null) {
   try {
-    const user = await db.user.findUnique({ where: { registerNum: username } });
-    if (!user) return; // Ignore if user not found in DB
+    const updateData = {};
+    if (status === 'SUCCESS') {
+      const fieldName = 'lastSync' + endpoint.charAt(0).toUpperCase() + endpoint.slice(1);
+      updateData[fieldName] = new Date();
+    }
 
-    await db.scrapeLog.create({
+    // Use a nested write to update the user and create the log in a single transaction!
+    await db.user.update({
+      where: { registerNum: username },
       data: {
-        userId: user.id,
-        endpoint,
-        status,
-        fullLog: fullLog ? String(fullLog).substring(0, 5000) : null // limit log size
+        ...updateData,
+        scrapeLogs: {
+          create: {
+            endpoint,
+            status,
+            fullLog: fullLog ? String(fullLog).substring(0, 5000) : null
+          }
+        }
       }
     });
 
-    // Also update user's lastSync for the specific endpoint
-    if (status === 'SUCCESS') {
-      const fieldName = 'lastSync' + endpoint.charAt(0).toUpperCase() + endpoint.slice(1);
-      const updateData = {};
-      updateData[fieldName] = new Date();
-      
-      try {
-        await db.user.update({
-          where: { id: user.id },
-          data: updateData
-        });
-      } catch (e) {
-        // Fallback in case endpoint doesn't match a specific lastSync field
-        console.warn(`Failed to update lastSync field: ${fieldName}`, e.message);
-      }
-    }
-
-    // Keep log table size manageable by deleting old logs if necessary (e.g. older than 7 days)
-    // We can do this probabilistically to avoid performance hit on every scrape
+    // Probabilistically clean up old logs without blocking
     if (Math.random() < 0.05) {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      await db.scrapeLog.deleteMany({
+      // Run background cleanup asynchronously
+      db.scrapeLog.deleteMany({
         where: { createdAt: { lt: sevenDaysAgo } }
-      }).catch(() => {}); // ignore cleanup errors
+      }).catch(() => {});
     }
   } catch (error) {
-    console.error('Failed to log scrape:', error);
+    // If the user isn't found or DB connection fails, gracefully ignore
+    if (error.code !== 'P2025') {
+      console.error('Failed to log scrape:', error);
+    }
   }
 }

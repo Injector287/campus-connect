@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import SkeletonPage from '@/components/SkeletonPage';
 
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([]);
@@ -44,12 +45,7 @@ export default function AnnouncementsPage() {
   };
 
   if (loading) {
-    return (
-      <main className="main-container" style={{ alignItems: 'center' }}>
-        <div className="spinner" style={{ width: '40px', height: '40px', borderWidth: '3px' }}></div>
-        <p style={{ marginTop: '1rem', color: 'rgba(255,255,255,0.7)' }}>Loading Announcements...</p>
-      </main>
-    );
+    return <SkeletonPage />;
   }
 
   return (

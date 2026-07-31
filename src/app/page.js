@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import SkeletonPage from '@/components/SkeletonPage';
 
 function LoginContent() {
   const [username, setUsername] = useState('')
@@ -151,7 +152,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="main-container" style={{ alignItems: 'center' }}><div className="spinner" style={{ width: '40px', height: '40px', borderWidth: '3px' }}></div></div>}>
+    <Suspense fallback={<SkeletonPage />}>
       <LoginContent />
     </Suspense>
   )

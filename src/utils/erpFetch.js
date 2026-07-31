@@ -7,7 +7,7 @@ const BASE_URL = 'https://erp.loyolacollege.edu';
 
 export async function loginToERP(username, password) {
     const jar = new CookieJar();
-    const client = wrapper(axios.create({ jar }));
+    const client = wrapper(axios.create({ jar, timeout: 15000 }));
 
     await client.get(`${BASE_URL}/loyolaonline/students/loginManager/youLogin.jsp`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
@@ -80,6 +80,7 @@ export async function fetchWithReauth(request, url, options = { method: 'GET' })
             url,
             ...options,
             headers,
+            timeout: 15000,
             validateStatus: (status) => status < 500 // Allow redirects to pass through
         });
     } catch (e) {
@@ -123,7 +124,8 @@ export async function fetchWithReauth(request, url, options = { method: 'GET' })
         retryRes = await axios({
             url,
             ...options,
-            headers: retryHeaders
+            headers: retryHeaders,
+            timeout: 15000
         });
     } catch (e) {
         throw new Error('Retry ERP request failed: ' + e.message);

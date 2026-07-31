@@ -1,18 +1,114 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 import calendarData from '../../calendar.json';
 import timetableData from '../utils/timetable.json';
 import { useTabState } from '@/hooks/useTabState'
+
+const MONTHS_LIST = [
+    { label: 'June 2026', value: '06.2026' },
+    { label: 'July 2026', value: '07.2026' },
+    { label: 'August 2026', value: '08.2026' },
+    { label: 'September 2026', value: '09.2026' },
+    { label: 'October 2026', value: '10.2026' },
+    { label: 'November 2026', value: '11.2026' },
+    { label: 'December 2026', value: '12.2026' },
+    { label: 'January 2027', value: '01.2027' },
+    { label: 'February 2027', value: '02.2027' },
+    { label: 'March 2027', value: '03.2027' },
+    { label: 'April 2027', value: '04.2027' },
+    { label: 'May 2027', value: '05.2027' },
+];
 
 export default function CalendarPage() {
     const [todayStr, setTodayStr] = useState('');
     const [isMobile, setIsMobile] = useState(false);
     const [activeView, setActiveView] = useTabState('view', 'calendar');
     const [selectedDayOrder, setSelectedDayOrder] = useState('1');
-    const [selectedMonth, setSelectedMonth] = useState('06.2026');
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        const today = new Date();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        return `${mm}.${yyyy}`;
+    });
     const topHeaderRef = React.useRef(null);
     const [topHeaderHeight, setTopHeaderHeight] = useState(0);
+
+    const [dynamicTimetable, setDynamicTimetable] = useState(timetableData);
+    const [isTimetableLoading, setIsTimetableLoading] = useState(false);
+    const [editModal, setEditModal] = useState(null); // { dayOrder, period, subject }
+    const [subjectsList, setSubjectsList] = useState([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [selectedSubject, setSelectedSubject] = useState('');
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        if (activeView === 'timetable') {
+            const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+            return () => clearInterval(timer);
+        }
+    }, [activeView]);
+
+    const todayData = useMemo(() => calendarData.find(d => d.date === todayStr), [todayStr]);
+    const todayDayOrder = todayData?.is_working_day ? todayData.day_order.toString() : null;
+    const nowMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+
+    const fetchTimetableAndSubjects = async () => {
+        setIsTimetableLoading(true);
+        try {
+            const [timeRes, gradesRes] = await Promise.all([
+                fetch('/api/timetable'),
+                fetch('/api/grades')
+            ]);
+            
+            const timeData = await timeRes.json();
+            if (timeData.success) setDynamicTimetable(timeData);
+
+            const gradesData = await gradesRes.json();
+            if (gradesData.success && gradesData.internalMarks) {
+                setSubjectsList(gradesData.internalMarks.map(s => ({ code: s.code, desc: s.desc })));
+            }
+        } catch (err) {
+            console.error('Failed to fetch data:', err);
+        } finally {
+            setIsTimetableLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeView === 'timetable') {
+            fetchTimetableAndSubjects();
+        }
+    }, [activeView]);
+
+    const handleSaveOverride = async (e) => {
+        e.preventDefault();
+        const newSubject = e.target.elements.subject.value.trim();
+        const alias = e.target.elements.alias ? e.target.elements.alias.value : '';
+        if (!newSubject) return;
+        
+        try {
+            await fetch('/api/timetable', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'override', dayOrder: editModal.dayOrder, period: editModal.period, subject: newSubject, alias }) 
+            });
+            setEditModal(null);
+            fetchTimetableAndSubjects(); // refresh
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleSyncClass = async () => {
+        if (!confirm('Are you sure you want to remove all personal overrides and sync with the class consensus?')) return;
+        try {
+            await fetch('/api/timetable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'sync' }) });
+            fetchTimetableAndSubjects();
+        } catch (err) {}
+    };
 
     const groupedByMonth = useMemo(() => {
         const groups = {};
@@ -20,20 +116,7 @@ export default function CalendarPage() {
             const [dd, mm, yyyy] = day.date.split('.');
             const monthYear = `${mm}.${yyyy}`;
             if (!groups[monthYear]) {
-                const labelObj = [
-                    { label: 'June 2026', value: '06.2026' },
-                    { label: 'July 2026', value: '07.2026' },
-                    { label: 'August 2026', value: '08.2026' },
-                    { label: 'September 2026', value: '09.2026' },
-                    { label: 'October 2026', value: '10.2026' },
-                    { label: 'November 2026', value: '11.2026' },
-                    { label: 'December 2026', value: '12.2026' },
-                    { label: 'January 2027', value: '01.2027' },
-                    { label: 'February 2027', value: '02.2027' },
-                    { label: 'March 2027', value: '03.2027' },
-                    { label: 'April 2027', value: '04.2027' },
-                    { label: 'May 2027', value: '05.2027' },
-                ].find(m => m.value === monthYear);
+                const labelObj = MONTHS_LIST.find(m => m.value === monthYear);
                 
                 groups[monthYear] = {
                     label: labelObj ? labelObj.label : monthYear,
@@ -55,7 +138,6 @@ export default function CalendarPage() {
         const tStr = `${dd}.${mm}.${yyyy}`;
         setTimeout(() => {
             setTodayStr(tStr);
-            setSelectedMonth(`${mm}.${yyyy}`);
         }, 0);
 
         const todayData = calendarData.find(d => d.date === tStr);
@@ -82,7 +164,13 @@ export default function CalendarPage() {
         };
     }, []);
 
-    useEffect(() => {
+    useIsomorphicLayoutEffect(() => {
+        if (topHeaderRef.current) {
+            setTopHeaderHeight(topHeaderRef.current.offsetHeight);
+        }
+    }, [activeView]);
+
+    useIsomorphicLayoutEffect(() => {
         const scrollToToday = () => {
             if (window.innerWidth <= 768 && activeView === 'calendar') {
                 const todayEl = document.getElementById('today-marker');
@@ -92,12 +180,9 @@ export default function CalendarPage() {
             }
         };
         
-        // Fire multiple times to override Next.js native scroll restoration
+        // Scroll synchronously before paint
         if (todayStr && activeView === 'calendar') {
             scrollToToday();
-            setTimeout(scrollToToday, 50);
-            setTimeout(scrollToToday, 150);
-            setTimeout(scrollToToday, 300);
         }
     }, [todayStr, activeView]);
 
@@ -119,20 +204,10 @@ export default function CalendarPage() {
         return calendarData;
     }, []);
 
-    const months = [
-        { label: 'June 2026', value: '06.2026' },
-        { label: 'July 2026', value: '07.2026' },
-        { label: 'August 2026', value: '08.2026' },
-        { label: 'September 2026', value: '09.2026' },
-        { label: 'October 2026', value: '10.2026' },
-        { label: 'November 2026', value: '11.2026' },
-        { label: 'December 2026', value: '12.2026' },
-        { label: 'January 2027', value: '01.2027' },
-        { label: 'February 2027', value: '02.2027' },
-        { label: 'March 2027', value: '03.2027' },
-        { label: 'April 2027', value: '04.2027' },
-        { label: 'May 2027', value: '05.2027' },
-    ];
+    const monthObj = MONTHS_LIST.find(m => m.value === selectedMonth) || MONTHS_LIST[0];
+    const activeMonthIdx = MONTHS_LIST.findIndex(m => m.value === monthObj.value);
+    const prevMonth = activeMonthIdx > 0 ? MONTHS_LIST[activeMonthIdx - 1] : null;
+    const nextMonth = activeMonthIdx < MONTHS_LIST.length - 1 ? MONTHS_LIST[activeMonthIdx + 1] : null;
 
     return (
         <>
@@ -151,16 +226,16 @@ export default function CalendarPage() {
                         .responsive-padding-container { padding-top: 0.5rem; padding-left: 0.5rem; padding-right: 0.5rem; }
                     }
                 `}</style>
-                <div ref={topHeaderRef} style={{ 
-                    display: 'flex', flexDirection: 'column', gap: '1.5rem', 
-                    marginBottom: '1rem',
-                    padding: '1rem 0'
-                }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <h1 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>
-                            {activeView === 'calendar' ? 'Calendar' : 'Timetable'}
-                        </h1>
-                    </div>
+                <div ref={topHeaderRef} style={{ position: 'sticky', top: 0, zIndex: 50, background: '#0f172a', paddingBottom: '0.25rem', margin: '0 -0.5rem', padding: '0.5rem 1rem' }}>
+                    <div style={{ 
+                        display: 'flex', flexDirection: 'column', gap: '0.5rem', 
+                        marginBottom: '0',
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <h1 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>
+                                {activeView === 'calendar' ? 'Calendar' : 'Timetable'}
+                            </h1>
+                        </div>
                     
                     <div style={{ display: 'flex', width: '100%' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
@@ -192,6 +267,91 @@ export default function CalendarPage() {
                             >Timetable</button>
                         </div>
                     </div>
+                    </div>
+
+
+                    {activeView === 'calendar' && (
+                        <div className="desktop-view" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', paddingTop: '1rem', position: 'relative' }}>
+                            <button 
+                                onClick={() => prevMonth && setSelectedMonth(prevMonth.value)}
+                                style={{ 
+                                    width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)',
+                                    cursor: prevMonth ? 'pointer' : 'default', opacity: prevMonth ? 1 : 0.2,
+                                    transition: 'all 0.2s', fontSize: '1.2rem'
+                                }}
+                                onMouseOver={(e) => { if(prevMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                                onMouseOut={(e) => { if(prevMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 'bold', width: '200px', textAlign: 'center', color: 'white' }}>
+                                {monthObj.label}
+                            </div>
+                            <button 
+                                onClick={() => nextMonth && setSelectedMonth(nextMonth.value)}
+                                style={{ 
+                                    width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)',
+                                    cursor: nextMonth ? 'pointer' : 'default', opacity: nextMonth ? 1 : 0.2,
+                                    transition: 'all 0.2s', fontSize: '1.2rem'
+                                }}
+                                onMouseOver={(e) => { if(nextMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                                onMouseOut={(e) => { if(nextMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                            
+                            <button
+                                onClick={handleTodayClick}
+                                style={{ 
+                                    position: 'absolute', right: '0', 
+                                    background: 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)', 
+                                    color: 'var(--primary)', 
+                                    border: '1px solid rgba(var(--primary-rgb, 59, 130, 246), 0.3)',
+                                    borderRadius: '12px',
+                                    padding: '8px 16px',
+                                    fontWeight: 'bold',
+                                    fontSize: '0.9rem',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(var(--primary-rgb, 59, 130, 246), 0.25)' }}
+                                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' }}
+                            >
+                                Today
+                            </button>
+                        </div>
+                    )}
+                    {activeView === 'timetable' && (
+                        <div className="mobile-view" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none', flex: 1 }}>
+                                {[1,2,3,4,5,6].map(day => {
+                                    const isSelected = selectedDayOrder === day.toString();
+                                    const isToday = todayDayOrder === day.toString();
+                                    return (
+                                        <button 
+                                            key={day}
+                                            onClick={() => setSelectedDayOrder(day.toString())}
+                                            style={{
+                                                padding: '0.75rem 1.25rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', flexShrink: 0,
+                                                background: isSelected ? 'var(--primary)' : (isToday ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0,0,0,0.2)'),
+                                                color: isSelected ? 'white' : (isToday ? '#60a5fa' : 'rgba(255,255,255,0.7)'),
+                                                border: isSelected ? 'none' : (isToday ? '1px solid rgba(59, 130, 246, 0.5)' : '1px solid rgba(255,255,255,0.1)'),
+                                                boxShadow: isSelected ? '0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.4)' : 'none',
+                                                transition: 'all 0.2s', cursor: 'pointer', outline: 'none', WebkitTapHighlightColor: 'transparent'
+                                            }}
+                                        >
+                                            Day {day}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <button onClick={handleSyncClass} style={{ padding: '0.85rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }} title="Sync with Class">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.26l5.57 5.57"/></svg>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div style={{ 
@@ -211,27 +371,24 @@ export default function CalendarPage() {
                             listData.forEach((dayData) => {
                                     const dateNum = dayData.date.split('.')[0];
                                     const monthYear = `${dayData.date.split('.')[1]}.${dayData.date.split('.')[2]}`;
-                                    const monthLabel = months.find(m => m.value === monthYear)?.label || monthYear;
+                                    const monthLabel = MONTHS_LIST.find(m => m.value === monthYear)?.label || monthYear;
                                     const isToday = dayData.date === todayStr;
                                     
                                     if (monthYear !== lastMonth) {
                                         items.push(
                                             <div key={`header-${monthYear}`} style={{
                                                 position: 'sticky',
-                                                top: '0',
+                                                top: topHeaderHeight ? `${topHeaderHeight}px` : '75px',
                                                 zIndex: 10,
-                                                background: 'rgba(15, 23, 42, 0.95)', 
-                                                backdropFilter: 'blur(16px)',
-                                                WebkitBackdropFilter: 'blur(16px)',
-                                                padding: '1rem',
-                                                marginTop: '0',
+                                                background: '#0f172a',
+                                                padding: '0.5rem 1rem',
+                                                margin: '0 -0.5rem',
                                                 borderBottomLeftRadius: '16px',
                                                 borderBottomRightRadius: '16px',
                                                 color: 'white',
                                                 fontWeight: 'bold',
-                                                fontSize: '1.1rem',
-                                                border: '1px solid rgba(255,255,255,0.05)',
-                                                borderTop: 'none',
+                                                fontSize: '1.05rem',
+                                                borderBottom: '1px solid rgba(255,255,255,0.1)',
                                                 textTransform: 'uppercase',
                                                 letterSpacing: '1px'
                                             }}>
@@ -240,6 +397,7 @@ export default function CalendarPage() {
                                         );
                                         lastMonth = monthYear;
                                     }
+                                    const isExamEvent = dayData.event && dayData.event.toLowerCase().match(/\b(cia|exam(s|inations?)?)\b/);
 
                                     items.push(
                                         <React.Fragment key={dayData.date}>
@@ -249,22 +407,22 @@ export default function CalendarPage() {
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     padding: '1rem 0.75rem', 
-                                                    border: isToday ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)',
+                                                    border: isToday ? '2px solid var(--primary)' : (isExamEvent ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.05)'),
                                                     borderRadius: '12px',
-                                                    background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)',
+                                                    background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : (isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)')),
                                                     transition: 'all 0.2s',
                                                     gap: '0.75rem'
                                                 }}
-                                                onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                                                onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)' }}
+                                                onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = isExamEvent ? 'rgba(245, 158, 11, 0.12)' : 'rgba(255,255,255,0.05)' }}
+                                                onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)') }}
                                             >
                                                 {/* Date & Day Badge */}
                                                 <div style={{ 
                                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                                                     width: '60px', height: '60px',
-                                                    background: isToday ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                    background: isToday ? 'var(--primary)' : (isExamEvent ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.05)'),
                                                     borderRadius: '12px',
-                                                    color: isToday ? 'white' : dayData.is_holiday ? '#ef4444' : 'white',
+                                                    color: isToday ? 'white' : (isExamEvent ? '#fbbf24' : (dayData.is_holiday ? '#ef4444' : 'white')),
                                                     flexShrink: 0,
                                                     boxShadow: isToday ? '0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.4)' : 'none'
                                                 }}>
@@ -282,7 +440,14 @@ export default function CalendarPage() {
                                                         </div>
                                                     )}
                                                     {dayData.event && (
-                                                        <span style={{ fontSize: '0.95rem', fontWeight: '500', color: 'white', marginTop: '0.25rem' }}>{dayData.event}</span>
+                                                        <span style={{ 
+                                                            fontSize: '0.95rem', 
+                                                            fontWeight: '500', 
+                                                            color: isExamEvent ? '#fbbf24' : 'white', 
+                                                            marginTop: '0.25rem' 
+                                                        }}>
+                                                            {dayData.event}
+                                                        </span>
                                                     )}
                                                     {dayData.is_holiday && <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: '600' }}>Holiday</span>}
                                                 </div>
@@ -311,20 +476,8 @@ export default function CalendarPage() {
                         {/* Desktop View */}
                         <div className="desktop-view" style={{ flexDirection: 'column', gap: '1.5rem' }}>
                         {(() => {
-                                // Desktop Calendar Grid Grouped by Month
-                                const groupedByMonth = {};
-                                calendarData.forEach(day => {
-                                    const [dd, mm, yyyy] = day.date.split('.');
-                                    const monthYear = `${mm}.${yyyy}`;
-                                    if (!groupedByMonth[monthYear]) {
-                                        groupedByMonth[monthYear] = [];
-                                    }
-                                    groupedByMonth[monthYear].push(day);
-                                });
-
-                                const monthObj = months.find(m => m.value === selectedMonth) || months[0];
                                 const activeMonthKey = monthObj.value;
-                                const days = groupedByMonth[activeMonthKey] || [];
+                                const days = groupedByMonth[activeMonthKey]?.days || [];
                                 
                                 // Generate grid cells
                                 const firstDay = days[0];
@@ -336,24 +489,25 @@ export default function CalendarPage() {
                                     const dateNum = dayData.date.split('.')[0];
                                     const isToday = dayData.date === todayStr;
                                     const isPast = new Date(dayData.date.split('.').reverse().join('-')) < new Date(todayStr.split('.').reverse().join('-'));
+                                    const isExamEvent = dayData.event && dayData.event.toLowerCase().match(/\b(cia|exam(s|inations?)?)\b/);
                                     
                                     return (
                                         <div key={dayData.date} style={{ 
                                             padding: '0.75rem', 
-                                            background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)'), 
+                                            background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' : (isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)')), 
                                             borderRight: '1px solid rgba(255,255,255,0.05)', 
                                             borderBottom: '1px solid rgba(255,255,255,0.05)',
-                                            border: isToday ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)',
+                                            border: isToday ? '1px solid var(--primary)' : (isExamEvent ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.05)'),
                                             display: 'flex', flexDirection: 'column', gap: '0.5rem',
                                             minHeight: '120px',
                                             opacity: isPast ? 0.4 : 1,
                                             transition: 'opacity 0.2s, background 0.2s',
                                         }}
-                                        onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                                        onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)' }}
+                                        onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = isExamEvent ? 'rgba(245, 158, 11, 0.12)' : 'rgba(255,255,255,0.05)' }}
+                                        onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)') }}
                                         >
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isToday ? 'var(--primary)' : (dayData.is_holiday ? '#ef4444' : 'white') }}>
+                                                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isToday ? 'var(--primary)' : (isExamEvent ? '#fbbf24' : (dayData.is_holiday ? '#ef4444' : 'white')) }}>
                                                     {parseInt(dateNum, 10)}
                                                 </span>
                                                 {dayData.is_working_day && (
@@ -364,7 +518,12 @@ export default function CalendarPage() {
                                             </div>
                                             
                                             {dayData.event && (
-                                                <div style={{ fontSize: '0.85rem', fontWeight: '500', color: 'rgba(255,255,255,0.9)', lineHeight: '1.2' }}>
+                                                <div style={{ 
+                                                    fontSize: '0.85rem', 
+                                                    fontWeight: '500', 
+                                                    color: isExamEvent ? '#fbbf24' : 'rgba(255,255,255,0.9)', 
+                                                    lineHeight: '1.2' 
+                                                }}>
                                                     {dayData.event}
                                                 </div>
                                             )}
@@ -376,65 +535,8 @@ export default function CalendarPage() {
                                 const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
                                 const trailingEmptyCells = Array.from({ length: remainingCells }).map((_, i) => <div key={`trail-${i}`} style={{ padding: '1rem', background: 'rgba(0,0,0,0.1)', borderRight: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}></div>);
 
-                                const activeMonthIdx = months.findIndex(m => m.value === activeMonthKey);
-                                const prevMonth = activeMonthIdx > 0 ? months[activeMonthIdx - 1] : null;
-                                const nextMonth = activeMonthIdx < months.length - 1 ? months[activeMonthIdx + 1] : null;
-
                                 return (
                                     <React.Fragment>
-                                        {/* Month Selector */}
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '0.5rem 0', position: 'relative' }}>
-                                            <button 
-                                                onClick={() => prevMonth && setSelectedMonth(prevMonth.value)}
-                                                style={{ 
-                                                    width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)',
-                                                    cursor: prevMonth ? 'pointer' : 'default', opacity: prevMonth ? 1 : 0.2,
-                                                    transition: 'all 0.2s', fontSize: '1.2rem'
-                                                }}
-                                                onMouseOver={(e) => { if(prevMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                                                onMouseOut={(e) => { if(prevMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                                            >
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                                            </button>
-                                            <div style={{ fontSize: '1.4rem', fontWeight: 'bold', width: '200px', textAlign: 'center', color: 'white' }}>
-                                                {monthObj.label}
-                                            </div>
-                                            <button 
-                                                onClick={() => nextMonth && setSelectedMonth(nextMonth.value)}
-                                                style={{ 
-                                                    width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)',
-                                                    cursor: nextMonth ? 'pointer' : 'default', opacity: nextMonth ? 1 : 0.2,
-                                                    transition: 'all 0.2s', fontSize: '1.2rem'
-                                                }}
-                                                onMouseOver={(e) => { if(nextMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                                                onMouseOut={(e) => { if(nextMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                                            >
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-                                            </button>
-                                            
-                                            <button
-                                                onClick={handleTodayClick}
-                                                style={{ 
-                                                    position: 'absolute', right: '0', 
-                                                    background: 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)', 
-                                                    color: 'var(--primary)', 
-                                                    border: '1px solid rgba(var(--primary-rgb, 59, 130, 246), 0.3)', 
-                                                    padding: '0.5rem 1rem', 
-                                                    borderRadius: '8px', 
-                                                    cursor: 'pointer', 
-                                                    fontWeight: '600',
-                                                    transition: 'all 0.2s',
-                                                    fontSize: '0.85rem'
-                                                }}
-                                                onMouseOver={(e) => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
-                                                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)'; e.currentTarget.style.color = 'var(--primary)'; }}
-                                            >
-                                                Today
-                                            </button>
-                                        </div>
-
                                         {/* Month Grid */}
                                         <div key={activeMonthKey} style={{ marginBottom: '2rem' }}>
                                             <div style={{ 
@@ -466,33 +568,14 @@ export default function CalendarPage() {
                             </>
                         </div>
 
-                        <div style={{ display: activeView === 'timetable' ? 'block' : 'none' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem 0' }}>
-                                <div className="mobile-view" style={{ flexDirection: 'column' }}>
-                                        {/* Day Selector */}
-                                        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-                                            {[1,2,3,4,5,6].map(day => (
-                                                <button 
-                                                    key={day}
-                                                    onClick={() => setSelectedDayOrder(day.toString())}
-                                                    style={{
-                                                        padding: '0.75rem 1.25rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', flexShrink: 0,
-                                                        background: selectedDayOrder === day.toString() ? 'var(--primary)' : 'rgba(0,0,0,0.2)',
-                                                        color: selectedDayOrder === day.toString() ? 'white' : 'rgba(255,255,255,0.7)',
-                                                        border: selectedDayOrder === day.toString() ? 'none' : '1px solid rgba(255,255,255,0.1)',
-                                                        boxShadow: selectedDayOrder === day.toString() ? '0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.4)' : 'none',
-                                                        transition: 'all 0.2s', cursor: 'pointer'
-                                                    }}
-                                                >
-                                                    Day {day}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        
+                        <div style={{ display: activeView === 'timetable' ? 'block' : 'none', height: '100%' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.5rem 0', height: '100%' }}>
+                                <div className="mobile-view" style={{ flexDirection: 'column', height: 'auto' }}>
                                         {/* Timetable List */}
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', height: '100%' }}>
                                             {(() => {
-                                                const dayTimetable = timetableData.timetable[selectedDayOrder];
+                                                if (isTimetableLoading && !dynamicTimetable.userOverrides) return <div style={{ color: 'white', textAlign: 'center', padding: '2rem' }}>Loading...</div>;
+                                                const dayTimetable = dynamicTimetable.timetable[selectedDayOrder];
                                                 if (!dayTimetable) return <div style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '2rem' }}>No timetable available for Day {selectedDayOrder}</div>;
                                                 
                                                 const periods = [
@@ -504,24 +587,51 @@ export default function CalendarPage() {
                                                 ];
 
                                                 return periods.map((p, idx) => {
-                                                    const timeStr = timetableData.timings[p.id];
-                                                    const subject = p.type === 'class' ? dayTimetable[p.id] : 'Break';
+                                                    const timeStr = dynamicTimetable.timings[p.id];
+                                                    const rawSubject = p.type === 'class' ? dayTimetable[p.id] : 'Break';
+                                                    const subject = p.type === 'class' && dynamicTimetable.aliases && dynamicTimetable.aliases[rawSubject] ? dynamicTimetable.aliases[rawSubject] : rawSubject;
                                                     
+                                                    let isActive = false;
+                                                    if (timeStr && selectedDayOrder === todayDayOrder) {
+                                                        const [startStr, endStr] = timeStr.split(' - ');
+                                                        const [sh, sm] = startStr.split(':').map(Number);
+                                                        const [eh, em] = endStr.split(':').map(Number);
+                                                        const startMinutes = sh * 60 + sm;
+                                                        const endMinutes = eh * 60 + em;
+                                                        isActive = nowMinutes >= startMinutes && nowMinutes < endMinutes;
+                                                    }
+
                                                     return (
                                                         <div key={idx} style={{ 
-                                                            display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem',
-                                                            background: p.type === 'break' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.2)',
-                                                            border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px'
+                                                            display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1.25rem 1rem',
+                                                            background: p.type === 'break' ? 'rgba(255,255,255,0.02)' : (isActive ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0,0,0,0.2)'),
+                                                            border: isActive ? '1px solid rgba(59, 130, 246, 0.5)' : '1px solid rgba(255,255,255,0.05)', 
+                                                            borderRadius: '16px',
+                                                            boxShadow: isActive ? '0 0 15px rgba(59, 130, 246, 0.2)' : 'none',
+                                                            transition: 'all 0.3s',
+                                                            minHeight: '85px'
                                                         }}>
                                                             <div style={{ 
-                                                                width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                                                width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                                                                 background: p.type === 'break' ? 'transparent' : 'rgba(255,255,255,0.05)', borderRadius: '12px',
-                                                                color: p.type === 'break' ? 'rgba(255,255,255,0.4)' : 'white', fontWeight: 'bold', fontSize: '1.2rem'
+                                                                color: p.type === 'break' ? 'rgba(255,255,255,0.4)' : 'white', fontWeight: 'bold', fontSize: '1.1rem'
                                                             }}>
                                                                 {p.type === 'class' ? p.id : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>}
                                                             </div>
-                                                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                                                <span style={{ fontSize: '1.1rem', fontWeight: '600', color: p.type === 'break' ? 'rgba(255,255,255,0.5)' : 'white' }}>{subject}</span>
+                                                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                                                                <div 
+                                                                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', cursor: p.type === 'class' ? 'context-menu' : 'default', overflow: 'hidden' }}
+                                                                    onContextMenu={(e) => {
+                                                                        if (p.type === 'class') {
+                                                                            e.preventDefault();
+                                                                            setEditModal({ dayOrder: selectedDayOrder, period: p.id, subject: rawSubject, alias: dynamicTimetable.aliases?.[rawSubject] || '' });
+                                                                            setSelectedSubject(rawSubject === 'Elective (Tap to Select)' ? '' : rawSubject);
+                                                                            setIsDropdownOpen(false);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <span title={subject} style={{ fontSize: '1.05rem', fontWeight: '600', color: p.type === 'break' ? 'rgba(255,255,255,0.5)' : 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', maxWidth: '100%' }}>{subject}</span>
+                                                                </div>
                                                                 <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                                                                     {timeStr}
@@ -546,11 +656,13 @@ export default function CalendarPage() {
                                             background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)',
                                             fontWeight: 'bold'
                                         }}>
-                                            <div style={{ padding: '1rem', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>Day</div>
+                                            <div style={{ padding: '1rem', borderRight: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                                                <button onClick={handleSyncClass} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '0.3rem 0.6rem', borderRadius: '6px', fontSize: '0.7rem', cursor: 'pointer', marginTop: '4px' }}>Sync</button>
+                                            </div>
                                             {['1', '2', '3', '4', '5'].map(p => (
                                                 <div key={p} style={{ padding: '1rem', borderRight: p !== '5' ? '1px solid rgba(255,255,255,0.1)' : 'none', textAlign: 'center' }}>
                                                     <div>{p}</div>
-                                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>{timetableData.timings[p]}</div>
+                                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>{dynamicTimetable.timings[p]}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -566,7 +678,9 @@ export default function CalendarPage() {
                                                     Day {day}
                                                 </div>
                                                 {['1', '2', '3', '4', '5'].map(p => {
-                                                    const subject = timetableData.timetable[day] ? timetableData.timetable[day][p] : '-';
+                                                    const rawSubject = dynamicTimetable.timetable[day] ? dynamicTimetable.timetable[day][p] : '-';
+                                                    const subject = rawSubject !== '-' && dynamicTimetable.aliases && dynamicTimetable.aliases[rawSubject] ? dynamicTimetable.aliases[rawSubject] : rawSubject;
+                                                    
                                                     return (
                                                         <div key={p} style={{ 
                                                             padding: '1rem', 
@@ -574,7 +688,20 @@ export default function CalendarPage() {
                                                             textAlign: 'center',
                                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                             color: 'white',
-                                                            fontWeight: '500'
+                                                            fontWeight: '500',
+                                                            position: 'relative',
+                                                            cursor: 'context-menu',
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            maxWidth: '100%'
+                                                        }}
+                                                        title={rawSubject}
+                                                        onContextMenu={(e) => {
+                                                            e.preventDefault();
+                                                            setEditModal({ dayOrder: day.toString(), period: p, subject: rawSubject, alias: dynamicTimetable.aliases?.[rawSubject] || '' });
+                                                            setSelectedSubject(rawSubject === 'Elective (Tap to Select)' ? '' : rawSubject);
+                                                            setIsDropdownOpen(false);
                                                         }}>
                                                             {subject}
                                                         </div>
@@ -620,6 +747,75 @@ export default function CalendarPage() {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     Today
                 </button>
+            )}
+
+            {/* Edit Modal */}
+            {editModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                    <div style={{ background: '#1e1e1e', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <h3 style={{ margin: '0 0 1rem 0', color: 'white' }}>Edit Period</h3>
+                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                            Day {editModal.dayOrder}, Period {editModal.period}
+                        </p>
+                        <form onSubmit={handleSaveOverride}>
+                            {subjectsList.length > 0 ? (
+                                <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                                    <input type="hidden" name="subject" value={selectedSubject} />
+                                    <div 
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: '#1e1e1e', color: 'white', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                    >
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {selectedSubject || 'Select a subject'}
+                                        </span>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: '8px' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </div>
+                                    {isDropdownOpen && (
+                                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', background: '#2d2d2d', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', zIndex: 10, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+                                            {subjectsList.map(subj => (
+                                                <div 
+                                                    key={subj.code} 
+                                                    onClick={() => { setSelectedSubject(subj.desc); setIsDropdownOpen(false); }}
+                                                    style={{ padding: '0.75rem', color: 'white', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.95rem' }}
+                                                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                                                    onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                                                >
+                                                    {subj.desc}
+                                                </div>
+                                            ))}
+                                            <div 
+                                                onClick={() => { setSelectedSubject('Free Period'); setIsDropdownOpen(false); }}
+                                                style={{ padding: '0.75rem', color: 'white', cursor: 'pointer', fontSize: '0.95rem' }}
+                                                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                                                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                                            >
+                                                Free Period
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <input 
+                                    name="subject"
+                                    defaultValue={editModal.subject === 'Elective (Tap to Select)' ? '' : editModal.subject}
+                                    placeholder="Enter Subject Code"
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: 'white', marginBottom: '1rem', outline: 'none' }}
+                                    autoFocus
+                                />
+                            )}
+                            <input 
+                                name="alias"
+                                defaultValue={editModal.alias}
+                                placeholder="Alias (e.g. RDBMS) - Optional"
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: 'white', marginBottom: '1.5rem', outline: 'none' }}
+                            />
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button type="button" onClick={() => setEditModal(null)} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'white', cursor: 'pointer' }}>Cancel</button>
+                                <button type="submit" style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Save Override</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </>
     );

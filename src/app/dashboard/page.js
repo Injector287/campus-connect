@@ -7,6 +7,8 @@ import { fetcher } from '@/utils/fetcher';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import CurrentPeriod from '@/components/CurrentPeriod';
 
+import SkeletonPage from '@/components/SkeletonPage';
+
 const formatSubjectName = (name) => {
     if (!name) return '';
     const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
@@ -73,12 +75,7 @@ export default function DashboardPage() {
   }
 
   if (isLoading && !json) {
-    return (
-      <main className="main-container" style={{ alignItems: 'center' }}>
-        <div className="spinner" style={{ width: '40px', height: '40px', borderWidth: '3px' }}></div>
-        <p style={{ marginTop: '1rem', color: 'rgba(255,255,255,0.7)' }}>Crunching ERP data...</p>
-      </main>
-    )
+    return <SkeletonPage />;
   }
 
   const data = json
@@ -294,14 +291,14 @@ export default function DashboardPage() {
                      <div style={{ display: 'flex', flexDirection: 'column' }}>
                          <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Hours Completed</span>
                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                             <span style={{ fontSize: '2.5rem', fontWeight: '800', color: '#c084fc', lineHeight: 1 }}>{outreachData.present}</span>
+                             <span style={{ fontSize: '2.5rem', fontWeight: '800', color: '#c084fc', lineHeight: 1 }}>{outreachData.present * 3}</span>
                              <span style={{ fontSize: '1.25rem', fontWeight: '600', color: 'rgba(255,255,255,0.4)' }}>/ 90</span>
                          </div>
                      </div>
                  </div>
 
                  <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', overflow: 'hidden' }}>
-                     <div style={{ width: `${Math.min((outreachData.present / 90) * 100, 100)}%`, height: '100%', background: 'linear-gradient(90deg, #c084fc, #a855f7)', borderRadius: '4px', transition: 'width 1s ease-out' }}></div>
+                     <div style={{ width: `${Math.min(((outreachData.present * 3) / 90) * 100, 100)}%`, height: '100%', background: 'linear-gradient(90deg, #c084fc, #a855f7)', borderRadius: '4px', transition: 'width 1s ease-out' }}></div>
                  </div>
              </div>
          )}
@@ -549,7 +546,17 @@ export default function DashboardPage() {
                    display: 'inline-block',
                    boxShadow: (liveCooldown && liveCooldown > 0) ? '0 0 8px rgba(250,204,21,0.5)' : 'none'
                }}></span>
-               {data.isCached ? `Synced ${liveMins}m ago` : 'Just synced'}
+               {data.isCached ? `Synced ${(() => {
+                   if (liveMins < 60) return `${liveMins}m`;
+                   const hours = Math.floor(liveMins / 60);
+                   if (hours < 24) return `${hours}h`;
+                   const days = Math.floor(hours / 24);
+                   if (days < 30) return `${days}d`;
+                   const months = Math.floor(days / 30);
+                   if (months < 12) return `${months}m`;
+                   const years = Math.floor(months / 12);
+                   return `${years}y`;
+               })()} ago` : 'Just synced'}
             </div>
         )}
       </div>

@@ -3,18 +3,14 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { fetcher } from '@/utils/fetcher';
+import SkeletonPage from '@/components/SkeletonPage';
 
 export default function HealthPage() {
   const { data: logsData, error, isLoading: loading } = useSWR('/api/admin/logs', fetcher);
   const logs = logsData?.logs || [];
 
   if (loading) {
-    return (
-      <main className="main-container" style={{ alignItems: 'center' }}>
-        <div className="spinner" style={{ width: '40px', height: '40px', borderWidth: '3px' }}></div>
-        <p style={{ marginTop: '1rem', color: 'rgba(255,255,255,0.7)' }}>Loading Health Logs...</p>
-      </main>
-    );
+    return <SkeletonPage />;
   }
   if (error) {
     return (

@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -25,6 +26,10 @@ model User {
   sessionVersion  Int      @default(1)
   customRateLimit Int?
   
+  // Customization
+  mobileNav       String?
+
+  
   // JSON blobs to cache the data for each section
   dashboardCache  String?
   financeCache    String?
@@ -37,6 +42,45 @@ model User {
   // Relations
   scrapeLogs      ScrapeLog[]
   suggestions     Suggestion[]
+  userTimetables  UserTimetable[]
+  subjectAliases  SubjectAlias[]
+}
+
+model SubjectAlias {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  alias     String
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, subject])
+}
+
+model UserTimetable {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classId   String   
+  dayOrder  String   // "1", "2", "3", "4", "5", "6"
+  period    String   // "1", "2", "3", "4", "5"
+  subject   String   
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, dayOrder, period]) 
+  @@index([classId, dayOrder, period]) 
+}
+
+model ClassTimetable {
+  id             String   @id @default(uuid())
+  classId        String
+  dayOrder       String
+  period         String
+  subject        String
+  consensusCount Int
+  updatedAt      DateTime @updatedAt
+
+  @@unique([classId, dayOrder, period])
 }
 
 model ScrapeLog {

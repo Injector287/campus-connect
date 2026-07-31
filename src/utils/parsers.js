@@ -81,11 +81,12 @@ export function parseDashboard(hourWiseHtml, subjHtml) {
         if (tr.hasClass('subheader') || tr.hasClass('header')) {
             tr.find('td, th').each((j, col) => {
                 const text = $subj(col).text().trim().toUpperCase();
+                const cleanText = text.replace(/[^A-Z]/g, ''); // Removes spaces, punctuation, zero-width chars
                 if (text.includes('TOTAL')) colIndices.total = j;
                 else if (text.includes('ABSENT')) colIndices.absent = j;
                 else if (text.includes('PRESENT')) colIndices.present = j;
-                else if (text === 'ML') colIndices.ml = j;
-                else if (text === 'OD') colIndices.od = j;
+                else if (cleanText === 'ML' || text.includes('MEDICAL')) colIndices.ml = j;
+                else if (cleanText === 'OD' || text.includes('DUTY')) colIndices.od = j;
                 else if (text.includes('%') || text.includes('PERCENTAGE')) colIndices.pct = j;
             });
         }

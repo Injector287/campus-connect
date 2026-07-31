@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import useSWR from 'swr'
 import { useRouter } from 'next/navigation'
 import { fetcher } from '@/utils/fetcher'
+import SkeletonPage from '@/components/SkeletonPage';
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -31,12 +32,7 @@ export default function ProfilePage() {
   }
 
   if (isLoading && !json) {
-    return (
-      <main className="main-container" style={{ alignItems: 'center' }}>
-        <div className="spinner" style={{ width: '40px', height: '40px', borderWidth: '3px' }}></div>
-        <p style={{ marginTop: '1rem', color: 'rgba(255,255,255,0.7)' }}>Loading Profile...</p>
-      </main>
-    )
+    return <SkeletonPage />;
   }
 
   const profile = json?.profile

@@ -13,6 +13,8 @@ import {
 } from '@/utils/parsers';
 import axios from 'axios';
 
+const client = axios.create({ timeout: 15000 }); // 15 seconds global timeout
+
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
 /**
@@ -37,8 +39,8 @@ export async function syncDashboard(registerNum) {
         };
 
         const [hourWiseRes, subjectWiseRes] = await Promise.all([
-            axios.get(`${BASE_URL}/loyolaonline/students/report/studentHourWiseAttendance.jsp`, { headers }),
-            axios.get(`${BASE_URL}/loyolaonline/students/report/studentSubjectWiseAttendance.jsp`, { headers })
+            client.get(`${BASE_URL}/loyolaonline/students/report/studentHourWiseAttendance.jsp`, { headers }),
+            client.get(`${BASE_URL}/loyolaonline/students/report/studentSubjectWiseAttendance.jsp`, { headers })
         ]);
 
         // 3. Parse the HTML using our extracted parser
@@ -54,11 +56,11 @@ export async function syncDashboard(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced dashboard for ${registerNum}.`);
-        await logScrape(registerNum, 'dashboard', 'SUCCESS');
+        logScrape(registerNum, 'dashboard', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync dashboard for ${registerNum}:`, error.message);
-        await logScrape(registerNum, 'dashboard', 'ERROR', error.stack || error.message);
+        logScrape(registerNum, 'dashboard', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -83,9 +85,9 @@ export async function syncFinance(registerNum) {
         };
 
         const [dueRes, paidRes, txRes] = await Promise.all([
-            axios.get(`${BASE_URL}/loyolaonline/students/report/studentFeeDueDetails.jsp`, { headers }),
-            axios.get(`${BASE_URL}/loyolaonline/students/report/studentFinanceDetails.jsp`, { headers }),
-            axios.get(`${BASE_URL}/loyolaonline/students/report/studentOnlinePaymentAcknowledgements.jsp`, { headers })
+            client.get(`${BASE_URL}/loyolaonline/students/report/studentFeeDueDetails.jsp`, { headers }),
+            client.get(`${BASE_URL}/loyolaonline/students/report/studentFinanceDetails.jsp`, { headers }),
+            client.get(`${BASE_URL}/loyolaonline/students/report/studentOnlinePaymentAcknowledgements.jsp`, { headers })
         ]);
 
         const parsedData = parseFinance(dueRes.data, paidRes.data, txRes.data);
@@ -99,11 +101,11 @@ export async function syncFinance(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced finance for ${registerNum}.`);
-        await logScrape(registerNum, 'finance', 'SUCCESS');
+        logScrape(registerNum, 'finance', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync finance for ${registerNum}:`, error.message);
-        await logScrape(registerNum, 'finance', 'ERROR', error.stack || error.message);
+        logScrape(registerNum, 'finance', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -128,8 +130,8 @@ export async function syncGrades(registerNum) {
         };
 
         const [resInternal, resExam] = await Promise.all([
-            axios.get(`${BASE_URL}/loyolaonline/students/report/studentInternalMarkDetails.jsp`, { headers }),
-            axios.get(`${BASE_URL}/loyolaonline/students/report/studentExamResultsDetails.jsp`, { headers })
+            client.get(`${BASE_URL}/loyolaonline/students/report/studentInternalMarkDetails.jsp`, { headers }),
+            client.get(`${BASE_URL}/loyolaonline/students/report/studentExamResultsDetails.jsp`, { headers })
         ]);
 
         const parsedData = parseGrades(resInternal.data, resExam.data);
@@ -143,11 +145,11 @@ export async function syncGrades(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced grades for ${registerNum}.`);
-        await logScrape(registerNum, 'grades', 'SUCCESS');
+        logScrape(registerNum, 'grades', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync grades for ${registerNum}:`, error.message);
-        await logScrape(registerNum, 'grades', 'ERROR', error.stack || error.message);
+        logScrape(registerNum, 'grades', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -173,9 +175,9 @@ export async function syncLibrary(registerNum) {
         };
 
         const [res1, res2, res3] = await Promise.all([
-            axios.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=1&filter=', { headers }),
-            axios.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=2&filter=', { headers }),
-            axios.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=3&filter=', { headers })
+            client.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=1&filter=', { headers }),
+            client.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=2&filter=', { headers }),
+            client.post(`${BASE_URL}/loyolaonline/students/report/studentLibraryDetailsInner.jsp`, 'ids=3&filter=', { headers })
         ]);
 
         const parsedData = parseLibrary(res1.data, res2.data, res3.data);
@@ -189,11 +191,11 @@ export async function syncLibrary(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced library for ${registerNum}.`);
-        await logScrape(registerNum, 'library', 'SUCCESS');
+        logScrape(registerNum, 'library', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync library for ${registerNum}:`, error.message);
-        await logScrape(registerNum, 'library', 'ERROR', error.stack || error.message);
+        logScrape(registerNum, 'library', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -217,7 +219,7 @@ export async function syncSubjects(registerNum) {
             'Cookie': `JSESSIONID=${jsessionId}`
         };
 
-        const resSubjects = await axios.get(`${BASE_URL}/loyolaonline/students/report/studentWiseSubjects.jsp`, { headers });
+        const resSubjects = await client.get(`${BASE_URL}/loyolaonline/students/report/studentWiseSubjects.jsp`, { headers });
 
         const parsedData = parseSubjects(resSubjects.data);
 
@@ -230,11 +232,11 @@ export async function syncSubjects(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced subjects for ${registerNum}.`);
-        await logScrape(registerNum, 'subjects', 'SUCCESS');
+        logScrape(registerNum, 'subjects', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync subjects for ${registerNum}:`, error.message);
-        await logScrape(registerNum, 'subjects', 'ERROR', error.stack || error.message);
+        logScrape(registerNum, 'subjects', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -258,13 +260,13 @@ export async function syncProfile(registerNum) {
             'Cookie': `JSESSIONID=${jsessionId}`
         };
 
-        const resProfile = await axios.get(`${BASE_URL}/loyolaonline/students/report/studentProfile.jsp`, { headers });
+        const resProfile = await client.get(`${BASE_URL}/loyolaonline/students/report/studentProfile.jsp`, { headers });
 
         const profileData = parseProfile(resProfile.data, BASE_URL);
 
         if (profileData.photoUrl) {
             try {
-                const imgRes = await axios.get(profileData.photoUrl, {
+                const imgRes = await client.get(profileData.photoUrl, {
                     headers,
                     responseType: 'arraybuffer'
                 });
@@ -289,11 +291,11 @@ export async function syncProfile(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced profile for ${registerNum}.`);
-        await logScrape(registerNum, 'profile', 'SUCCESS');
+        logScrape(registerNum, 'profile', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync profile for ${registerNum}:`, error.message);
-        await logScrape(registerNum, 'profile', 'ERROR', error.stack || error.message);
+        logScrape(registerNum, 'profile', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -317,7 +319,7 @@ export async function syncLeaves(registerNum) {
             'Cookie': `JSESSIONID=${jsessionId}`
         };
 
-        const resLeaves = await axios.get(`${BASE_URL}/loyolaonline/students/report/studentLeaveApplication.jsp`, { headers });
+        const resLeaves = await client.get(`${BASE_URL}/loyolaonline/students/report/studentLeaveApplication.jsp`, { headers });
 
         const parsedData = parseLeaves(resLeaves.data);
 
@@ -330,11 +332,11 @@ export async function syncLeaves(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced leaves for ${registerNum}.`);
-        await logScrape(registerNum, 'leaves', 'SUCCESS');
+        logScrape(registerNum, 'leaves', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync leaves for ${registerNum}:`, error.message);
-        await logScrape(registerNum, 'leaves', 'ERROR', error.stack || error.message);
+        logScrape(registerNum, 'leaves', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
