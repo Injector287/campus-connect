@@ -1,17 +1,15 @@
 import { PrismaClient } from '@prisma/client';
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { PrismaNeon } from '@prisma/adapter-neon';
-import ws from 'ws';
+import { neon } from '@neondatabase/serverless';
+import { PrismaNeonHTTP } from '@prisma/adapter-neon';
 
 const globalForPrisma = globalThis;
 
 let prismaInstance;
 
 if (process.env.VERCEL && process.env.POSTGRES_PRISMA_URL) {
-  // Use Neon Serverless Adapter in Vercel environment
-  neonConfig.webSocketConstructor = ws;
-  const pool = new Pool({ connectionString: process.env.POSTGRES_PRISMA_URL });
-  const adapter = new PrismaNeon(pool);
+  // Use Neon HTTP Serverless Adapter in Vercel environment (prevents "Connection terminated" errors)
+  const sql = neon(process.env.POSTGRES_PRISMA_URL);
+  const adapter = new PrismaNeonHTTP(sql);
   prismaInstance = new PrismaClient({ adapter });
 } else {
   // Standard Prisma Client for local development (SQLite or local Postgres)
