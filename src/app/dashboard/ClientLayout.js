@@ -206,7 +206,7 @@ export default function ClientLayout({ children, initialMobileNav }) {
                         {group.items.map((item) => {
                             const isActive = pathname === item.href;
                             return (
-                                <Link key={item.href} href={item.href} onClick={() => {
+                                <Link key={item.href} href={item.href} onMouseEnter={() => router.prefetch(item.href)} onTouchStart={() => router.prefetch(item.href)} onClick={() => {
                                     if (pathname === '/dashboard') sessionStorage.setItem('calendarScrollPos', window.scrollY.toString());
                                 }} style={{ 
                                     display: 'flex', alignItems: 'center', gap: '0.85rem', 
@@ -330,7 +330,7 @@ export default function ClientLayout({ children, initialMobileNav }) {
                             {group.items.map((item) => {
                                 const isActive = pathname === item.href;
                                 return (
-                                    <Link key={item.href} href={item.href} onClick={() => {
+                                    <Link key={item.href} href={item.href} onMouseEnter={() => router.prefetch(item.href)} onTouchStart={() => router.prefetch(item.href)} onClick={() => {
                                         if (pathname === '/dashboard') sessionStorage.setItem('calendarScrollPos', window.scrollY.toString());
                                         setIsMobileMenuOpen(false);
                                     }} style={{ 

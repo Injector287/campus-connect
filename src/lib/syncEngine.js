@@ -56,11 +56,11 @@ export async function syncDashboard(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced dashboard for ${registerNum}.`);
-        logScrape(registerNum, 'dashboard', 'SUCCESS');
+        await logScrape(registerNum, 'dashboard', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync dashboard for ${registerNum}:`, error.message);
-        logScrape(registerNum, 'dashboard', 'ERROR', error.stack || error.message);
+        await logScrape(registerNum, 'dashboard', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -101,11 +101,11 @@ export async function syncFinance(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced finance for ${registerNum}.`);
-        logScrape(registerNum, 'finance', 'SUCCESS');
+        await logScrape(registerNum, 'finance', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync finance for ${registerNum}:`, error.message);
-        logScrape(registerNum, 'finance', 'ERROR', error.stack || error.message);
+        await logScrape(registerNum, 'finance', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -145,11 +145,11 @@ export async function syncGrades(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced grades for ${registerNum}.`);
-        logScrape(registerNum, 'grades', 'SUCCESS');
+        await logScrape(registerNum, 'grades', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync grades for ${registerNum}:`, error.message);
-        logScrape(registerNum, 'grades', 'ERROR', error.stack || error.message);
+        await logScrape(registerNum, 'grades', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -191,11 +191,11 @@ export async function syncLibrary(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced library for ${registerNum}.`);
-        logScrape(registerNum, 'library', 'SUCCESS');
+        await logScrape(registerNum, 'library', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync library for ${registerNum}:`, error.message);
-        logScrape(registerNum, 'library', 'ERROR', error.stack || error.message);
+        await logScrape(registerNum, 'library', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -232,11 +232,11 @@ export async function syncSubjects(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced subjects for ${registerNum}.`);
-        logScrape(registerNum, 'subjects', 'SUCCESS');
+        await logScrape(registerNum, 'subjects', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync subjects for ${registerNum}:`, error.message);
-        logScrape(registerNum, 'subjects', 'ERROR', error.stack || error.message);
+        await logScrape(registerNum, 'subjects', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -291,11 +291,11 @@ export async function syncProfile(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced profile for ${registerNum}.`);
-        logScrape(registerNum, 'profile', 'SUCCESS');
+        await logScrape(registerNum, 'profile', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync profile for ${registerNum}:`, error.message);
-        logScrape(registerNum, 'profile', 'ERROR', error.stack || error.message);
+        await logScrape(registerNum, 'profile', 'ERROR', error.stack || error.message);
         throw error;
     }
 }
@@ -332,11 +332,11 @@ export async function syncLeaves(registerNum) {
         });
 
         console.log(`[SyncEngine] Successfully synced leaves for ${registerNum}.`);
-        logScrape(registerNum, 'leaves', 'SUCCESS');
+        await logScrape(registerNum, 'leaves', 'SUCCESS');
         return parsedData;
     } catch (error) {
         console.error(`[SyncEngine] Failed to sync leaves for ${registerNum}:`, error.message);
-        logScrape(registerNum, 'leaves', 'ERROR', error.stack || error.message);
+        await logScrape(registerNum, 'leaves', 'ERROR', error.stack || error.message);
         throw error;
     }
 }

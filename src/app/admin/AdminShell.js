@@ -4,10 +4,20 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useState, useEffect, Suspense } from 'react'
 
+import useSWR from 'swr'
+import { fetcher } from '@/utils/fetcher'
+
 export default function AdminShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { data: profile, isLoading } = useSWR('/api/profile', fetcher, { revalidateOnFocus: false });
+
+  useEffect(() => {
+      if (!isLoading && profile && profile.role !== 'ADMIN') {
+          router.push('/dashboard');
+      }
+  }, [profile, isLoading, router]);
 
   // Close drawer on path change
   useEffect(() => {
