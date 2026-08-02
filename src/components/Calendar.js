@@ -480,21 +480,48 @@ export default function CalendarPage() {
                                 const days = groupedByMonth[activeMonthKey]?.days || [];
                                 
                                 // Generate grid cells
-                                const firstDay = days[0];
-                                const firstDayIndex = firstDay ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(firstDay.day) : 0;
+                                const [monthStr, yearStr] = activeMonthKey.split('.');
+                                const monthNum = parseInt(monthStr, 10);
+                                const yearNum = parseInt(yearStr, 10);
+                                const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+                                const rawFirstDay = new Date(yearNum, monthNum - 1, 1).getDay();
+                                const firstDayOfWeek = (rawFirstDay + 6) % 7; // Shift to Monday-first (0 = Mon, 6 = Sun)
                                 
-                                const emptyCells = Array.from({ length: firstDayIndex }).map((_, i) => <div key={`empty-${i}`} style={{ padding: '1rem', background: 'rgba(0,0,0,0.1)', borderRight: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}></div>);
+                                const prevMonthDays = new Date(yearNum, monthNum - 1, 0).getDate();
+                                const emptyCells = Array.from({ length: firstDayOfWeek }).map((_, i) => {
+                                    const prevDateNum = prevMonthDays - firstDayOfWeek + 1 + i;
+                                    return (
+                                        <div key={`empty-${i}`} style={{ 
+                                            padding: '0.75rem', 
+                                            background: 'rgba(0,0,0,0.1)', 
+                                            borderRight: '1px solid rgba(255,255,255,0.05)', 
+                                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                            opacity: 0.3,
+                                            minHeight: '120px'
+                                        }}>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>
+                                                {prevDateNum}
+                                            </span>
+                                        </div>
+                                    );
+                                });
                                 
-                                const dayCells = days.map(dayData => {
-                                    const dateNum = dayData.date.split('.')[0];
-                                    const isToday = dayData.date === todayStr;
-                                    const isPast = new Date(dayData.date.split('.').reverse().join('-')) < new Date(todayStr.split('.').reverse().join('-'));
-                                    const isExamEvent = dayData.event && dayData.event.toLowerCase().match(/\b(cia|exam(s|inations?)?)\b/);
+                                const dayCells = Array.from({ length: daysInMonth }).map((_, i) => {
+                                    const dateNum = i + 1;
+                                    const dateStr = `${String(dateNum).padStart(2, '0')}.${monthStr}.${yearStr}`;
+                                    
+                                    const dayData = days.find(d => d.date === dateStr);
+                                    const isToday = dateStr === todayStr;
+                                    
+                                    const tParts = todayStr ? todayStr.split('.') : null;
+                                    const todayDate = tParts ? new Date(tParts[2], parseInt(tParts[1])-1, parseInt(tParts[0])) : new Date();
+                                    const isPast = new Date(yearNum, monthNum - 1, dateNum) < todayDate;
+                                    const isExamEvent = dayData?.event && dayData.event.toLowerCase().match(/\b(cia|exam(s|inations?)?)\b/);
                                     
                                     return (
-                                        <div key={dayData.date} style={{ 
+                                        <div key={dateStr} style={{ 
                                             padding: '0.75rem', 
-                                            background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' : (isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)')), 
+                                            background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' : (isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData?.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)')), 
                                             borderRight: '1px solid rgba(255,255,255,0.05)', 
                                             borderBottom: '1px solid rgba(255,255,255,0.05)',
                                             border: isToday ? '1px solid var(--primary)' : (isExamEvent ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.05)'),
@@ -504,20 +531,20 @@ export default function CalendarPage() {
                                             transition: 'opacity 0.2s, background 0.2s',
                                         }}
                                         onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = isExamEvent ? 'rgba(245, 158, 11, 0.12)' : 'rgba(255,255,255,0.05)' }}
-                                        onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)') }}
+                                        onMouseOut={(e) => { if(!isToday) e.currentTarget.style.background = isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData?.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)') }}
                                         >
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isToday ? 'var(--primary)' : (isExamEvent ? '#fbbf24' : (dayData.is_holiday ? '#ef4444' : 'white')) }}>
-                                                    {parseInt(dateNum, 10)}
+                                                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isToday ? 'var(--primary)' : (isExamEvent ? '#fbbf24' : (dayData?.is_holiday ? '#ef4444' : 'white')) }}>
+                                                    {dateNum}
                                                 </span>
-                                                {dayData.is_working_day && (
+                                                {dayData?.is_working_day && (
                                                     <span style={{ background: 'var(--primary)', color: 'white', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold' }}>
                                                         D{dayData.day_order}
                                                     </span>
                                                 )}
                                             </div>
                                             
-                                            {dayData.event && (
+                                            {dayData?.event && (
                                                 <div style={{ 
                                                     fontSize: '0.85rem', 
                                                     fontWeight: '500', 
@@ -533,7 +560,23 @@ export default function CalendarPage() {
 
                                 const totalCells = emptyCells.length + dayCells.length;
                                 const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-                                const trailingEmptyCells = Array.from({ length: remainingCells }).map((_, i) => <div key={`trail-${i}`} style={{ padding: '1rem', background: 'rgba(0,0,0,0.1)', borderRight: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}></div>);
+                                const trailingEmptyCells = Array.from({ length: remainingCells }).map((_, i) => {
+                                    const nextDateNum = i + 1;
+                                    return (
+                                        <div key={`trail-${i}`} style={{ 
+                                            padding: '0.75rem', 
+                                            background: 'rgba(0,0,0,0.1)', 
+                                            borderRight: '1px solid rgba(255,255,255,0.05)', 
+                                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                            opacity: 0.3,
+                                            minHeight: '120px'
+                                        }}>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>
+                                                {nextDateNum}
+                                            </span>
+                                        </div>
+                                    );
+                                });
 
                                 return (
                                     <React.Fragment>
@@ -550,8 +593,8 @@ export default function CalendarPage() {
                                                     background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)',
                                                     fontWeight: 'bold', textAlign: 'center'
                                                 }}>
-                                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                                        <div key={day} style={{ padding: '0.75rem', borderRight: day !== 'Sat' ? '1px solid rgba(255,255,255,0.05)' : 'none', color: day === 'Sun' ? '#ef4444' : 'rgba(255,255,255,0.7)' }}>{day}</div>
+                                                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                                                        <div key={day} style={{ padding: '0.75rem', borderRight: day !== 'Sun' ? '1px solid rgba(255,255,255,0.05)' : 'none', color: day === 'Sun' ? '#ef4444' : 'rgba(255,255,255,0.7)' }}>{day}</div>
                                                     ))}
                                                 </div>
                                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>

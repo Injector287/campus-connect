@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { fetcher } from '@/utils/fetcher';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import CurrentPeriod from '@/components/CurrentPeriod';
-
 import SkeletonPage from '@/components/SkeletonPage';
+import DashboardReminders from '@/components/DashboardReminders';
 
 const formatSubjectName = (name) => {
     if (!name) return '';
@@ -521,6 +521,8 @@ export default function DashboardPage() {
   return (
     <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
       
+      <DashboardReminders />
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Attendance</h1>
