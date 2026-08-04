@@ -8,9 +8,6 @@ export function getCacheStatus(lastSyncDate, force = false) {
 
   // Hard cooldown for forced refreshes (anti-spam)
   if (force) {
-    if (diffMinutes < 5) {
-      return { shouldSync: false, reason: 'Force sync cooldown (5 mins)', cooldownRemaining: 5 - diffMinutes };
-    }
     return { shouldSync: true, reason: 'Forced sync' };
   }
 

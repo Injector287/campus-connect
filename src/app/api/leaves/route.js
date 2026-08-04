@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { fetchWithReauth } from '@/utils/erpFetch';
 import { hasValidWhitelistedSession, unauthorizedResponse } from '@/utils/auth';
 import { db } from '@/lib/db';
 import { syncLeaves } from '@/lib/syncEngine';
+import { getCacheStatus } from '@/utils/cacheManager';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
@@ -17,24 +19,52 @@ export async function GET(request) {
       return unauthorizedResponse();
     }
 
+    const { searchParams } = new URL(request.url);
+    const force = searchParams.get('force') === 'true';
+
     const user = await db.user.findUnique({
       where: { registerNum },
-      select: { leavesCache: true }
+      select: { leavesCache: true, lastSyncLeaves: true }
     });
+
+    const cacheStatus = getCacheStatus(user?.lastSyncLeaves, force);
 
     if (user && user.leavesCache) {
       const cachedData = JSON.parse(user.leavesCache);
+      const diffMins = user.lastSyncLeaves ? Math.floor((new Date().getTime() - user.lastSyncLeaves.getTime()) / (1000 * 60)) : 0;
+      
+      if (!cacheStatus.shouldSync) {
+         return NextResponse.json({ 
+           success: true, 
+           ...cachedData, 
+           isCached: true, 
+           lastSyncMinutesAgo: diffMins,
+           cooldownRemaining: cacheStatus.cooldownRemaining 
+         });
+      }
 
-      syncLeaves(registerNum).catch(err => {
-        console.error('[Background Sync] Failed for leaves:', err.message);
+      // Optimistically update the sync timestamp to act as a mutex lock
+      // This prevents race conditions if the user spams F5 before the background sync finishes
+      await db.user.update({
+        where: { registerNum },
+        data: { lastSyncLeaves: new Date() }
       });
 
-      return NextResponse.json({ success: true, ...cachedData, isCached: true });
+      console.log(`[Leaves API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+      after(async () => {
+        try {
+          await syncLeaves(registerNum);
+        } catch (err) {
+          console.error(`[Background Sync] Failed for leaves:`, err.message);
+        }
+      });
+
+      return NextResponse.json({ success: true, ...cachedData, isCached: true, lastSyncMinutesAgo: diffMins });
     } else {
-      console.log(`[Leaves API] No cache found for ${registerNum}. Performing initial sync...`);
+      console.log(`[Leaves API] No cache found for ${registerNum}. Performing initial blocking sync...`);
       const freshData = await syncLeaves(registerNum);
 
-      return NextResponse.json({ success: true, ...freshData, isCached: false });
+      return NextResponse.json({ success: true, ...freshData, isCached: false, lastSyncMinutesAgo: 0 });
     }
   } catch (error) {
     console.error('[Leaves API] Error:', error);

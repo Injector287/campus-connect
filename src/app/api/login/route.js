@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
-import { clearAuthCookies } from '@/utils/auth';
+import { clearAuthCookies, normalizeUsername } from '@/utils/auth';
 import { db } from '@/lib/db';
 import { encrypt } from '@/utils/crypto';
 import { sanitizeString } from '@/utils/validation';
@@ -12,7 +12,7 @@ const BASE_URL = 'https://erp.loyolacollege.edu';
 export async function POST(request) {
   try {
     const { username, password, stayLoggedIn } = await request.json();
-    const normalizedUsername = sanitizeString(username, 100);
+    const normalizedUsername = normalizeUsername(sanitizeString(username, 100));
     const validPassword = sanitizeString(password, 255);
 
     if (!normalizedUsername || !validPassword) {

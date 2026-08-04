@@ -2,7 +2,15 @@ import { NextResponse } from 'next/server';
 
 
 export function normalizeUsername(username) {
-  return typeof username === 'string' ? username.trim().toUpperCase() : '';
+  if (typeof username !== 'string') return '';
+  let str = username.trim().toUpperCase().replace(/[- ]/g, '');
+  
+  // Loyola Register Number strict pattern: YY-DDD-RRR (2 digits, 3 letters, 3 digits)
+  const match = str.match(/^(\d{2})([A-Z]{3})(\d{3})$/);
+  if (match) {
+    return `${match[1]}-${match[2]}-${match[3]}`;
+  }
+  return str;
 }
 
 import { db } from '@/lib/db';

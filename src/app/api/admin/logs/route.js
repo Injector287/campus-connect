@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { db as prisma } from '@/lib/db';
 import { checkAdmin } from '@/utils/adminAuth';
