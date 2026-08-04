@@ -28,12 +28,13 @@ export async function GET(request) {
 
     if (user && user.libraryCache) {
       const cachedData = JSON.parse(user.libraryCache);
+      const libraryData = cachedData.library ? cachedData : { ...cachedData, library: cachedData };
       const diffMins = user.lastSyncLibrary ? Math.floor((new Date().getTime() - user.lastSyncLibrary.getTime()) / (1000 * 60)) : 0;
       
       if (!cacheStatus.shouldSync) {
          return NextResponse.json({ 
            success: true, 
-           ...cachedData, 
+           ...libraryData, 
            isCached: true, 
            lastSyncMinutesAgo: diffMins,
            cooldownRemaining: cacheStatus.cooldownRemaining 
@@ -56,7 +57,7 @@ export async function GET(request) {
         }
       });
 
-      return NextResponse.json({ success: true, ...cachedData, isCached: true, lastSyncMinutesAgo: diffMins });
+      return NextResponse.json({ success: true, ...libraryData, isCached: true, lastSyncMinutesAgo: diffMins });
     } else {
       console.log(`[Library API] No cache found for ${registerNum}. Performing initial blocking sync...`);
       const freshData = await syncLibrary(registerNum);

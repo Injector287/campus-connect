@@ -8,32 +8,25 @@ export async function logScrape(username, endpoint, status, fullLog = null) {
       updateData[fieldName] = new Date();
     }
 
-    // Use a nested write to update the user and create the log in a single transaction!
-    await db.user.update({
-      where: { registerNum: username },
+    // Direct insert to avoid nested transaction deadlocks on Serverless Postgres
+    await db.scrapeLog.create({
       data: {
-        ...updateData,
-        scrapeLogs: {
-          create: {
-            endpoint,
-            status,
-            fullLog: fullLog ? String(fullLog).substring(0, 5000) : null
-          }
-        }
+        user: { connect: { registerNum: username } },
+        endpoint,
+        status,
+        fullLog: fullLog ? String(fullLog).substring(0, 5000) : null
       }
     });
 
-    // Probabilistically clean up old logs without blocking
-    if (Math.random() < 0.05) {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      // Run background cleanup asynchronously
-      db.scrapeLog.deleteMany({
-        where: { createdAt: { lt: sevenDaysAgo } }
-      }).catch(() => {});
+    // Update the timestamp separately
+    if (Object.keys(updateData).length > 0) {
+      await db.user.update({
+        where: { registerNum: username },
+        data: updateData
+      });
     }
+
   } catch (error) {
-    // If the user isn't found or DB connection fails, gracefully ignore
     if (error.code !== 'P2025') {
       console.error('Failed to log scrape:', error);
     }
