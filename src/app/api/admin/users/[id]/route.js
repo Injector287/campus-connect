@@ -13,7 +13,7 @@ export async function PATCH(request, { params }) {
   
   try {
     const body = await request.json();
-    const { role, status, customRateLimit } = body;
+    const { role, status } = body;
 
     if (role !== undefined || status !== undefined) {
       if (id === admin.id) {
@@ -29,8 +29,6 @@ export async function PATCH(request, { params }) {
     const data = {};
     if (role !== undefined) data.role = role;
     if (status !== undefined) data.status = status;
-    if (customRateLimit !== undefined) data.customRateLimit = customRateLimit === '' ? null : parseInt(customRateLimit, 10);
-    
     if (body.forceLogout === true) {
       data.sessionVersion = { increment: 1 };
     }
@@ -43,7 +41,6 @@ export async function PATCH(request, { params }) {
         registerNum: true,
         role: true,
         status: true,
-        customRateLimit: true,
       },
     });
 

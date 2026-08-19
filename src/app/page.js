@@ -81,8 +81,8 @@ function LoginContent() {
     <main className="main-container animate-slide-up" style={{ justifyContent: 'center', alignItems: 'center' }}>
       <div className="glass-panel" style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 className="text-gradient" style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Loyola ERP</h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)' }}>Sign in with your student credentials.</p>
+          <h1 className="text-gradient" style={{ fontSize: '3rem', fontWeight: '800', letterSpacing: '-1px', marginBottom: '0.25rem' }}>Flow</h1>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '500', fontSize: '0.9rem', letterSpacing: '0.5px' }}>A Loyola ERP Reinvented</p>
         </div>
 
         {error && (

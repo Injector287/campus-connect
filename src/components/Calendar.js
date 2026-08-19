@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
+import { usePathname } from 'next/navigation';
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 import calendarData from '../../calendar.json';
@@ -25,6 +26,7 @@ const MONTHS_LIST = [
 export default function CalendarPage() {
     const [todayStr, setTodayStr] = useState('');
     const [isMobile, setIsMobile] = useState(false);
+    const [viewSlideDir, setViewSlideDir] = useState('');
     const [activeView, setActiveView] = useTabState('view', 'calendar');
     const [selectedDayOrder, setSelectedDayOrder] = useState('1');
     const [selectedMonth, setSelectedMonth] = useState(() => {
@@ -33,16 +35,47 @@ export default function CalendarPage() {
         const yyyy = today.getFullYear();
         return `${mm}.${yyyy}`;
     });
+    const [slideDirection, setSlideDirection] = useState('');
     const topHeaderRef = React.useRef(null);
     const [topHeaderHeight, setTopHeaderHeight] = useState(0);
 
     const [dynamicTimetable, setDynamicTimetable] = useState(timetableData);
     const [isTimetableLoading, setIsTimetableLoading] = useState(false);
+    
+    const pathname = usePathname();
+    const isVisible = pathname === '/dashboard/calendar';
     const [editModal, setEditModal] = useState(null); // { dayOrder, period, subject }
     const [subjectsList, setSubjectsList] = useState([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedSubject, setSelectedSubject] = useState('');
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [viewportHeight, setViewportHeight] = useState('100vh');
+
+    useEffect(() => {
+        const updateHeight = () => {
+            setViewportHeight(`${window.innerHeight}px`);
+        };
+        updateHeight();
+        window.addEventListener('resize', updateHeight);
+        return () => window.removeEventListener('resize', updateHeight);
+    }, []);
+
+
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        
+        if (isVisible && window.innerWidth >= 769) {
+            window.scrollTo(0, 0);
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [activeView, isVisible]);
 
     useEffect(() => {
         if (activeView === 'timetable') {
@@ -175,7 +208,17 @@ export default function CalendarPage() {
             if (window.innerWidth <= 768 && activeView === 'calendar') {
                 const todayEl = document.getElementById('today-marker');
                 if (todayEl) {
+                    // Temporarily disable global smooth scrolling to force an instant jump
+                    const style = document.createElement('style');
+                    style.innerHTML = '* { scroll-behavior: auto !important; }';
+                    document.head.appendChild(style);
+                    
                     todayEl.scrollIntoView({ behavior: 'auto', block: 'center' });
+                    
+                    // Remove the style block after the scroll completes
+                    requestAnimationFrame(() => {
+                        document.head.removeChild(style);
+                    });
                 }
             }
         };
@@ -209,149 +252,172 @@ export default function CalendarPage() {
     const prevMonth = activeMonthIdx > 0 ? MONTHS_LIST[activeMonthIdx - 1] : null;
     const nextMonth = activeMonthIdx < MONTHS_LIST.length - 1 ? MONTHS_LIST[activeMonthIdx + 1] : null;
 
+    const lastWheelTime = React.useRef(0);
+    const handleWheel = (e) => {
+        const now = Date.now();
+        if (now - lastWheelTime.current < 250) return; // Debounce wheel events
+        
+        if (e.deltaY > 0 && nextMonth) {
+            setSlideDirection('right');
+            setSelectedMonth(nextMonth.value);
+            lastWheelTime.current = now;
+        } else if (e.deltaY < 0 && prevMonth) {
+            setSlideDirection('left');
+            setSelectedMonth(prevMonth.value);
+            lastWheelTime.current = now;
+        }
+    };
+
     return (
         <>
-            <div className="animate-slide-up responsive-padding-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div className="animate-slide-up responsive-padding-container calendar-container-wrapper" style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
                 <style>{`
                     .mobile-view { display: none !important; }
                     .desktop-view { display: flex !important; }
                     .desktop-block { display: block !important; }
                     .desktop-grid { display: grid !important; }
-                    .responsive-padding-container { padding-top: 2rem; padding-left: 2rem; padding-right: 2rem; }
+                    .responsive-padding-container { padding: 1rem 2rem; }
+                    .calendar-container-wrapper {
+                        height: ${viewportHeight};
+                        display: flex;
+                        flex-direction: column;
+                    }
                     @media (max-width: 768px) {
                         .mobile-view { display: flex !important; }
                         .desktop-view { display: none !important; }
                         .desktop-block { display: none !important; }
                         .desktop-grid { display: none !important; }
-                        .responsive-padding-container { padding-top: 0.5rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+                        .responsive-padding-container { padding: 0.5rem 0.5rem 2rem 0.5rem; }
+                        .calendar-container-wrapper {
+                            height: auto;
+                            display: block;
+                        }
+                    }
+                    
+                    .calendar-header {
+                        position: sticky;
+                        top: 0;
+                        z-index: 50;
+                        background: #0f172a;
+                        margin: 0 -0.5rem;
+                        padding: 0.5rem 1rem 0.25rem 1rem;
+                    }
+                    @media (min-width: 769px) {
+                        .calendar-header {
+                            position: relative;
+                            background: transparent;
+                            margin: 0 0 1rem 0;
+                            padding: 0;
+                        }
                     }
                 `}</style>
-                <div ref={topHeaderRef} style={{ position: 'sticky', top: 0, zIndex: 50, background: '#0f172a', paddingBottom: '0.25rem', margin: '0 -0.5rem', padding: '0.5rem 1rem' }}>
-                    <div style={{ 
-                        display: 'flex', flexDirection: 'column', gap: '0.5rem', 
-                        marginBottom: '0',
-                    }}>
+                <div ref={topHeaderRef} className="calendar-header">
+                    {/* Mobile Header */}
+                    <div className="mobile-view" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                             <h1 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>
                                 {activeView === 'calendar' ? 'Calendar' : 'Timetable'}
                             </h1>
                         </div>
-                    
-                    <div style={{ display: 'flex', width: '100%' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
-                            <button 
-                                onClick={() => {
-                                    setActiveView('calendar');
-                                }}
-                                style={{ 
-                                    padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', 
-                                    background: activeView === 'calendar' ? 'var(--primary)' : 'transparent',
-                                    color: activeView === 'calendar' ? 'white' : 'rgba(255,255,255,0.6)',
-                                    fontWeight: activeView === 'calendar' ? '600' : '500',
-                                    cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem',
-                                    width: '100%'
-                                }}
-                            >Calendar</button>
-                            <button 
-                                onClick={() => {
-                                    setActiveView('timetable');
-                                }}
-                                style={{ 
-                                    padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', 
-                                    background: activeView === 'timetable' ? 'var(--primary)' : 'transparent',
-                                    color: activeView === 'timetable' ? 'white' : 'rgba(255,255,255,0.6)',
-                                    fontWeight: activeView === 'timetable' ? '600' : '500',
-                                    cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem',
-                                    width: '100%'
-                                }}
-                            >Timetable</button>
-                        </div>
-                    </div>
-                    </div>
-
-
-                    {activeView === 'calendar' && (
-                        <div className="desktop-view" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', paddingTop: '1rem', position: 'relative' }}>
-                            <button 
-                                onClick={() => prevMonth && setSelectedMonth(prevMonth.value)}
-                                style={{ 
-                                    width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)',
-                                    cursor: prevMonth ? 'pointer' : 'default', opacity: prevMonth ? 1 : 0.2,
-                                    transition: 'all 0.2s', fontSize: '1.2rem'
-                                }}
-                                onMouseOver={(e) => { if(prevMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                                onMouseOut={(e) => { if(prevMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                            >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                            </button>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 'bold', width: '200px', textAlign: 'center', color: 'white' }}>
-                                {monthObj.label}
+                        <div style={{ display: 'flex', width: '100%' }}>
+                            <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
+                                <div style={{
+                                    position: 'absolute', top: '0.35rem', bottom: '0.35rem',
+                                    left: '0.35rem',
+                                    width: 'calc(50% - 0.35rem)',
+                                    background: 'var(--primary)', borderRadius: '10px',
+                                    transform: activeView === 'calendar' ? 'translateX(0)' : 'translateX(100%)',
+                                    willChange: 'transform',
+                                    transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                                }} />
+                                <button onClick={() => { setActiveView('calendar'); setViewSlideDir('left'); setSlideDirection(''); }} style={{ position: 'relative', zIndex: 1, padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeView === 'calendar' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.95rem', width: '100%' }}>Calendar</button>
+                                <button onClick={() => { setActiveView('timetable'); setViewSlideDir('right'); setSlideDirection(''); }} style={{ position: 'relative', zIndex: 1, padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeView === 'timetable' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.95rem', width: '100%' }}>Timetable</button>
                             </div>
-                            <button 
-                                onClick={() => nextMonth && setSelectedMonth(nextMonth.value)}
-                                style={{ 
-                                    width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)',
-                                    cursor: nextMonth ? 'pointer' : 'default', opacity: nextMonth ? 1 : 0.2,
-                                    transition: 'all 0.2s', fontSize: '1.2rem'
-                                }}
-                                onMouseOver={(e) => { if(nextMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                                onMouseOut={(e) => { if(nextMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                            >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-                            </button>
-                            
-                            <button
-                                onClick={handleTodayClick}
-                                style={{ 
-                                    position: 'absolute', right: '0', 
-                                    background: 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)', 
-                                    color: 'var(--primary)', 
-                                    border: '1px solid rgba(var(--primary-rgb, 59, 130, 246), 0.3)',
-                                    borderRadius: '12px',
-                                    padding: '8px 16px',
-                                    fontWeight: 'bold',
-                                    fontSize: '0.9rem',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
-                                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(var(--primary-rgb, 59, 130, 246), 0.25)' }}
-                                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' }}
-                            >
-                                Today
-                            </button>
                         </div>
-                    )}
-                    {activeView === 'timetable' && (
-                        <div className="mobile-view" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem' }}>
-                            <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none', flex: 1 }}>
-                                {[1,2,3,4,5,6].map(day => {
-                                    const isSelected = selectedDayOrder === day.toString();
-                                    const isToday = todayDayOrder === day.toString();
-                                    return (
-                                        <button 
-                                            key={day}
-                                            onClick={() => setSelectedDayOrder(day.toString())}
-                                            style={{
-                                                padding: '0.75rem 1.25rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', flexShrink: 0,
-                                                background: isSelected ? 'var(--primary)' : (isToday ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0,0,0,0.2)'),
-                                                color: isSelected ? 'white' : (isToday ? '#60a5fa' : 'rgba(255,255,255,0.7)'),
-                                                border: isSelected ? 'none' : (isToday ? '1px solid rgba(59, 130, 246, 0.5)' : '1px solid rgba(255,255,255,0.1)'),
-                                                boxShadow: isSelected ? '0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.4)' : 'none',
-                                                transition: 'all 0.2s', cursor: 'pointer', outline: 'none', WebkitTapHighlightColor: 'transparent'
-                                            }}
-                                        >
-                                            Day {day}
+
+                        {activeView === 'timetable' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none', flex: 1 }}>
+                                    {[1,2,3,4,5,6].map(day => {
+                                        const isSelected = selectedDayOrder === day.toString();
+                                        const isToday = todayDayOrder === day.toString();
+                                        return (
+                                            <button 
+                                                key={day}
+                                                onClick={() => setSelectedDayOrder(day.toString())}
+                                                style={{
+                                                    padding: '0.75rem 1.25rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 'bold', flexShrink: 0,
+                                                    background: isSelected ? 'var(--primary)' : (isToday ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0,0,0,0.2)'),
+                                                    color: isSelected ? 'white' : (isToday ? '#60a5fa' : 'rgba(255,255,255,0.7)'),
+                                                    border: isSelected ? 'none' : (isToday ? '1px solid rgba(59, 130, 246, 0.5)' : '1px solid rgba(255,255,255,0.1)'),
+                                                    boxShadow: isSelected ? '0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.4)' : 'none',
+                                                    transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s', cursor: 'pointer', outline: 'none', WebkitTapHighlightColor: 'transparent'
+                                                }}
+                                            >
+                                                Day {day}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <button onClick={handleSyncClass} style={{ padding: '0.85rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }} title="Sync with Class">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.26l5.57 5.57"/></svg>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Desktop Header */}
+                    <div className="desktop-view" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                            <h1 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>
+                                {activeView === 'calendar' ? 'Calendar' : 'Timetable'}
+                            </h1>
+                            {activeView === 'calendar' && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <button onClick={() => {
+                                        setSlideDirection('left');
+                                        handleTodayClick();
+                                    }} style={{ background: 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)', color: 'var(--primary)', border: '1px solid rgba(var(--primary-rgb, 59, 130, 246), 0.3)', borderRadius: '12px', padding: '8px 16px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(var(--primary-rgb, 59, 130, 246), 0.25)' }} onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' }}>
+                                        Today
+                                    </button>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <button onClick={() => {
+                                            if (prevMonth) {
+                                                setSlideDirection('left');
+                                                setSelectedMonth(prevMonth.value);
+                                            }
+                                        }} style={{ width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: prevMonth ? 'pointer' : 'default', opacity: prevMonth ? 1 : 0.2, transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s', fontSize: '1.1rem' }} onMouseOver={(e) => { if(prevMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }} onMouseOut={(e) => { if(prevMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                                         </button>
-                                    );
-                                })}
-                            </div>
-                            <button onClick={handleSyncClass} style={{ padding: '0.85rem', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }} title="Sync with Class">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.26l5.57 5.57"/></svg>
-                            </button>
+                                        <button onClick={() => {
+                                            if (nextMonth) {
+                                                setSlideDirection('right');
+                                                setSelectedMonth(nextMonth.value);
+                                            }
+                                        }} style={{ width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: nextMonth ? 'pointer' : 'default', opacity: nextMonth ? 1 : 0.2, transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s', fontSize: '1.1rem' }} onMouseOver={(e) => { if(nextMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }} onMouseOut={(e) => { if(nextMonth) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                                        </button>
+                                    </div>
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'white' }}>
+                                        {monthObj.label}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
+                        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{
+                                position: 'absolute', top: '0.35rem', bottom: '0.35rem',
+                                left: '0.35rem',
+                                width: 'calc(50% - 0.35rem)',
+                                background: 'var(--primary)', borderRadius: '10px',
+                                transform: activeView === 'calendar' ? 'translateX(0)' : 'translateX(100%)',
+                                willChange: 'transform',
+                                transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                            }} />
+                            <button onClick={() => { setActiveView('calendar'); setViewSlideDir('left'); setSlideDirection(''); }} style={{ position: 'relative', zIndex: 1, padding: '0.5rem 1.5rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeView === 'calendar' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.95rem' }}>Calendar</button>
+                            <button onClick={() => { setActiveView('timetable'); setViewSlideDir('right'); setSlideDirection(''); }} style={{ position: 'relative', zIndex: 1, padding: '0.5rem 1.5rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeView === 'timetable' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.95rem' }}>Timetable</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div style={{ 
@@ -359,10 +425,15 @@ export default function CalendarPage() {
                     borderRadius: '16px', 
                     borderTopLeftRadius: '0',
                     borderTopRightRadius: '0',
-                    overflow: 'visible'
+                    overflow: 'visible',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 0
                 }}>
-                    <div style={{ padding: '0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ display: activeView === 'calendar' ? 'block' : 'none' }}>
+                    <div style={{ padding: '0', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, minHeight: 0 }}>
+                        {activeView === 'calendar' && (
+                            <div key="calendar-view" onWheel={handleWheel} className={viewSlideDir === 'left' ? "animate-slide-left" : ""} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                             <>                    {/* Mobile View */}
                         <div className="mobile-view" style={{ flexDirection: 'column', gap: '1rem' }}>
                         {(() => {
@@ -410,7 +481,7 @@ export default function CalendarPage() {
                                                     border: isToday ? '2px solid var(--primary)' : (isExamEvent ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.05)'),
                                                     borderRadius: '12px',
                                                     background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : (isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0,0,0,0.2)')),
-                                                    transition: 'all 0.2s',
+                                                    transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s',
                                                     gap: '0.75rem'
                                                 }}
                                                 onMouseOver={(e) => { if(!isToday) e.currentTarget.style.background = isExamEvent ? 'rgba(245, 158, 11, 0.12)' : 'rgba(255,255,255,0.05)' }}
@@ -474,7 +545,7 @@ export default function CalendarPage() {
                         </div>
 
                         {/* Desktop View */}
-                        <div className="desktop-view" style={{ flexDirection: 'column', gap: '1.5rem' }}>
+                        <div className="desktop-view" style={{ flexDirection: 'column', gap: '1.5rem', flex: 1, minHeight: 0 }}>
                         {(() => {
                                 const activeMonthKey = monthObj.value;
                                 const days = groupedByMonth[activeMonthKey]?.days || [];
@@ -492,12 +563,12 @@ export default function CalendarPage() {
                                     const prevDateNum = prevMonthDays - firstDayOfWeek + 1 + i;
                                     return (
                                         <div key={`empty-${i}`} style={{ 
-                                            padding: '0.75rem', 
+                                            padding: '0.5rem 0.75rem', 
                                             background: 'rgba(0,0,0,0.1)', 
                                             borderRight: '1px solid rgba(255,255,255,0.05)', 
                                             borderBottom: '1px solid rgba(255,255,255,0.05)',
                                             opacity: 0.3,
-                                            minHeight: '120px'
+                                            minHeight: 0
                                         }}>
                                             <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>
                                                 {prevDateNum}
@@ -520,13 +591,13 @@ export default function CalendarPage() {
                                     
                                     return (
                                         <div key={dateStr} style={{ 
-                                            padding: '0.75rem', 
+                                            padding: '0.5rem 0.75rem', 
                                             background: isToday ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' : (isExamEvent ? 'rgba(245, 158, 11, 0.08)' : (dayData?.is_holiday ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255,255,255,0.02)')), 
                                             borderRight: '1px solid rgba(255,255,255,0.05)', 
                                             borderBottom: '1px solid rgba(255,255,255,0.05)',
                                             border: isToday ? '1px solid var(--primary)' : (isExamEvent ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.05)'),
-                                            display: 'flex', flexDirection: 'column', gap: '0.5rem',
-                                            minHeight: '120px',
+                                            display: 'flex', flexDirection: 'column', gap: '0.2rem',
+                                            minHeight: 0,
                                             opacity: isPast ? 0.4 : 1,
                                             transition: 'opacity 0.2s, background 0.2s',
                                         }}
@@ -545,11 +616,18 @@ export default function CalendarPage() {
                                             </div>
                                             
                                             {dayData?.event && (
-                                                <div style={{ 
+                                                <div 
+                                                    title={dayData.event}
+                                                    style={{ 
                                                     fontSize: '0.85rem', 
                                                     fontWeight: '500', 
                                                     color: isExamEvent ? '#fbbf24' : 'rgba(255,255,255,0.9)', 
-                                                    lineHeight: '1.2' 
+                                                    lineHeight: '1.2',
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
                                                 }}>
                                                     {dayData.event}
                                                 </div>
@@ -559,17 +637,18 @@ export default function CalendarPage() {
                                 });
 
                                 const totalCells = emptyCells.length + dayCells.length;
-                                const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+                                const totalWeeks = Math.ceil(totalCells / 7);
+                                const remainingCells = (totalWeeks * 7) - totalCells;
                                 const trailingEmptyCells = Array.from({ length: remainingCells }).map((_, i) => {
                                     const nextDateNum = i + 1;
                                     return (
                                         <div key={`trail-${i}`} style={{ 
-                                            padding: '0.75rem', 
+                                            padding: '0.5rem 0.75rem', 
                                             background: 'rgba(0,0,0,0.1)', 
                                             borderRight: '1px solid rgba(255,255,255,0.05)', 
                                             borderBottom: '1px solid rgba(255,255,255,0.05)',
                                             opacity: 0.3,
-                                            minHeight: '120px'
+                                            minHeight: 0
                                         }}>
                                             <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>
                                                 {nextDateNum}
@@ -581,11 +660,12 @@ export default function CalendarPage() {
                                 return (
                                     <React.Fragment>
                                         {/* Month Grid */}
-                                        <div key={activeMonthKey} style={{ marginBottom: '2rem' }}>
+                                        <div key={activeMonthKey} className={slideDirection === 'left' ? 'animate-slide-left' : (slideDirection === 'right' ? 'animate-slide-right' : '')} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                                             <div style={{ 
                                                 background: 'rgba(0,0,0,0.2)', 
                                                 borderRadius: '16px', 
                                                 border: '1px solid rgba(255,255,255,0.05)', 
+                                                display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0,
                                                 overflow: 'hidden' 
                                             }}>
                                                 <div style={{ 
@@ -597,7 +677,7 @@ export default function CalendarPage() {
                                                         <div key={day} style={{ padding: '0.75rem', borderRight: day !== 'Sun' ? '1px solid rgba(255,255,255,0.05)' : 'none', color: day === 'Sun' ? '#ef4444' : 'rgba(255,255,255,0.7)' }}>{day}</div>
                                                     ))}
                                                 </div>
-                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridTemplateRows: `repeat(${totalWeeks}, 1fr)`, flex: 1, minHeight: 0 }}>
                                                     {emptyCells}
                                                     {dayCells}
                                                     {trailingEmptyCells}
@@ -610,8 +690,10 @@ export default function CalendarPage() {
                         </div>
                             </>
                         </div>
+                        )}
 
-                        <div style={{ display: activeView === 'timetable' ? 'block' : 'none', height: '100%' }}>
+                        {activeView === 'timetable' && (
+                            <div key="timetable-view" className={viewSlideDir === 'right' ? "animate-slide-right" : ""} style={{ display: 'block', height: '100%' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.5rem 0', height: '100%' }}>
                                 <div className="mobile-view" style={{ flexDirection: 'column', height: 'auto' }}>
                                         {/* Timetable List */}
@@ -651,7 +733,7 @@ export default function CalendarPage() {
                                                             border: isActive ? '1px solid rgba(59, 130, 246, 0.5)' : '1px solid rgba(255,255,255,0.05)', 
                                                             borderRadius: '16px',
                                                             boxShadow: isActive ? '0 0 15px rgba(59, 130, 246, 0.2)' : 'none',
-                                                            transition: 'all 0.3s',
+                                                            transition: 'transform 0.3s, opacity 0.3s, background-color 0.3s, border-color 0.3s',
                                                             minHeight: '85px'
                                                         }}>
                                                             <div style={{ 
@@ -687,12 +769,13 @@ export default function CalendarPage() {
                                         </div>
                                 </div>
 
-                                <div className="desktop-block">
+                                <div className="desktop-view" style={{ flex: 1, minHeight: 0, flexDirection: 'column' }}>
                                     <div style={{ 
                                         background: 'rgba(0,0,0,0.2)', 
                                         borderRadius: '16px', 
                                         border: '1px solid rgba(255,255,255,0.05)', 
-                                        overflow: 'hidden' 
+                                        overflow: 'hidden',
+                                        display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0
                                     }}>
                                         <div style={{ 
                                             display: 'grid', gridTemplateColumns: '100px repeat(5, 1fr)', 
@@ -710,23 +793,25 @@ export default function CalendarPage() {
                                             ))}
                                         </div>
                                         
-                                        {[1, 2, 3, 4, 5, 6].map((day, rowIndex) => (
-                                            <div key={day} style={{ 
-                                                display: 'grid', gridTemplateColumns: '100px repeat(5, 1fr)', 
-                                                borderBottom: rowIndex !== 5 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                                                background: selectedDayOrder === day.toString() ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : 'transparent',
-                                                transition: 'background 0.2s'
-                                            }}>
-                                                <div style={{ padding: '1rem', borderRight: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                                                    Day {day}
-                                                </div>
+                                        <div style={{ display: 'grid', gridTemplateRows: 'repeat(6, 1fr)', flex: 1, minHeight: 0 }}>
+                                            {[1, 2, 3, 4, 5, 6].map((day, rowIndex) => (
+                                                <div key={day} style={{ 
+                                                    display: 'grid', gridTemplateColumns: '100px repeat(5, 1fr)', 
+                                                    borderBottom: rowIndex !== 5 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                                    background: selectedDayOrder === day.toString() ? 'rgba(var(--primary-rgb, 59, 130, 246), 0.15)' : 'transparent',
+                                                    transition: 'background 0.2s',
+                                                    minHeight: 0
+                                                }}>
+                                                    <div style={{ padding: '0.5rem 1rem', borderRight: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                                                        Day {day}
+                                                    </div>
                                                 {['1', '2', '3', '4', '5'].map(p => {
                                                     const rawSubject = dynamicTimetable.timetable[day] ? dynamicTimetable.timetable[day][p] : '-';
                                                     const subject = rawSubject !== '-' && dynamicTimetable.aliases && dynamicTimetable.aliases[rawSubject] ? dynamicTimetable.aliases[rawSubject] : rawSubject;
                                                     
                                                     return (
                                                         <div key={p} style={{ 
-                                                            padding: '1rem', 
+                                                            padding: '0.5rem 1rem', 
                                                             borderRight: p !== '5' ? '1px solid rgba(255,255,255,0.05)' : 'none', 
                                                             textAlign: 'center',
                                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -751,11 +836,13 @@ export default function CalendarPage() {
                                                     );
                                                 })}
                                             </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        )}
                     </div>
                 </div>
             </div>

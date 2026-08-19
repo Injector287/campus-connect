@@ -23,7 +23,6 @@ export async function GET(request) {
           registerNum: true,
           role: true,
           status: true,
-          customRateLimit: true,
           lastSyncDashboard: true,
         },
         orderBy: {

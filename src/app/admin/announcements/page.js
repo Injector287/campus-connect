@@ -105,7 +105,7 @@ export default function AnnouncementsPage() {
           <button type="submit" disabled={publishing} style={{ 
               alignSelf: 'flex-start', background: 'var(--primary)', color: 'white', border: 'none', 
               padding: '0.85rem 2rem', borderRadius: '12px', fontWeight: '600', cursor: publishing ? 'not-allowed' : 'pointer', 
-              transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: publishing ? 0.7 : 1
+              transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: publishing ? 0.7 : 1
           }}>
             {publishing ? 'Publishing...' : (
                 <>
@@ -132,7 +132,7 @@ export default function AnnouncementsPage() {
                         <h3 style={{ margin: '0 0 0.5rem 0', color: 'white', fontSize: '1.1rem' }}>{ann.title}</h3>
                         <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', textTransform: 'uppercase' }}>Target: {ann.targetRole}</span>
                     </div>
-                    <button onClick={() => deleteAnnouncement(ann.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                    <button onClick={() => deleteAnnouncement(ann.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s' }}
                     onMouseOver={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)' }}
                     onMouseOut={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)' }}
                     title="Delete Announcement"

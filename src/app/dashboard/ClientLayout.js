@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '@/utils/fetcher'
 import dynamic from 'next/dynamic'
@@ -18,6 +18,25 @@ export default function ClientLayout({ children, initialMobileNav }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [customMobileNav, setCustomMobileNav] = useState(initialMobileNav);
   const [isEditNavMode, setIsEditNavMode] = useState(false);
+
+  const navContainerRef = useRef(null);
+  const [activeLinkStyle, setActiveLinkStyle] = useState({ top: 0, height: 0, opacity: 0 });
+
+  useEffect(() => {
+    if (!navContainerRef.current) return;
+    // Small delay to ensure layout is done
+    const timeoutId = setTimeout(() => {
+        const activeLink = navContainerRef.current?.querySelector('a[data-active="true"]');
+        if (activeLink) {
+            setActiveLinkStyle({
+                top: activeLink.offsetTop,
+                height: activeLink.offsetHeight,
+                opacity: 1,
+            });
+        }
+    }, 50);
+    return () => clearTimeout(timeoutId);
+  }, [pathname]);
 
   // Sync localStorage just in case, and listen for client-side modifications
   useEffect(() => {
@@ -118,9 +137,15 @@ export default function ClientLayout({ children, initialMobileNav }) {
   
   const navGroups = [
     {
+      title: 'Overview',
+      items: [
+        { href: '/dashboard', label: 'Home', icon: <><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></> },
+      ]
+    },
+    {
       title: 'Academics',
       items: [
-        { href: '/dashboard', label: 'Attendance', icon: <><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></> },
+        { href: '/dashboard/attendance', label: 'Attendance', icon: <><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></> },
         { href: '/dashboard/subjects', label: 'Subjects', icon: <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path> },
         { href: '/dashboard/grades', label: 'Grades', icon: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></> },
         { href: '/dashboard/calendar', label: 'Calendar', icon: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></> }
@@ -185,11 +210,27 @@ export default function ClientLayout({ children, initialMobileNav }) {
         <style>{`
           .desktop-only::-webkit-scrollbar { display: none; }
         `}</style>
-        <div style={{ marginBottom: '1.5rem', paddingLeft: '1rem' }}>
-           <h2 className="text-gradient" style={{ fontSize: '1.5rem', margin: 0 }}>Loyola ERP</h2>
+        <div style={{ marginBottom: '1rem', paddingLeft: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+           <h2 className="text-gradient" style={{ fontSize: '1.75rem', fontWeight: '800', letterSpacing: '-0.5px', margin: 0 }}>Flow</h2>
         </div>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div ref={navContainerRef} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative' }}>
+            {activeLinkStyle.opacity > 0 && (
+                <div style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    height: activeLinkStyle.height,
+                    background: 'var(--primary)',
+                    borderRadius: '12px',
+                    transform: `translateY(${activeLinkStyle.top}px)`,
+                    transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
+                    opacity: activeLinkStyle.opacity,
+                    zIndex: 0,
+                    pointerEvents: 'none'
+                }} />
+            )}
             {navGroups.map((group, idx) => (
                 <div key={idx}>
                     <h3 style={{ 
@@ -197,7 +238,7 @@ export default function ClientLayout({ children, initialMobileNav }) {
                         textTransform: 'uppercase', 
                         letterSpacing: '1px', 
                         color: 'rgba(255,255,255,0.4)', 
-                        margin: '0 0 0.5rem 1rem',
+                        margin: '0 0 0.25rem 1rem',
                         fontWeight: '600'
                     }}>
                         {group.title}
@@ -206,15 +247,16 @@ export default function ClientLayout({ children, initialMobileNav }) {
                         {group.items.map((item) => {
                             const isActive = pathname === item.href;
                             return (
-                                <Link key={item.href} href={item.href} onMouseEnter={() => router.prefetch(item.href)} onTouchStart={() => router.prefetch(item.href)} onClick={() => {
+                                <Link key={item.href} href={item.href} data-active={isActive} onMouseEnter={() => router.prefetch(item.href)} onTouchStart={() => router.prefetch(item.href)} onClick={() => {
                                     if (pathname === '/dashboard') sessionStorage.setItem('calendarScrollPos', window.scrollY.toString());
                                 }} style={{ 
                                     display: 'flex', alignItems: 'center', gap: '0.85rem', 
-                                    padding: '0.65rem 1rem', borderRadius: '12px',
+                                    padding: '0.5rem 1rem', borderRadius: '12px',
                                     textDecoration: 'none', 
                                     color: isActive ? 'white' : 'rgba(255,255,255,0.6)',
-                                    background: isActive ? 'var(--primary)' : 'transparent',
-                                    transition: 'all 0.2s ease',
+                                    background: 'transparent',
+                                    position: 'relative', zIndex: 1,
+                                    transition: 'color 0.3s ease',
                                     fontWeight: isActive ? '600' : '500'
                                 }}>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -239,7 +281,7 @@ export default function ClientLayout({ children, initialMobileNav }) {
                 cursor: 'pointer', 
                 fontSize: '0.875rem',
                 fontWeight: '600',
-                transition: 'all 0.2s ease',
+                transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                 width: 'calc(100% - 2rem)'
             }}
             onMouseOver={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)'; }}
@@ -289,18 +331,19 @@ export default function ClientLayout({ children, initialMobileNav }) {
               borderTopLeftRadius: '24px',
               borderTopRightRadius: '24px',
               borderTop: '1px solid rgba(255,255,255,0.1)',
-              padding: '2rem 1.5rem',
-              transform: isMobileMenuOpen ? 'translateY(0)' : 'translateY(100%)',
+              transform: isMobileMenuOpen ? 'translateY(0) translateZ(0)' : 'translateY(100%) translateZ(0)',
+              willChange: 'transform',
               transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               maxHeight: '85vh',
-              overflowY: 'auto'
+              display: 'flex',
+              flexDirection: 'column'
           }} onClick={e => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 1.5rem 1rem 1.5rem' }}>
                   <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'white', fontWeight: 'bold' }}>
                       {isEditNavMode ? 'Edit Navigation' : 'Menu'}
                   </h3>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button onClick={() => setIsEditNavMode(!isEditNavMode)} style={{ background: isEditNavMode ? 'var(--primary)' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', transition: 'all 0.2s ease' }}>
+                      <button onClick={() => setIsEditNavMode(!isEditNavMode)} style={{ background: isEditNavMode ? 'var(--primary)' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease' }}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                           </svg>
@@ -311,175 +354,179 @@ export default function ClientLayout({ children, initialMobileNav }) {
                   </div>
               </div>
 
-              {!isEditNavMode ? (
-                  <>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem' }}>
-                {navGroups.map((group, idx) => (
-                    <div key={idx}>
-                        <h4 style={{ 
-                            fontSize: '0.75rem', 
-                            textTransform: 'uppercase', 
-                            letterSpacing: '1px', 
-                            color: 'rgba(255,255,255,0.4)', 
-                            margin: '0 0 1rem 0',
-                            fontWeight: '600'
-                        }}>
-                            {group.title}
-                        </h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-                            {group.items.map((item) => {
-                                const isActive = pathname === item.href;
-                                return (
-                                    <Link key={item.href} href={item.href} onMouseEnter={() => router.prefetch(item.href)} onTouchStart={() => router.prefetch(item.href)} onClick={() => {
-                                        if (pathname === '/dashboard') sessionStorage.setItem('calendarScrollPos', window.scrollY.toString());
-                                        setIsMobileMenuOpen(false);
-                                    }} style={{ 
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', 
-                                        padding: '1rem', borderRadius: '16px',
-                                        textDecoration: 'none', 
-                                        color: isActive ? 'white' : 'rgba(255,255,255,0.8)',
-                                        background: isActive ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-                                        transition: 'all 0.2s ease',
-                                        textAlign: 'center'
-                                    }}>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            {item.icon}
-                                        </svg>
-                                        <span style={{ fontSize: '0.85rem', fontWeight: isActive ? '600' : '500' }}>{item.label}</span>
-                                    </Link>
-                                )
-                            })}
-                        </div>
-                    </div>
-                ))}
-              </div>
-
-              <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
-                  <button onClick={handleLogout} style={{ 
-                      background: 'rgba(239, 68, 68, 0.1)', 
-                      border: '1px solid rgba(239, 68, 68, 0.3)', 
-                      color: '#ef4444', 
-                      padding: '0.75rem 2rem', 
-                      borderRadius: '999px',
-                      cursor: 'pointer', 
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      transition: 'all 0.2s ease',
-                      width: '100%'
-                  }}>
-                    Logout
-                  </button>
-              </div>
-              </>
-              ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem' }}>
-                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: '-1rem 0 0 0' }}>
-                          Select 2 to 4 items for quick access. Drag (≡) to reorder active items.
-                      </p>
-                      
-                      {/* ACTIVE ITEMS (Draggable) */}
-                      <div>
-                          <h4 style={{ 
-                              fontSize: '0.75rem', 
-                              textTransform: 'uppercase', 
-                              letterSpacing: '1px', 
-                              color: 'rgba(255,255,255,0.4)', 
-                              margin: '0 0 1rem 0',
-                              fontWeight: '600'
-                          }}>
-                              Active Quick Access
-                          </h4>
-                          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                              <SortableContext items={customMobileNav} strategy={verticalListSortingStrategy}>
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                      {customMobileNav.map((href) => {
-                                          const item = getNavItem(href);
-                                          if (!item) return null;
-                                          const icon = href === '/dashboard' ? mobilePrimaryNav[0].icon : item.icon;
-                                          const label = href === '/dashboard' ? 'Home' : item.label;
-                                          
+              <div style={{ padding: '0 1.5rem', overflowY: 'auto', flex: 1, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  <style>{`
+                      .mobile-only div::-webkit-scrollbar { display: none; }
+                  `}</style>
+                  {!isEditNavMode ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '1.5rem' }}>
+                          {navGroups.map((group, idx) => (
+                              <div key={idx}>
+                                  <h4 style={{ 
+                                      fontSize: '0.75rem', 
+                                      textTransform: 'uppercase', 
+                                      letterSpacing: '1px', 
+                                      color: 'rgba(255,255,255,0.4)', 
+                                      margin: '0 0 1rem 0',
+                                      fontWeight: '600'
+                                  }}>
+                                      {group.title}
+                                  </h4>
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+                                      {group.items.map((item) => {
+                                          const isActive = pathname === item.href;
                                           return (
-                                              <SortableNavItem 
-                                                  key={href} 
-                                                  id={href} 
-                                                  item={{ ...item, icon, label }} 
-                                                  onRemove={(id) => handleNavChange(id, false)} 
-                                                  atMin={customMobileNav.length <= 2}
-                                              />
-                                          );
+                                              <Link key={item.href} href={item.href} onMouseEnter={() => router.prefetch(item.href)} onTouchStart={() => router.prefetch(item.href)} onClick={() => {
+                                                  if (pathname === '/dashboard') sessionStorage.setItem('calendarScrollPos', window.scrollY.toString());
+                                                  setIsMobileMenuOpen(false);
+                                              }} style={{ 
+                                                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', 
+                                                  padding: '1rem', borderRadius: '16px',
+                                                  textDecoration: 'none', 
+                                                  color: isActive ? 'white' : 'rgba(255,255,255,0.8)',
+                                                  background: isActive ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                  transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
+                                                  textAlign: 'center'
+                                              }}>
+                                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                      {item.icon}
+                                                  </svg>
+                                                  <span style={{ fontSize: '0.85rem', fontWeight: isActive ? '600' : '500' }}>{item.label}</span>
+                                              </Link>
+                                          )
                                       })}
                                   </div>
-                              </SortableContext>
-                          </DndContext>
+                              </div>
+                          ))}
                       </div>
-
-                      {/* AVAILABLE ITEMS */}
-                      <div>
-                          <h4 style={{ 
-                              fontSize: '0.75rem', 
-                              textTransform: 'uppercase', 
-                              letterSpacing: '1px', 
-                              color: 'rgba(255,255,255,0.4)', 
-                              margin: '0 0 1rem 0',
-                              fontWeight: '600'
-                          }}>
-                              Available Items
-                          </h4>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                              {navGroups.map((group) => {
-                                  return group.items.map((item) => {
-                                      if (customMobileNav.includes(item.href)) return null;
-                                      
-                                      const atMax = customMobileNav.length >= 4;
-                                      
-                                      return (
-                                          <div key={item.href} style={{ 
-                                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                              padding: '0.75rem 1rem', borderRadius: '12px',
-                                              background: 'rgba(0,0,0,0.2)',
-                                              border: '1px solid rgba(255,255,255,0.02)'
-                                          }}>
-                                              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'rgba(255,255,255,0.6)' }}>
-                                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                      {item.href === '/dashboard' ? mobilePrimaryNav[0].icon : item.icon}
-                                                  </svg>
-                                                  <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>
-                                                      {item.href === '/dashboard' ? 'Home' : item.label}
-                                                  </span>
-                                              </div>
+                  ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem' }}>
+                          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: '-0.5rem 0 0 0' }}>
+                              Select 2 to 4 items for quick access. Drag (≡) to reorder active items.
+                          </p>
+                          
+                          {/* ACTIVE ITEMS (Draggable) */}
+                          <div>
+                              <h4 style={{ 
+                                  fontSize: '0.75rem', 
+                                  textTransform: 'uppercase', 
+                                  letterSpacing: '1px', 
+                                  color: 'rgba(255,255,255,0.4)', 
+                                  margin: '0 0 1rem 0',
+                                  fontWeight: '600'
+                              }}>
+                                  Active Quick Access
+                              </h4>
+                              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                  <SortableContext items={customMobileNav} strategy={verticalListSortingStrategy}>
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                          {customMobileNav.map((href) => {
+                                              const item = getNavItem(href);
+                                              if (!item) return null;
+                                              const icon = href === '/dashboard' ? mobilePrimaryNav[0].icon : item.icon;
+                                              const label = href === '/dashboard' ? 'Home' : item.label;
                                               
-                                              <button 
-                                                  onClick={() => !atMax && handleNavChange(item.href, true)}
-                                                  style={{
-                                                      background: atMax ? 'rgba(255,255,255,0.1)' : 'rgba(74, 222, 128, 0.2)',
-                                                      color: atMax ? 'rgba(255,255,255,0.3)' : '#4ade80',
-                                                      border: 'none',
-                                                      borderRadius: '8px',
-                                                      padding: '0.5rem',
-                                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                      cursor: atMax ? 'not-allowed' : 'pointer',
-                                                      transition: 'all 0.2s ease',
-                                                      opacity: atMax ? 0.5 : 1
-                                                  }}
-                                              >
-                                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                              </button>
-                                          </div>
-                                      );
-                                  });
-                              })}
+                                              return (
+                                                  <SortableNavItem 
+                                                      key={href} 
+                                                      id={href} 
+                                                      item={{ ...item, icon, label }} 
+                                                      onRemove={(id) => handleNavChange(id, false)} 
+                                                      atMin={customMobileNav.length <= 2}
+                                                  />
+                                              );
+                                          })}
+                                      </div>
+                                  </SortableContext>
+                              </DndContext>
+                          </div>
+
+                          {/* AVAILABLE ITEMS */}
+                          <div>
+                              <h4 style={{ 
+                                  fontSize: '0.75rem', 
+                                  textTransform: 'uppercase', 
+                                  letterSpacing: '1px', 
+                                  color: 'rgba(255,255,255,0.4)', 
+                                  margin: '0 0 1rem 0',
+                                  fontWeight: '600'
+                              }}>
+                                  Available Items
+                              </h4>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                  {navGroups.map((group) => {
+                                      return group.items.map((item) => {
+                                          if (customMobileNav.includes(item.href)) return null;
+                                          
+                                          const atMax = customMobileNav.length >= 4;
+                                          
+                                          return (
+                                              <div key={item.href} style={{ 
+                                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                  padding: '0.75rem 1rem', borderRadius: '12px',
+                                                  background: 'rgba(0,0,0,0.2)',
+                                                  border: '1px solid rgba(255,255,255,0.02)'
+                                              }}>
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'rgba(255,255,255,0.6)' }}>
+                                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                          {item.href === '/dashboard' ? mobilePrimaryNav[0].icon : item.icon}
+                                                      </svg>
+                                                      <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>
+                                                          {item.href === '/dashboard' ? 'Home' : item.label}
+                                                      </span>
+                                                  </div>
+                                                  
+                                                  <button 
+                                                      onClick={() => !atMax && handleNavChange(item.href, true)}
+                                                      style={{
+                                                          background: atMax ? 'rgba(255,255,255,0.1)' : 'rgba(74, 222, 128, 0.2)',
+                                                          color: atMax ? 'rgba(255,255,255,0.3)' : '#4ade80',
+                                                          border: 'none',
+                                                          borderRadius: '8px',
+                                                          padding: '0.5rem',
+                                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                          cursor: atMax ? 'not-allowed' : 'pointer',
+                                                          transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
+                                                          opacity: atMax ? 0.5 : 1
+                                                      }}
+                                                  >
+                                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                                  </button>
+                                              </div>
+                                          );
+                                      });
+                                  })}
+                              </div>
                           </div>
                       </div>
-                      
-                      <div style={{ marginTop: '1rem' }}>
-                          <button onClick={() => setIsEditNavMode(false)} style={{
-                              width: '100%', padding: '0.85rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', cursor: 'pointer'
-                          }}>
-                              Done Editing
-                          </button>
-                      </div>
-                  </div>
-              )}
+                  )}
+              </div>
+
+              {/* Fixed Footer */}
+              <div style={{ padding: '1rem 1.5rem 2rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(15, 23, 42, 0.95)' }}>
+                  {!isEditNavMode ? (
+                      <button onClick={handleLogout} style={{ 
+                          background: 'rgba(239, 68, 68, 0.1)', 
+                          border: '1px solid rgba(239, 68, 68, 0.3)', 
+                          color: '#ef4444', 
+                          padding: '0.75rem 2rem', 
+                          borderRadius: '999px',
+                          cursor: 'pointer', 
+                          fontSize: '0.875rem',
+                          fontWeight: '600',
+                          transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
+                          width: '100%'
+                      }}>
+                          Logout
+                      </button>
+                  ) : (
+                      <button onClick={() => setIsEditNavMode(false)} style={{
+                          width: '100%', padding: '0.85rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '999px', fontWeight: '600', cursor: 'pointer'
+                      }}>
+                          Done Editing
+                      </button>
+                  )}
+              </div>
           </div>
       </div>
 
@@ -508,7 +555,7 @@ export default function ClientLayout({ children, initialMobileNav }) {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', 
                     textDecoration: 'none', 
                     color: isActive ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
-                    transition: 'all 0.2s ease',
+                    transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                     flex: 1
                 }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -523,7 +570,7 @@ export default function ClientLayout({ children, initialMobileNav }) {
             display: 'flex', flexDirection: 'column', alignItems: 'center', 
             background: 'transparent', border: 'none', cursor: 'pointer',
             color: isMobileMenuOpen ? 'white' : 'rgba(255,255,255,0.5)',
-            transition: 'all 0.2s ease',
+            transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
             flex: 1
         }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -1,7 +1,7 @@
 export default function manifest() {
   return {
-    name: 'Loyola ERP',
-    short_name: 'Loyola ERP',
+    name: 'Flow',
+    short_name: 'Flow',
     description: 'A modern, fast wrapper for Loyola College ERP',
     start_url: '/',
     display: 'standalone',

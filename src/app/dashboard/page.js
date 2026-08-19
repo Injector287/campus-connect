@@ -1,624 +1,444 @@
-'use client'
+'use client';
 import { useState, useEffect } from 'react';
 import useSWR from 'swr';
-import { useTabState } from '@/hooks/useTabState';
 import { useRouter } from 'next/navigation';
 import { fetcher } from '@/utils/fetcher';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import Link from 'next/link';
+import calendarData from '../../../calendar.json';
 import CurrentPeriod from '@/components/CurrentPeriod';
-import SkeletonPage from '@/components/SkeletonPage';
-import DashboardReminders from '@/components/DashboardReminders';
 
-const formatSubjectName = (name) => {
-    if (!name) return '';
-    const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-    return name.toLowerCase().split(' ').map(word => {
-        const upperWord = word.toUpperCase();
-        // Keep roman numerals uppercase, otherwise capitalize first letter
-        if (romanNumerals.includes(upperWord)) return upperWord;
-        return word.charAt(0).toUpperCase() + word.slice(1);
-    }).join(' ');
+// Helper to get today's date in DD.MM.YYYY format
+const getTodayStr = () => {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    return `${dd}.${mm}.${yyyy}`;
 };
 
-export default function DashboardPage() {
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useTabState('tab', 'hourWise') // 'hourWise', 'subjectWise'
-  
-  // Detect if the page was hard reloaded (e.g. native pull-to-refresh or F5)
-  const isReload = typeof window !== 'undefined' && 
-                   window.performance && 
-                   window.performance.getEntriesByType("navigation").length > 0 && 
-                   window.performance.getEntriesByType("navigation")[0].type === 'reload';
-                   
-  const apiUrl = isReload ? '/api/dashboard?force=true' : '/api/dashboard';
-  const { data: json, error, isLoading } = useSWR(apiUrl, fetcher)
-  const { data: announcements } = useSWR('/api/announcements', fetcher)
-
-  const [liveMins, setLiveMins] = useState(null);
-  const [liveCooldown, setLiveCooldown] = useState(null);
-
-  useEffect(() => {
-    if (json) {
-      setTimeout(() => {
-          setLiveMins(json.lastSyncMinutesAgo);
-          setLiveCooldown(json.cooldownRemaining);
-      }, 0);
-      
-      const interval = setInterval(() => {
-        setLiveMins(prev => (prev !== undefined && prev !== null) ? prev + 1 : prev);
-        setLiveCooldown(prev => (prev && prev > 0) ? Math.max(0, prev - 1) : prev);
-      }, 60000); // tick every minute
-
-      return () => clearInterval(interval);
-    }
-  }, [json]);
-
-  useEffect(() => {
-    if (error && error.status === 401) {
-      router.push('/?error=401')
-    }
-  }, [error, router])
-
-  if (error) {
-    if (error.status === 401) {
-      return null
-    }
-    return (
-      <main className="main-container">
-        <div className="glass-panel" style={{ textAlign: 'center' }}>
-           <h2 className="text-gradient">Oops!</h2>
-           <p style={{ marginTop: '1rem' }}>{error.message || 'A network error occurred.'}</p>
-           <button onClick={() => window.location.reload()} className="btn-secondary" style={{ marginTop: '2rem' }}>Retry</button>
-        </div>
-      </main>
-    )
-  }
-
-  if (isLoading && !json) {
-    return <SkeletonPage />;
-  }
-
-  const data = json
-  if (!data) return null
-
-
-
-  const { stats = {}, allDays = [], subjectWise = [], outreachData = null, hasODColumn = false } = data || {};
-  
-  const getStatusColor = (status) => {
+const getStatusColor = (status) => {
     if (status === 'P') return '#4db8ff'; // vibrant blue
     if (status === 'A') return '#f59f00'; // vibrant orange
     if (status === 'ML' || status === 'OD') return '#4caf50'; // green
     if (status === 'CL') return '#c0ca33';
     if (status === 'DA' || status === 'LA') return '#e11d48'; 
     return 'transparent'; // empty or other
-  }
+};
 
-  // Data for PieChart mapping to the ERP colors
-  const pieData = [
-    { name: 'Present', value: stats.hrsPresent, fill: '#4ab4c4' },
-    { name: 'Absent', value: stats.hrsAbsent, fill: '#f2a632' },
-    { name: 'CL', value: stats.hrsCL, fill: '#c0ca33' },
-    { name: 'ML', value: stats.hrsML, fill: '#5e9973' },
-    { name: 'OD', value: stats.hrsOD, fill: '#8a9b5f' },
-    { name: 'DA', value: stats.hrsDA, fill: '#8f9218' },
-    { name: 'LA', value: stats.hrsLA, fill: '#8f2e62' }
-  ].filter(item => item.value > 0);
+const getWeatherCaption = (condition, temp) => {
+    const c = (condition || '').toLowerCase();
+    if (c.includes('rain') || c.includes('shower') || c.includes('drizzle')) return "Don't forget your umbrella! ☔";
+    if (c.includes('thunder')) return "Thunderstorms expected. Stay safe! 🌩️";
+    if (c.includes('snow')) return "Bundle up, it's snowing! ❄️";
+    if (temp > 30 && (c.includes('clear') || c.includes('sun'))) return "It's hot! Wear sunscreen and stay hydrated. 🧴☀️";
+    if (temp < 15) return "It's chilly! Grab a jacket. 🧥";
+    if (c.includes('clear') || c.includes('sun')) return "Beautiful day! Enjoy the sunshine. 🌞";
+    if (c.includes('cloud')) return "A bit cloudy, but a great day ahead. ☁️";
+    if (c.includes('fog') || c.includes('mist')) return "It's foggy. Be careful if you're driving! 🌫️";
+    return "Have a great day ahead! ✨";
+};
 
-  // Group by month
-  const groupedDays = allDays.reduce((acc, day) => {
-      // day.date format is like "15-Jul-2026"
-      const parts = day.date.split('-');
-      if (parts.length === 3) {
-          const monthYear = `${parts[1]} ${parts[2]}`;
-          if (!acc[monthYear]) acc[monthYear] = [];
-          acc[monthYear].push(day);
-      } else {
-          if (!acc['Other']) acc['Other'] = [];
-          acc['Other'].push(day);
-      }
-      return acc;
-  }, {});
+export default function DashboardHomePage() {
+    const router = useRouter();
+    const [todayStr, setTodayStr] = useState('');
+    const [todayCalendar, setTodayCalendar] = useState(null);
 
-  // Custom label for Pie chart slices to match the ERP reference exactly
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-    const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-  
-    return (
-      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={14} fontWeight={600} opacity={0.9}>
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
+    useEffect(() => {
+        const today = getTodayStr();
+        setTodayStr(today);
+        const calData = calendarData.find(d => d.date === today) || null;
+        setTodayCalendar(calData);
+    }, []);
 
-  const renderHourWise = () => {
+    const { data: attendanceData, error: attendanceError, mutate: mutateAttendance } = useSWR('/api/dashboard', fetcher, { keepPreviousData: true });
+    const { data: financeData, error: financeError } = useSWR('/api/finance', fetcher);
+    const { data: weatherData } = useSWR('/api/weather', fetcher);
+    const { data: timetableData } = useSWR('/api/timetable', fetcher);
+    const { data: profileData } = useSWR('/api/profile', fetcher);
+
+    const [liveMins, setLiveMins] = useState(0);
+    const [liveCooldown, setLiveCooldown] = useState(0);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [shakeTimeout, setShakeTimeout] = useState(null);
+
+    const handleSyncClick = async () => {
+        if (isSyncing) return;
+        if (liveCooldown > 0) {
+            // Shake effect
+            const el = document.getElementById('sync-bubble');
+            if (el) {
+                el.classList.remove('shake-anim');
+                void el.offsetWidth; // trigger reflow
+                el.classList.add('shake-anim');
+            }
+            return;
+        }
+        setIsSyncing(true);
+        try {
+            const res = await fetch('/api/dashboard?force=true');
+            const newData = await res.json();
+            if (newData.success) {
+                mutateAttendance(newData, { revalidate: false });
+                
+                // Smooth pulse animation to indicate new data
+                const card = document.getElementById('attendance-card');
+                if (card) {
+                    card.style.transition = 'box-shadow 0.5s ease, border-color 0.5s ease';
+                    card.style.boxShadow = '0 0 30px rgba(74, 222, 128, 0.2)';
+                    card.style.borderColor = 'rgba(74, 222, 128, 0.5)';
+                    setTimeout(() => {
+                        card.style.boxShadow = 'none';
+                        card.style.borderColor = 'rgba(255,255,255,0.1)';
+                    }, 1500);
+                }
+            }
+        } catch (e) {
+            console.error('Sync failed', e);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    useEffect(() => {
+        if (attendanceData) {
+            setTimeout(() => {
+                setLiveMins(attendanceData.lastSyncMinutesAgo);
+                setLiveCooldown(attendanceData.cooldownRemaining);
+            }, 0);
+        }
+    }, [attendanceData]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setLiveMins(prev => (prev !== undefined && prev !== null) ? prev + 1 : prev);
+            setLiveCooldown(prev => prev > 0 ? prev - 1 : 0);
+        }, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        if ((attendanceError && attendanceError.status === 401) || (financeError && financeError.status === 401)) {
+            router.push('/?error=401');
+        }
+    }, [attendanceError, financeError, router]);
+
+    // Handle day order classes
+    let todaysClasses = [];
+    if (todayCalendar && todayCalendar.day_order && timetableData?.timetable) {
+        const dayOrderStr = String(todayCalendar.day_order);
+        const dayTimetable = timetableData.timetable[dayOrderStr];
+        if (dayTimetable) {
+            todaysClasses = Object.entries(dayTimetable).map(([period, subject]) => {
+                const isOverride = timetableData.userOverrides?.some(o => o.dayOrder === dayOrderStr && o.period === period);
+                const isAlias = !!timetableData.aliases?.[subject];
+                const displaySubject = timetableData.aliases?.[subject] || subject;
+                return { period, subject: displaySubject, isOverride, isAlias, originalSubject: subject };
+            });
+        }
+    }
+
+    // Attendance stats
+    const { stats = {} } = attendanceData || {};
     const totalConducted = [stats.hrsPresent, stats.hrsAbsent, stats.hrsCL, stats.hrsML, stats.hrsOD, stats.hrsDA, stats.hrsLA].reduce((a, b) => a + (b || 0), 0);
     const currentPresent = (stats.hrsPresent || 0) + (stats.hrsML || 0) + (stats.hrsOD || 0);
     const currentPercentage = totalConducted > 0 ? (currentPresent / totalConducted) * 100 : 0;
 
-    return (
-    <div className="responsive-split">
-      {/* Pie Chart Card */}
-      <div className="glass-panel" style={{ padding: '1rem', textAlign: 'center', marginBottom: '2rem' }}>
-         <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)' }}>Attendance Breakdown</h2>
-         <div style={{ width: '100%', height: 280 }}>
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie 
-                  data={pieData} 
-                  dataKey="value" 
-                  nameKey="name" 
-                  cx="50%" 
-                  cy="50%" 
-                  outerRadius={100} 
-                  labelLine={false}
-                  label={renderCustomizedLabel}
-                  stroke="rgba(255,255,255,0.1)"
-                  strokeWidth={2}
-                  isAnimationActive={false}
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} 
-                  itemStyle={{ color: '#fff', fontWeight: '500' }} 
-                />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '0.875rem' }} />
-              </PieChart>
-            </ResponsiveContainer>
-         </div>
-         <div style={{ marginTop: '0.5rem' }}>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '700' }}>{currentPercentage.toFixed(1)}%</h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem' }}>Effective Attendance</p>
-         </div>
+    // Finance dues
+    let pendingDuesTotal = 0;
+    if (financeData?.due?.data) {
+        pendingDuesTotal = financeData.due.data.reduce((sum, item) => {
+            const amt = parseFloat(String(item.dueAmount).replace(/,/g, ''));
+            return sum + (isNaN(amt) ? 0 : amt);
+        }, 0);
+    }
 
-         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '1.5rem' }}>
-             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: '70px' }}>
-                 <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#4ab4c4' }}>{stats.hrsPresent || 0}</span>
-                 <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem', letterSpacing: '0.05em' }}>Present</span>
-             </div>
-             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: '70px' }}>
-                 <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#f2a632' }}>{stats.hrsAbsent || 0}</span>
-                 <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem', letterSpacing: '0.05em' }}>Absent</span>
-             </div>
-             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: '70px' }}>
-                 <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#8a9b5f' }}>{stats.hrsOD || 0}</span>
-                 <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem', letterSpacing: '0.05em' }}>OD</span>
-             </div>
-             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: '70px' }}>
-                 <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#5e9973' }}>{stats.hrsML || 0}</span>
-                 <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem', letterSpacing: '0.05em' }}>ML</span>
-             </div>
-         </div>
+    // Greeting logic
+    let greeting = 'Good day';
+    const hour = new Date().getHours();
+    if (hour < 12) greeting = 'Good Morning';
+    else if (hour < 18) greeting = 'Good Afternoon';
+    else greeting = 'Good Evening';
 
-         {/* 80% Attendance Goal Box */}
-         {(() => {
-             const reqClasses = Math.ceil((0.8 * totalConducted - currentPresent) / 0.2);
-             const safeToMiss = Math.floor((currentPresent - 0.8 * totalConducted) / 0.8);
-             
-             const isDanger = currentPercentage < 80;
-             const cardBg = isDanger ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.02))' : 'linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.02))';
-             const borderColor = isDanger ? 'rgba(239, 68, 68, 0.2)' : 'rgba(74, 222, 128, 0.2)';
-             const iconColor = isDanger ? '#ef4444' : '#4ade80';
-             
-             return (
-                 <div style={{ 
-                     marginTop: '2rem', 
-                     padding: '1.25rem', 
-                     background: cardBg, 
-                     borderRadius: '16px', 
-                     border: `1px solid ${borderColor}`,
-                     textAlign: 'left',
-                     boxShadow: `0 4px 20px ${isDanger ? 'rgba(239, 68, 68, 0.05)' : 'rgba(74, 222, 128, 0.05)'}`,
-                     display: 'flex',
-                     flexDirection: 'column',
-                     gap: '1rem'
-                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ 
-                            width: '32px', height: '32px', 
-                            borderRadius: '8px', 
-                            background: isDanger ? 'rgba(239, 68, 68, 0.15)' : 'rgba(74, 222, 128, 0.15)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: iconColor
-                        }}>
-                            {isDanger ? (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                            ) : (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            )}
-                        </div>
-                        <h3 style={{ fontSize: '0.85rem', color: isDanger ? '#fca5a5' : '#86efac', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em', fontWeight: '700' }}>80% Attendance Goal</h3>
-                    </div>
-                    
-                    <div>
-                        {isDanger ? (
-                            <p style={{ fontSize: '0.95rem', fontWeight: '500', color: 'rgba(255,255,255,0.9)', lineHeight: '1.5', margin: 0 }}>
-                                You need to attend <span style={{ fontWeight: '800', color: '#ef4444', fontSize: '1.1rem' }}>{reqClasses > 0 ? reqClasses : 1}</span> more consecutive periods to reach the 80% minimum.
-                            </p>
-                        ) : (
-                            <p style={{ fontSize: '0.95rem', fontWeight: '500', color: 'rgba(255,255,255,0.9)', lineHeight: '1.5', margin: 0 }}>
-                                You are above 80%! You can afford to miss <span style={{ fontWeight: '800', color: '#4ade80', fontSize: '1.1rem' }}>{safeToMiss > 0 ? safeToMiss : 0}</span> periods.
-                            </p>
-                        )}
-                    </div>
-                    
-                    {/* Progress Bar visualization towards 80% */}
-                    <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.3)', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
-                        <div style={{ width: `${Math.min(currentPercentage, 100)}%`, height: '100%', background: iconColor, borderRadius: '3px', transition: 'width 1s ease-out' }}></div>
-                        {/* The 80% Marker line */}
-                        <div style={{ position: 'absolute', left: '80%', top: 0, bottom: 0, width: '2px', background: 'rgba(255,255,255,0.5)', zIndex: 2 }}></div>
-                    </div>
-                 </div>
-             );
-         })()}
-
-         {/* Outreach Progress Widget (if applicable) */}
-         {outreachData && (
-             <div style={{
-                 marginTop: '2rem',
-                 padding: '1.25rem',
-                 background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.02))',
-                 borderRadius: '16px',
-                 border: '1px solid rgba(168, 85, 247, 0.2)',
-                 textAlign: 'left',
-                 boxShadow: '0 4px 20px rgba(168, 85, 247, 0.05)',
-                 display: 'flex',
-                 flexDirection: 'column',
-                 gap: '1rem'
-             }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                     <div style={{
-                         width: '32px', height: '32px',
-                         borderRadius: '8px',
-                         background: 'rgba(168, 85, 247, 0.15)',
-                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                         color: '#c084fc'
-                     }}>
-                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                     </div>
-                     <div>
-                         <h3 style={{ fontSize: '0.85rem', color: '#d8b4fe', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em', fontWeight: '700' }}>Outreach Progress</h3>
-                         <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>{outreachData.team}</span>
-                     </div>
-                 </div>
-
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
-                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                         <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Hours Completed</span>
-                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                             <span style={{ fontSize: '2.5rem', fontWeight: '800', color: '#c084fc', lineHeight: 1 }}>{outreachData.present * 3}</span>
-                             <span style={{ fontSize: '1.25rem', fontWeight: '600', color: 'rgba(255,255,255,0.4)' }}>/ 90</span>
-                         </div>
-                     </div>
-                 </div>
-
-                 <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', overflow: 'hidden' }}>
-                     <div style={{ width: `${Math.min(((outreachData.present * 3) / 90) * 100, 100)}%`, height: '100%', background: 'linear-gradient(90deg, #c084fc, #a855f7)', borderRadius: '4px', transition: 'width 1s ease-out' }}></div>
-                 </div>
-             </div>
-         )}
-      </div>
-
-      {/* Complete Attendance List Grouped by Month */}
-      <div>
-          
-          {Object.entries(groupedDays).map(([month, days]) => (
-            <div key={month} style={{ marginBottom: '2rem' }}>
-               <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '0.75rem', paddingLeft: '0.5rem' }}>
-                   {month}
-               </h4>
-               <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
-                 {days.map((day, idx) => (
-                   <div key={idx} style={{ 
-                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-                     padding: '1rem', 
-                     borderBottom: idx === days.length - 1 ? 'none' : '1px solid var(--glass-border)' 
-                   }}>
-                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                         <p style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>{day.date.split('-')[0]}</p>
-                         <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>{day.date.split('-')[1]}</p>
-                     </div>
-                     <div style={{ display: 'flex', gap: '0.25rem' }}>
-                       {day.hours.map((status, i) => (
-                         <div key={i} style={{
-                           width: '28px', height: '28px', 
-                           borderRadius: '6px', 
-                           background: getStatusColor(status), 
-                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                           fontSize: '0.75rem', fontWeight: '700', 
-                           color: status === '-' ? 'rgba(255,255,255,0.2)' : '#fff',
-                           border: status === '-' ? '1px solid rgba(255,255,255,0.1)' : 'none'
-                         }}>
-                           {status}
-                         </div>
-                       ))}
-                     </div>
-                   </div>
-                 ))}
-               </div>
-            </div>
-          ))}
-      </div>
-    </div>
-    )
-  }
-
-  const renderSubjectWise = () => {
-    if (!subjectWise || subjectWise.length === 0) {
-        return <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>No subject wise data found.</div>
+    let firstName = '';
+    if (profileData?.profile?.name) {
+        firstName = profileData.profile.name.split(' ')[0];
+        // Capitalize first letter properly
+        firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
     }
 
     return (
-      <>
-      {/* Desktop Data Grid View */}
-      <div className="desktop-view glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <th style={{ width: '35%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Subject</th>
-                      <th style={{ width: '10%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Total Hrs</th>
-                      <th style={{ width: '10%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Present</th>
-                      <th style={{ width: '8%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Absent</th>
-                      <th style={{ width: '8%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ML</th>
-                      {hasODColumn && <th style={{ width: '8%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>OD</th>}
-                      <th style={{ width: '25%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Progress</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  {subjectWise.map((subj, idx) => {
-                      const pct = parseFloat(subj.percentage);
-                      const isDanger = pct < 75;
-                      const pctColor = isDanger ? '#ef4444' : '#4ade80';
-
-                      return (
-                          <tr key={idx} style={{ borderBottom: idx === subjectWise.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s', cursor: 'default' }}
-                              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-                          >
-                              <td style={{ padding: '1.25rem' }}>
-                                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                      <span style={{ fontWeight: '700', color: 'white', fontSize: '0.95rem', marginBottom: '0.2rem' }}>{formatSubjectName(subj.desc)}</span>
-                                      <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>{subj.code}</span>
-                                  </div>
-                              </td>
-                              <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: 'rgba(255,255,255,0.9)' }}>{subj.total}</td>
-                              <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: '#4ade80' }}>{subj.present}</td>
-                              <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: '#ef4444' }}>{subj.absent}</td>
-                              <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: '#facc15' }}>{subj.ml}</td>
-                              {hasODColumn && <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '600', color: '#60a5fa' }}>{subj.od || 0}</td>}
-                              <td style={{ padding: '1.25rem' }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                      <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
-                                          <div style={{ width: `${pct}%`, height: '100%', background: pctColor, borderRadius: '3px', transition: 'width 0.5s ease' }}></div>
-                                      </div>
-                                      <span style={{ fontWeight: '800', color: pctColor, fontSize: '1rem', minWidth: '60px', textAlign: 'right' }}>{subj.percentage}%</span>
-                                  </div>
-                              </td>
-                          </tr>
-                      );
-                  })}
-                  {/* Total Row */}
-                  <tr style={{ background: 'rgba(255,255,255,0.05)', borderTop: '2px solid rgba(255,255,255,0.1)' }}>
-                      <td style={{ padding: '1.25rem', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</td>
-                      <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: 'white' }}>{subjectWise.reduce((sum, s) => sum + s.total, 0)}</td>
-                      <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: '#4ade80' }}>{subjectWise.reduce((sum, s) => sum + s.present, 0)}</td>
-                      <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: '#ef4444' }}>{subjectWise.reduce((sum, s) => sum + s.absent, 0)}</td>
-                      <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: '#facc15' }}>{subjectWise.reduce((sum, s) => sum + s.ml, 0)}</td>
-                      {hasODColumn && <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '800', color: '#60a5fa' }}>{subjectWise.reduce((sum, s) => sum + (s.od || 0), 0)}</td>}
-                      <td style={{ padding: '1.25rem' }}>
-                          <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', textAlign: 'right' }}>
-                              {(() => {
-                                  const totalPresent = subjectWise.reduce((sum, s) => sum + s.present + s.ml + (s.od || 0), 0);
-                                  const totalScheduled = subjectWise.reduce((sum, s) => sum + s.total, 0);
-                                  return totalScheduled > 0 ? ((totalPresent / totalScheduled) * 100).toFixed(2) + '%' : '0.00%';
-                              })()}
-                          </div>
-                      </td>
-                  </tr>
-              </tbody>
-          </table>
-      </div>
-
-      {/* Mobile Cards View */}
-      <div className="responsive-grid mobile-view">
-        {subjectWise.map((subj, idx) => {
-          const pct = parseFloat(subj.percentage);
-          const isDanger = pct < 75;
-          const pctColor = isDanger ? '#ef4444' : '#4ade80';
-
-          return (
-            <div key={idx} className="glass-panel" style={{ padding: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                    <div style={{ flex: 1, paddingRight: '1rem' }}>
-                        <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '0.25rem' }}>{formatSubjectName(subj.desc)}</h3>
-                        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>{subj.code}</span>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '1.5rem', fontWeight: '800', color: pctColor }}>
-                            {subj.percentage}%
-                        </div>
-                    </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginBottom: '1rem', overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: pctColor, borderRadius: '4px', transition: 'width 0.5s ease' }}></div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', background: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: '8px' }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Total Hrs</div>
-                        <div style={{ fontSize: '1rem', fontWeight: '600' }}>{subj.total}</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Present</div>
-                        <div style={{ fontSize: '1rem', fontWeight: '600', color: '#4ade80' }}>{subj.present}</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Absent</div>
-                        <div style={{ fontSize: '1rem', fontWeight: '600', color: '#ef4444' }}>{subj.absent}</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>ML</div>
-                        <div style={{ fontSize: '1rem', fontWeight: '600', color: '#facc15' }}>{subj.ml}</div>
-                    </div>
-                    {hasODColumn && (
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>OD</div>
-                            <div style={{ fontSize: '1rem', fontWeight: '600', color: '#60a5fa' }}>{subj.od || 0}</div>
-                        </div>
-                    )}
-                </div>
-            </div>
-          )
-        })}
-        
-        {/* Mobile Total Card */}
-        <div className="glass-panel" style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', textAlign: 'center' }}>Overall Total</h3>
-            <div style={{ display: 'flex', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Total</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white' }}>{subjectWise.reduce((sum, s) => sum + s.total, 0)}</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Present</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#4ade80' }}>{subjectWise.reduce((sum, s) => sum + s.present, 0)}</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Absent</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#ef4444' }}>{subjectWise.reduce((sum, s) => sum + s.absent, 0)}</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>ML</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#facc15' }}>{subjectWise.reduce((sum, s) => sum + s.ml, 0)}</div>
-                </div>
-                {hasODColumn && (
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>OD</div>
-                        <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#60a5fa' }}>{subjectWise.reduce((sum, s) => sum + (s.od || 0), 0)}</div>
+        <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>
+                    {firstName ? `${greeting}, ${firstName}!` : 'Overview'}
+                </h1>
+                
+                {attendanceData && (
+                    <div 
+                       id="sync-bubble"
+                       onClick={handleSyncClick}
+                       style={{ 
+                           background: 'rgba(255,255,255,0.05)', 
+                           border: '1px solid rgba(255,255,255,0.1)', 
+                           padding: '0.35rem 0.85rem', 
+                           borderRadius: '999px',
+                           fontSize: '0.75rem',
+                           color: 'rgba(255,255,255,0.8)',
+                           display: 'flex',
+                           alignItems: 'center',
+                           gap: '0.5rem',
+                           cursor: (isSyncing || liveCooldown > 0) ? 'not-allowed' : 'pointer',
+                           transition: 'transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease',
+                           userSelect: 'none'
+                       }}
+                       onMouseOver={e => { if (!isSyncing && liveCooldown === 0) e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                       onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    >
+                       <style>{`
+                           @keyframes shake {
+                               0%, 100% { transform: translateX(0); }
+                               25% { transform: translateX(-4px); }
+                               75% { transform: translateX(4px); }
+                           }
+                           .shake-anim {
+                               animation: shake 0.3s ease-in-out;
+                           }
+                           @keyframes spin {
+                               100% { transform: rotate(360deg); }
+                           }
+                           .spin-anim {
+                               animation: spin 1s linear infinite;
+                           }
+                       `}</style>
+                       {isSyncing ? (
+                           <>
+                               <svg className="spin-anim" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#60a5fa' }}>
+                                   <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                               </svg>
+                               <span>Syncing...</span>
+                           </>
+                       ) : (
+                           <>
+                               <span style={{ 
+                                   width: 8, 
+                                   height: 8, 
+                                   background: (liveCooldown && liveCooldown > 0) ? '#facc15' : (attendanceData.isCached ? '#4ade80' : '#60a5fa'), 
+                                   borderRadius: '50%', 
+                                   display: 'inline-block',
+                                   boxShadow: (liveCooldown && liveCooldown > 0) ? '0 0 8px rgba(250,204,21,0.5)' : 'none',
+                                   transition: 'background 0.3s ease'
+                               }}></span>
+                               <span>{attendanceData.isCached ? `Synced ${(() => {
+                                   if (liveMins < 60) return `${liveMins}m`;
+                                   const hours = Math.floor(liveMins / 60);
+                                   if (hours < 24) return `${hours}h`;
+                                   const days = Math.floor(hours / 24);
+                                   if (days < 30) return `${days}d`;
+                                   const months = Math.floor(days / 30);
+                                   if (months < 12) return `${months}m`;
+                                   const years = Math.floor(months / 12);
+                                   return `${years}y`;
+                               })()} ago` : 'Just synced'}</span>
+                           </>
+                       )}
                     </div>
                 )}
             </div>
-            <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '2rem', fontWeight: '800', color: 'white' }}>
-                {(() => {
-                    const totalPresent = subjectWise.reduce((sum, s) => sum + s.present + s.ml + (s.od || 0), 0);
-                    const totalScheduled = subjectWise.reduce((sum, s) => sum + s.total, 0);
-                    return totalScheduled > 0 ? ((totalPresent / totalScheduled) * 100).toFixed(2) + '%' : '0.00%';
-                })()}
-            </div>
-        </div>
-      </div>
-      </>
-    )
-  }
 
-  return (
-    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
-      
-      <DashboardReminders />
+            <CurrentPeriod />
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Attendance</h1>
-        {data.isCached !== undefined && (
-            <div 
-               style={{ 
-                   background: 'rgba(255,255,255,0.05)', 
-                   border: '1px solid rgba(255,255,255,0.1)', 
-                   padding: '0.25rem 0.75rem', 
-                   borderRadius: '999px',
-                   fontSize: '0.75rem',
-                   color: 'rgba(255,255,255,0.6)',
-                   display: 'flex',
-                   alignItems: 'center',
-                   gap: '0.35rem'
-               }}
-            >
-               <span style={{ 
-                   width: 6, 
-                   height: 6, 
-                   background: (liveCooldown && liveCooldown > 0) ? '#facc15' : (data.isCached ? '#4ade80' : '#60a5fa'), 
-                   borderRadius: '50%', 
-                   display: 'inline-block',
-                   boxShadow: (liveCooldown && liveCooldown > 0) ? '0 0 8px rgba(250,204,21,0.5)' : 'none'
-               }}></span>
-               {data.isCached ? `Synced ${(() => {
-                   if (liveMins < 60) return `${liveMins}m`;
-                   const hours = Math.floor(liveMins / 60);
-                   if (hours < 24) return `${hours}h`;
-                   const days = Math.floor(hours / 24);
-                   if (days < 30) return `${days}d`;
-                   const months = Math.floor(days / 30);
-                   if (months < 12) return `${months}m`;
-                   const years = Math.floor(months / 12);
-                   return `${years}y`;
-               })()} ago` : 'Just synced'}
-            </div>
-        )}
-      </div>
+            <div className="responsive-grid">
+                
+                {/* Weather & Day Overview Widget */}
+                <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05))', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                            <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white', margin: 0 }}>Today</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: 0 }}>{todayStr}</p>
+                        </div>
+                        {weatherData && (
+                            <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'white' }}>{Math.round(weatherData.temp)}°C</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', textTransform: 'capitalize' }}>{weatherData.description}</div>
+                                </div>
+                                <img src={`https://openweathermap.org/img/wn/${weatherData.icon}@2x.png`} alt="weather icon" style={{ width: '48px', height: '48px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+                            </div>
+                        )}
+                    </div>
 
-      <style>{`
-        .mobile-view { display: none; }
-        .desktop-view { display: block; }
-        @media (max-width: 768px) {
-            .mobile-view { display: block; }
-            .desktop-view { display: none; }
-        }
-      `}</style>
-
-      {/* Announcements */}
-      {announcements && announcements.length > 0 && (
-        <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {announcements.map((ann) => (
-             <div key={ann.id} style={{ padding: '1rem 1.25rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05))', borderRadius: '12px', borderLeft: '4px solid #3b82f6', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                <div style={{ color: '#60a5fa', marginTop: '2px' }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path>
-                    </svg>
+                    {/* Hourly Forecast */}
+                    {weatherData?.hourly && weatherData.hourly.length > 0 && (
+                        <div style={{ 
+                            display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem', 
+                            scrollbarWidth: 'none', msOverflowStyle: 'none'
+                        }}>
+                            <style>{`.glass-panel::-webkit-scrollbar { display: none; }`}</style>
+                            {weatherData.hourly.map((hour, idx) => (
+                                <div key={idx} style={{ 
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                                    background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '12px',
+                                    minWidth: '60px'
+                                }}>
+                                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)' }}>{hour.time}</span>
+                                    <img src={`https://openweathermap.org/img/wn/${hour.icon}.png`} alt={hour.description} style={{ width: '32px', height: '32px', margin: '0.25rem 0' }} />
+                                    <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'white' }}>{Math.round(hour.temp)}°</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    
+                    {weatherData && (
+                        <div style={{ 
+                            marginTop: 'auto', 
+                            background: 'rgba(255,255,255,0.05)', 
+                            padding: '0.75rem', 
+                            borderRadius: '8px', 
+                            color: 'rgba(255,255,255,0.9)', 
+                            fontSize: '0.85rem',
+                            fontWeight: '500',
+                            textAlign: 'center',
+                            border: '1px solid rgba(255,255,255,0.1)'
+                        }}>
+                            {getWeatherCaption(weatherData.condition, weatherData.temp)}
+                        </div>
+                    )}
                 </div>
-                <div>
-                   <h4 style={{ color: '#eff6ff', fontSize: '0.95rem', fontWeight: '600', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                     {ann.title}
-                     {ann.roleTarget && ann.roleTarget !== 'ALL' && (
-                       <span style={{ fontSize: '0.65rem', background: 'rgba(59, 130, 246, 0.2)', padding: '0.15rem 0.4rem', borderRadius: '4px', color: '#93c5fd' }}>
-                         {ann.roleTarget}
-                       </span>
-                     )}
-                   </h4>
-                   <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', lineHeight: '1.4', margin: 0, whiteSpace: 'pre-wrap' }}>{ann.content}</p>
+
+                {/* Attendance Snapshot Widget */}
+                <Link href="/dashboard/attendance" style={{ textDecoration: 'none' }}>
+                    <div id="attendance-card" className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s, background 0.2s, box-shadow 0.5s, border-color 0.5s', border: '1px solid rgba(255,255,255,0.1)' }}
+                         onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                         onMouseOut={e => e.currentTarget.style.background = 'rgba(15, 23, 42, 0.6)'}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0 }}>Attendance</h2>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </div>
+                        {attendanceData ? (
+                            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '2.5rem', fontWeight: '800', color: currentPercentage >= 80 ? '#4ade80' : '#ef4444', lineHeight: 1, marginBottom: '0.5rem' }}>
+                                        {currentPercentage.toFixed(1)}%
+                                    </div>
+                                    <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                        <div style={{ width: `${Math.min(currentPercentage, 100)}%`, height: '100%', background: currentPercentage >= 80 ? '#4ade80' : '#ef4444', borderRadius: '3px' }}></div>
+                                    </div>
+                                </div>
+                                
+                                {attendanceData.allDays && attendanceData.allDays.length > 0 && (
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                        {attendanceData.allDays.slice(0, 5).map((day, idx) => (
+                                            <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 0.25rem', borderRadius: '8px', minWidth: '40px' }}>
+                                                <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)' }}>{day.date.split('-')[0]}</span>
+                                                <div style={{ display: 'flex', gap: '2px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                                    {day.hours.map((status, i) => (
+                                                        <div key={i} style={{
+                                                            width: '6px', height: '6px', borderRadius: '50%',
+                                                            background: getStatusColor(status),
+                                                            opacity: status === '-' ? 0.2 : 1
+                                                        }} title={status} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: 'auto' }}>Loading...</div>
+                        )}
+                    </div>
+                </Link>
+
+                {/* Finance Snapshot Widget */}
+                <Link href="/dashboard/finance" style={{ textDecoration: 'none' }}>
+                    <div className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s, background 0.2s' }}
+                         onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                         onMouseOut={e => e.currentTarget.style.background = 'rgba(15, 23, 42, 0.6)'}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0 }}>Pending Dues</h2>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </div>
+                        {financeData ? (
+                            <div style={{ marginTop: 'auto' }}>
+                                {pendingDuesTotal > 0 ? (
+                                    <>
+                                        <div style={{ fontSize: '2rem', fontWeight: '800', color: '#ef4444', lineHeight: 1, marginBottom: '0.5rem' }}>
+                                            ₹{pendingDuesTotal.toLocaleString('en-IN')}
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Action required</div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#4ade80', lineHeight: 1, marginBottom: '0.5rem' }}>
+                                            All Clear!
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>No pending fees</div>
+                                    </>
+                                )}
+                            </div>
+                        ) : (
+                            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: 'auto' }}>Loading...</div>
+                        )}
+                    </div>
+                </Link>
+
+            </div>
+
+            {/* Today's Classes Widget */}
+            <div style={{ marginTop: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', margin: 0 }}>Today's Classes</h2>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {todayCalendar?.day_order ? (
+                            <span style={{ background: 'var(--primary)', color: 'white', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontWeight: '700', fontSize: '0.85rem' }}>
+                                Day Order {todayCalendar.day_order}
+                            </span>
+                        ) : (
+                            <span style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontWeight: '600', fontSize: '0.85rem' }}>
+                                No classes today
+                            </span>
+                        )}
+                        {todayCalendar?.event && (
+                            <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                {todayCalendar.event}
+                            </span>
+                        )}
+                    </div>
                 </div>
-             </div>
-          ))}
-        </div>
-      )}
+                {todaysClasses.length > 0 ? (
+                    <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
+                        {todaysClasses.map((cls, idx) => (
+                            <div key={idx} style={{ 
+                                display: 'flex', alignItems: 'center', gap: '1rem', 
+                                padding: '1rem', 
+                                borderBottom: idx === todaysClasses.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <div style={{ 
+                                    width: '40px', height: '40px', borderRadius: '8px', 
+                                    background: 'rgba(255,255,255,0.05)', 
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontWeight: '800', color: 'var(--primary)'
+                                }}>
+                                    {cls.period}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>{cls.subject}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.15rem' }}>
+                                        {timetableData.timings?.[cls.period]}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
+                        {todayCalendar?.day_order ? 'Loading classes...' : 'Enjoy your day off!'}
+                    </div>
+                )}
+            </div>
 
-      {/* Current Time and Period */}
-      <CurrentPeriod />
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', marginBottom: '1.5rem' }}>
-          <button 
-              onClick={() => setActiveTab('hourWise')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'hourWise' ? 'var(--primary)' : 'transparent', color: activeTab === 'hourWise' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
-          >
-              Hour Wise
-          </button>
-          <button 
-              onClick={() => setActiveTab('subjectWise')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'subjectWise' ? 'var(--primary)' : 'transparent', color: activeTab === 'subjectWise' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
-          >
-              Subject Wise
-          </button>
-      </div>
-
-      {activeTab === 'hourWise' ? renderHourWise() : renderSubjectWise()}
-      
-    </main>
-  )
+        </main>
+    );
 }

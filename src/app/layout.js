@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Loyola ERP',
+  title: 'Flow',
   description: 'A modern, fast wrapper for Loyola College ERP',
 }
 

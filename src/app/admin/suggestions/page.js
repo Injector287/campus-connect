@@ -45,13 +45,13 @@ export default function AdminSuggestionsPage() {
       <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', marginBottom: '1.5rem', width: 'fit-content' }}>
           <button 
               onClick={() => setActiveTab('pending')}
-              style={{ padding: '0.75rem 2rem', borderRadius: '8px', border: 'none', background: activeTab === 'pending' ? 'var(--primary)' : 'transparent', color: activeTab === 'pending' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              style={{ padding: '0.75rem 2rem', borderRadius: '8px', border: 'none', background: activeTab === 'pending' ? 'var(--primary)' : 'transparent', color: activeTab === 'pending' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease', cursor: 'pointer' }}
           >
               Pending ({pendingSuggestions.length})
           </button>
           <button 
               onClick={() => setActiveTab('solved')}
-              style={{ padding: '0.75rem 2rem', borderRadius: '8px', border: 'none', background: activeTab === 'solved' ? 'var(--primary)' : 'transparent', color: activeTab === 'solved' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              style={{ padding: '0.75rem 2rem', borderRadius: '8px', border: 'none', background: activeTab === 'solved' ? 'var(--primary)' : 'transparent', color: activeTab === 'solved' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease', cursor: 'pointer' }}
           >
               Solved ({solvedSuggestions.length})
           </button>
@@ -135,7 +135,7 @@ export default function AdminSuggestionsPage() {
                   {editing[sug.id] && (
                       <button onClick={() => setEditing({ ...editing, [sug.id]: false })} style={{ 
                           background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', 
-                          padding: '0 1rem', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s'
+                          padding: '0 1rem', borderRadius: '12px', cursor: 'pointer', transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s'
                       }}>
                         Cancel
                       </button>
@@ -143,7 +143,7 @@ export default function AdminSuggestionsPage() {
                   <button onClick={() => submitReply(sug.id)} style={{ 
                       background: 'var(--primary)', color: 'white', border: 'none', 
                       padding: '0 1.5rem', borderRadius: '12px', fontWeight: '600', cursor: 'pointer', 
-                      transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                      transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem'
                   }}>
                     {editing[sug.id] ? 'Update' : 'Reply'}
                   </button>

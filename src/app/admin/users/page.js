@@ -92,19 +92,19 @@ export default function UsersPage() {
   return (
     <main className="main-container animate-slide-up" style={{ paddingBottom: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>User Management</h1>
+        <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Users</h1>
         
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', width: 'fit-content' }}>
           <button 
               onClick={() => toggleAccessMode('BLACKLIST')}
-              style={{ padding: '0.5rem 1.5rem', borderRadius: '8px', border: 'none', background: accessMode === 'BLACKLIST' ? '#ef4444' : 'transparent', color: accessMode === 'BLACKLIST' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.85rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              style={{ padding: '0.5rem 1.5rem', borderRadius: '8px', border: 'none', background: accessMode === 'BLACKLIST' ? '#ef4444' : 'transparent', color: accessMode === 'BLACKLIST' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.85rem', transition: 'transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease', cursor: 'pointer' }}
               title="Blacklist Mode: Anyone can enter, EXCEPT banned users."
           >
               Blacklist Mode
           </button>
           <button 
               onClick={() => toggleAccessMode('WHITELIST')}
-              style={{ padding: '0.5rem 1.5rem', borderRadius: '8px', border: 'none', background: accessMode === 'WHITELIST' ? '#10b981' : 'transparent', color: accessMode === 'WHITELIST' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.85rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              style={{ padding: '0.5rem 1.5rem', borderRadius: '8px', border: 'none', background: accessMode === 'WHITELIST' ? '#10b981' : 'transparent', color: accessMode === 'WHITELIST' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.85rem', transition: 'transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease', cursor: 'pointer' }}
               title="Whitelist Mode: Only approved users can enter."
           >
               Whitelist Mode
@@ -145,9 +145,8 @@ export default function UsersPage() {
               <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Register No.</th>
               <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</th>
               <th style={{ width: '20%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
-              <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rate Limit</th>
-              <th style={{ width: '20%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Last Sync</th>
-              <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
+              <th style={{ width: '25%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Last Sync</th>
+              <th style={{ width: '25%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -177,12 +176,11 @@ export default function UsersPage() {
                     <option value="BANNED">BANNED</option>
                   </select>
                 </td>
-                <td style={{ padding: '1.25rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>{user.customRateLimit || 'Default'}</td>
                 <td style={{ padding: '1.25rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem' }}>{user.lastSyncDashboard ? new Date(user.lastSyncDashboard).toLocaleString() : 'Never'}</td>
                 <td style={{ padding: '1.25rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <button 
-                      style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                      style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s' }}
                       onClick={() => { if(confirm('Are you sure you want to force logout this user?')) updateUser(user.id, { forceLogout: true }) }}
                       title="Force Logout"
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(245, 158, 11, 0.2)' }}
@@ -191,7 +189,7 @@ export default function UsersPage() {
                       Logout
                     </button>
                     <button 
-                      style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                      style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s' }}
                       onClick={() => updateUser(user.id, { status: 'BANNED' })}
                       title="Force Logout / Ban"
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)' }}
@@ -200,7 +198,7 @@ export default function UsersPage() {
                       Ban
                     </button>
                     <button 
-                      style={{ background: 'rgba(220, 38, 38, 0.2)', color: '#f87171', border: '1px solid rgba(220, 38, 38, 0.4)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                      style={{ background: 'rgba(220, 38, 38, 0.2)', color: '#f87171', border: '1px solid rgba(220, 38, 38, 0.4)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontSize: '0.8rem', cursor: 'pointer', transition: 'transform 0.2s, opacity 0.2s, background-color 0.2s, border-color 0.2s' }}
                       onClick={() => deleteUser(user.id)}
                       title="Permanently Delete User"
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(220, 38, 38, 0.3)' }}
@@ -214,7 +212,7 @@ export default function UsersPage() {
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>No users found.</td>
+                <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>No users found.</td>
               </tr>
             )}
           </tbody>

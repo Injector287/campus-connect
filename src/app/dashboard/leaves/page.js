@@ -248,7 +248,7 @@ export default function LeaveApplicationPage() {
                                 appearance: 'none',
                                 background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', 
                                 padding: '1rem 1.25rem', color: 'white', fontSize: '1.05rem', width: '100%', outline: 'none',
-                                transition: 'all 0.2s ease', cursor: 'pointer'
+                                transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease', cursor: 'pointer'
                             }}
                             onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
                             onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
@@ -267,7 +267,7 @@ export default function LeaveApplicationPage() {
                 <div className="leave-dates-row" style={{ display: 'flex', gap: '1.5rem' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                         <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>From Date</label>
-                        <div style={{ position: 'relative', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', height: '54.8px', display: 'flex', alignItems: 'center', padding: '0 1.25rem', transition: 'all 0.2s ease' }}>
+                        <div style={{ position: 'relative', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', height: '54.8px', display: 'flex', alignItems: 'center', padding: '0 1.25rem', transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease' }}>
                             <span style={{ color: 'white', fontSize: '1.05rem', flex: 1, pointerEvents: 'none' }}>
                                 {fromDate ? formatDate(fromDate) : 'Select Date'}
                             </span>
@@ -291,7 +291,7 @@ export default function LeaveApplicationPage() {
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                         <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>To Date</label>
-                        <div style={{ position: 'relative', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', height: '54.8px', display: 'flex', alignItems: 'center', padding: '0 1.25rem', transition: 'all 0.2s ease' }}>
+                        <div style={{ position: 'relative', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', height: '54.8px', display: 'flex', alignItems: 'center', padding: '0 1.25rem', transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease' }}>
                             <span style={{ color: 'white', fontSize: '1.05rem', flex: 1, pointerEvents: 'none' }}>
                                 {toDate ? formatDate(toDate) : 'Select Date'}
                             </span>
@@ -398,7 +398,7 @@ export default function LeaveApplicationPage() {
                         alignItems: 'center',
                         gap: '0.75rem',
                         cursor: (isSubmitting || noOfDays <= 0) ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.3s ease',
+                        transition: 'transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease',
                         boxShadow: (isSubmitting || noOfDays <= 0) ? 'none' : '0 10px 20px rgba(74, 180, 196, 0.3)'
                     }}
                     onMouseOver={(e) => {

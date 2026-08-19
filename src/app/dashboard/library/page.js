@@ -10,6 +10,7 @@ import SkeletonPage from '@/components/SkeletonPage';
 
 export default function LibraryPage() {
   const [activeTab, setActiveTab] = useTabState('tab', 'hand') // 'hand', 'activities', 'fines'
+  const [slideDirection, setSlideDirection] = useState('');
   const router = useRouter()
   const { data: json, error, isLoading } = useSWR('/api/library', fetcher)
 
@@ -124,7 +125,7 @@ export default function LibraryPage() {
                       </h3>
                   </div>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
                       <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
                           <span style={{ color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', fontSize: '0.7rem' }}>Borrowed:</span><br/> 
                           {book.borrowedDate ? book.borrowedDate.split(' ')[0] : '-'}
@@ -159,30 +160,70 @@ export default function LibraryPage() {
   }
 
   return (
-    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
+    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start', minHeight: '101vh' }}>
       
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div className="desktop-view" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Library</h1>
+        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', width: 'fit-content' }}>
+            <div style={{
+                position: 'absolute', top: '0.35rem', bottom: '0.35rem',
+                left: '0.35rem',
+                transform: activeTab === 'hand' ? 'translateX(0)' : activeTab === 'activities' ? 'translateX(100%)' : 'translateX(200%)',
+                width: 'calc((100% - 0.7rem) / 3)',
+                background: 'var(--primary)', borderRadius: '10px',
+                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                willChange: 'transform'
+            }} />
+            <button 
+                onClick={() => { setSlideDirection('left'); setActiveTab('hand'); }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'hand' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
+            >
+                In Hand
+            </button>
+            <button 
+                onClick={() => { setSlideDirection(activeTab === 'hand' ? 'right' : 'left'); setActiveTab('activities'); }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'activities' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
+            >
+                History
+            </button>
+            <button 
+                onClick={() => { setSlideDirection('right'); setActiveTab('fines'); }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'fines' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
+            >
+                Fines
+            </button>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', marginBottom: '1.5rem' }}>
+      <div className="mobile-view" style={{ marginBottom: '1.5rem' }}>
+        <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Library</h1>
+      </div>      {/* Mobile Tabs */}
+      <div className="mobile-view" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.5rem', width: '100%' }}>
+          <div style={{
+              position: 'absolute', top: '0.35rem', bottom: '0.35rem',
+              left: '0.35rem',
+              transform: activeTab === 'hand' ? 'translateX(0)' : activeTab === 'activities' ? 'translateX(100%)' : 'translateX(200%)',
+              width: 'calc((100% - 0.7rem) / 3)',
+              background: 'var(--primary)', borderRadius: '10px',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              willChange: 'transform'
+          }} />
           <button 
-              onClick={() => setActiveTab('hand')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'hand' ? 'var(--primary)' : 'transparent', color: activeTab === 'hand' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              onClick={() => { setSlideDirection('left'); setActiveTab('hand'); }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 0', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'hand' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.85rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
           >
               In Hand
           </button>
           <button 
-              onClick={() => setActiveTab('activities')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'activities' ? 'var(--primary)' : 'transparent', color: activeTab === 'activities' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              onClick={() => { setSlideDirection(activeTab === 'hand' ? 'right' : 'left'); setActiveTab('activities'); }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 0', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'activities' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.85rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
           >
               History
           </button>
           <button 
-              onClick={() => setActiveTab('fines')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'fines' ? 'var(--primary)' : 'transparent', color: activeTab === 'fines' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              onClick={() => { setSlideDirection('right'); setActiveTab('fines'); }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 0', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'fines' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.85rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
           >
               Fines
           </button>
@@ -197,7 +238,7 @@ export default function LibraryPage() {
         }
       `}</style>
 
-      <div>
+      <div key={activeTab} className={slideDirection ? (slideDirection === 'left' ? 'animate-slide-left' : 'animate-slide-right') : ''}>
           {activeTab === 'hand' && renderBooks(library.booksInHand)}
           {activeTab === 'activities' && renderBooks(library.activities)}
           {activeTab === 'fines' && renderBooks(library.fines)}

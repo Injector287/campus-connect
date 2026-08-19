@@ -71,7 +71,7 @@ export function SortableNavItem({ id, item, onRemove, atMin }) {
                         padding: '0.5rem',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         cursor: atMin ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s ease',
+                        transition: 'transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                         opacity: atMin ? 0.5 : 1
                     }}
                 >

@@ -7,8 +7,14 @@ export function getCacheStatus(lastSyncDate, force = false) {
   const diffMinutes = (now.getTime() - lastSyncDate.getTime()) / (1000 * 60);
 
   // Hard cooldown for forced refreshes (anti-spam)
+  const COOLDOWN_MINUTES = 0; // Temporarily disabled for testing
+  const cooldownRemaining = Math.max(0, Math.ceil(COOLDOWN_MINUTES - diffMinutes));
+
   if (force) {
-    return { shouldSync: true, reason: 'Forced sync' };
+    if (cooldownRemaining > 0) {
+      return { shouldSync: false, reason: 'Cooldown active', cooldownRemaining };
+    }
+    return { shouldSync: true, reason: 'Forced sync', cooldownRemaining: 0 };
   }
 
   // Auto-sync logic based on college hours (IST timezone)
@@ -31,9 +37,9 @@ export function getCacheStatus(lastSyncDate, force = false) {
   if (isCollegeHours) {
     // During active hours, sync if data is older than 60 minutes
     if (diffMinutes >= 60) {
-      return { shouldSync: true, reason: 'Cache expired during college hours' };
+      return { shouldSync: true, reason: 'Cache expired during college hours', cooldownRemaining };
     } else {
-      return { shouldSync: false, reason: 'Cache valid during college hours (60 min cooldown)' };
+      return { shouldSync: false, reason: 'Cache valid during college hours (60 min cooldown)', cooldownRemaining };
     }
   } else {
     // Outside active hours, ONLY sync if the last sync was BEFORE college ended today
@@ -44,14 +50,14 @@ export function getCacheStatus(lastSyncDate, force = false) {
     
     // If the cache is > 14 hours old, it missed the start of the current/next day.
     if (diffMinutes > 14 * 60) {
-      return { shouldSync: true, reason: 'Cache is very old' };
+      return { shouldSync: true, reason: 'Cache is very old', cooldownRemaining };
     }
 
     // If it's evening and last sync was before 6:30 PM
     if (currentTimeDec >= COLLEGE_END && lastSyncDec < COLLEGE_END && diffMinutes < 12 * 60) {
-      return { shouldSync: true, reason: 'Final EOD sync required' };
+      return { shouldSync: true, reason: 'Final EOD sync required', cooldownRemaining };
     }
     
-    return { shouldSync: false, reason: 'Off-hours cache valid until morning' };
+    return { shouldSync: false, reason: 'Off-hours cache valid until morning', cooldownRemaining };
   }
 }

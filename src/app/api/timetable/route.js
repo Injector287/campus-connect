@@ -3,6 +3,18 @@ import { hasValidWhitelistedSession, unauthorizedResponse } from '@/utils/auth';
 import { db } from '@/lib/db';
 import defaultTimetable from '@/utils/timetable.json';
 
+function getDerivedClassId(profileCache, fallbackClassId) {
+  if (!profileCache) return fallbackClassId;
+  try {
+    const profile = JSON.parse(profileCache);
+    if (profile.course && profile.section) {
+      // e.g., "B.Sc. Computer Science - A"
+      return `${profile.course.trim()} - ${profile.section.trim()}`;
+    }
+  } catch (e) {}
+  return fallbackClassId;
+}
+
 export async function GET(request) {
   try {
     if (!(await hasValidWhitelistedSession(request))) {
@@ -39,7 +51,7 @@ export async function GET(request) {
 
     const shift2Timings = defaultTimetable.timings;
 
-    const classId = request.nextUrl.searchParams.get('classId') || defaultTimetable.title;
+    const classId = getDerivedClassId(user.profileCache, request.nextUrl.searchParams.get('classId') || defaultTimetable.title);
 
     // Fetch class consensus timetable
     const classTimetables = await db.classTimetable.findMany({
@@ -102,7 +114,8 @@ export async function POST(request) {
     if (!user) return unauthorizedResponse();
 
     const body = await request.json();
-    const { action, classId = defaultTimetable.title, dayOrder, period, subject, alias } = body;
+    const { action, dayOrder, period, subject, alias } = body;
+    const classId = getDerivedClassId(user.profileCache, defaultTimetable.title);
 
     if (action === 'override') {
       await db.userTimetable.upsert({

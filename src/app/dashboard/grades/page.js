@@ -12,6 +12,9 @@ export default function GradesPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useTabState('tab', 'internal') // 'internal', 'exam'
   const [expandedInternal, setExpandedInternal] = useState(null)
+  const [slideDirection, setSlideDirection] = useState('');
+  const [isInitialMount, setIsInitialMount] = useState(true);
+  useEffect(() => { setIsInitialMount(false); }, []);
   
   const formatSubjectName = (name) => {
       if (!name) return '';
@@ -219,18 +222,21 @@ export default function GradesPage() {
       return (
           <>
              {grades.summary && grades.summary.totalCredits && (
-                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', padding: '1rem', marginBottom: '1rem', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--glass-border)' }}>
-                     <div style={{ textAlign: 'center' }}>
-                         <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white' }}>{grades.summary.acquiredCredits}</div>
-                         <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Acquired</div>
-                     </div>
-                     <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
-                         <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary)' }}>{grades.summary.totalCredits}</div>
-                         <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Total</div>
-                     </div>
-                     <div style={{ textAlign: 'center' }}>
-                         <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--error)' }}>{grades.summary.remainingCredits}</div>
-                         <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Remaining</div>
+                 <div style={{ padding: '1.25rem 1.5rem', marginBottom: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                     <h3 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', letterSpacing: '1px', marginBottom: '1rem', fontWeight: '600' }}>Credits Overview</h3>
+                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                         <div style={{ textAlign: 'center' }}>
+                             <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'white' }}>{grades.summary.acquiredCredits}</div>
+                             <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Acquired</div>
+                         </div>
+                         <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                             <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary)' }}>{grades.summary.totalCredits}</div>
+                             <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Total</div>
+                         </div>
+                         <div style={{ textAlign: 'center' }}>
+                             <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--error)' }}>{grades.summary.remainingCredits}</div>
+                             <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Remaining</div>
+                         </div>
                      </div>
                  </div>
              )}
@@ -358,7 +364,34 @@ export default function GradesPage() {
     <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
       
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div className="desktop-view" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Grades</h1>
+        <div style={{ position: 'relative', display: 'flex', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', width: '320px' }}>
+            <div style={{
+                position: 'absolute', top: '0.35rem', bottom: '0.35rem',
+                left: '0.35rem',
+                width: 'calc(50% - 0.35rem)',
+                background: 'var(--primary)', borderRadius: '10px',
+                transform: activeTab === 'internal' ? 'translateX(0)' : 'translateX(100%)',
+                willChange: 'transform',
+                transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }} />
+            <button 
+                onClick={() => { setSlideDirection('left'); setActiveTab('internal'); }}
+                style={{ textAlign: 'center', width: '100%', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'internal' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem' }}
+            >
+                Internal Marks
+            </button>
+            <button 
+                onClick={() => { setSlideDirection('right'); setActiveTab('exam'); }}
+                style={{ textAlign: 'center', width: '100%', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'exam' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem' }}
+            >
+                Exam Results
+            </button>
+        </div>
+      </div>
+
+      <div className="mobile-view" style={{ marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Grades</h1>
       </div>
 
@@ -371,23 +404,32 @@ export default function GradesPage() {
         }
       `}</style>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', marginBottom: '1.5rem' }}>
+      {/* Mobile Tabs */}
+      <div className="mobile-view" style={{ position: 'relative', display: 'flex', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.5rem' }}>
+          <div style={{
+              position: 'absolute', top: '0.35rem', bottom: '0.35rem',
+              left: '0.35rem',
+              width: 'calc(50% - 0.35rem)',
+              background: 'var(--primary)', borderRadius: '10px',
+              transform: activeTab === 'internal' ? 'translateX(0)' : 'translateX(100%)',
+              willChange: 'transform',
+              transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+          }} />
           <button 
-              onClick={() => setActiveTab('internal')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'internal' ? 'var(--primary)' : 'transparent', color: activeTab === 'internal' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              onClick={() => { setSlideDirection('left'); setActiveTab('internal'); }}
+              style={{ textAlign: 'center', width: '100%', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'internal' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem' }}
           >
               Internal Marks
           </button>
           <button 
-              onClick={() => setActiveTab('exam')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'exam' ? 'var(--primary)' : 'transparent', color: activeTab === 'exam' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              onClick={() => { setSlideDirection('right'); setActiveTab('exam'); }}
+              style={{ textAlign: 'center', width: '100%', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'exam' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem' }}
           >
               Exam Results
           </button>
       </div>
 
-      <div>
+      <div key={activeTab} className={isInitialMount ? '' : (slideDirection === 'left' ? 'animate-slide-left' : (slideDirection === 'right' ? 'animate-slide-right' : ''))}>
           {activeTab === 'internal' && renderInternal()}
           {activeTab === 'exam' && renderExam()}
       </div>

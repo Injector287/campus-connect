@@ -8,7 +8,8 @@ import SkeletonPage from '@/components/SkeletonPage';
 
 export default function FinancePage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useTabState('tab', 'due') // 'due', 'history', 'transactions'
+  const [activeTab, setActiveTab] = useTabState('tab', 'due')
+  const [slideDirection, setSlideDirection] = useState('')
   const [isMobile, setIsMobile] = useState(false)
   const [downloadingReceipt, setDownloadingReceipt] = useState(null)
   
@@ -81,7 +82,7 @@ export default function FinancePage() {
   const renderDue = () => {
     if (due.status === 'no_dues' || !due.data || due.data.length === 0) {
       return (
-        <div className="glass-panel animate-slide-up" style={{ padding: '3rem 1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="glass-panel" style={{ padding: '3rem 1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(74, 222, 128, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
@@ -94,7 +95,7 @@ export default function FinancePage() {
     }
 
     return (
-      <div className="responsive-grid animate-slide-up">
+      <div className="responsive-grid">
         {due.data.map((item, idx) => (
           <div key={idx} className="glass-panel" style={{ padding: '1.25rem' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
@@ -153,7 +154,7 @@ export default function FinancePage() {
       `}</style>
 
       {/* Desktop View */}
-      <div className="desktop-view glass-panel animate-slide-up" style={{ padding: '0', overflow: 'hidden', marginBottom: '2rem' }}>
+      <div className="desktop-view glass-panel" style={{ padding: '0', overflow: 'hidden', marginBottom: '2rem' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -193,7 +194,7 @@ export default function FinancePage() {
       </div>
 
       {/* Mobile View */}
-      <div className="responsive-grid animate-slide-up mobile-view">
+      <div className="responsive-grid mobile-view">
         {sortedHistory.map((item, idx) => (
           <div key={idx} className="glass-panel" style={{ padding: '1.25rem' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
@@ -231,7 +232,7 @@ export default function FinancePage() {
     }
 
     return (
-      <div className="glass-panel animate-slide-up" style={{ padding: '0', overflow: 'hidden' }}>
+      <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
         {transactions.map((tx, idx) => {
           const isApproved = tx.status && tx.status.toLowerCase().includes('approved');
           const statusColor = isApproved ? '#4ade80' : '#ef4444';
@@ -294,36 +295,79 @@ export default function FinancePage() {
   }
 
   return (
-    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
+    <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start', minHeight: '101vh' }}>
       
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      {/* Desktop Header & Tabs */}
+      <div className="desktop-view" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Finance</h1>
+        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', width: 'fit-content' }}>
+            <div style={{
+                position: 'absolute', top: '0.35rem', bottom: '0.35rem',
+                left: '0.35rem',
+                transform: activeTab === 'due' ? 'translateX(0)' : activeTab === 'history' ? 'translateX(100%)' : 'translateX(200%)',
+                width: 'calc((100% - 0.7rem) / 3)',
+                background: 'var(--primary)', borderRadius: '10px',
+                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                willChange: 'transform'
+            }} />
+            <button 
+                onClick={() => { setSlideDirection('left'); setActiveTab('due'); }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'due' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
+            >
+                Due
+            </button>
+            <button 
+                onClick={() => { setSlideDirection(activeTab === 'due' ? 'right' : 'left'); setActiveTab('history'); }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'history' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
+            >
+                Paid
+            </button>
+            <button 
+                onClick={() => { setSlideDirection('right'); setActiveTab('transactions'); }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 1rem', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'transactions' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.9rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
+            >
+                Transactions
+            </button>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.25rem', marginBottom: '1.5rem' }}>
+      {/* Mobile Header */}
+      <div className="mobile-view" style={{ marginBottom: '1.5rem' }}>
+        <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Finance</h1>
+      </div>
+      
+      {/* Mobile Tabs */}
+      <div className="mobile-view" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.5rem', width: '100%' }}>
+          <div style={{
+              position: 'absolute', top: '0.35rem', bottom: '0.35rem',
+              left: '0.35rem',
+              transform: activeTab === 'due' ? 'translateX(0)' : activeTab === 'history' ? 'translateX(100%)' : 'translateX(200%)',
+              width: 'calc((100% - 0.7rem) / 3)',
+              background: 'var(--primary)', borderRadius: '10px',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              willChange: 'transform'
+          }} />
           <button 
-              onClick={() => setActiveTab('due')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'due' ? 'var(--primary)' : 'transparent', color: activeTab === 'due' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              onClick={() => { setSlideDirection('left'); setActiveTab('due'); }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 0', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'due' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.85rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
           >
               Due
           </button>
           <button 
-              onClick={() => setActiveTab('history')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'history' ? 'var(--primary)' : 'transparent', color: activeTab === 'history' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              onClick={() => { setSlideDirection(activeTab === 'due' ? 'right' : 'left'); setActiveTab('history'); }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 0', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'history' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.85rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
           >
               Paid
           </button>
           <button 
-              onClick={() => setActiveTab('transactions')}
-              style={{ flex: 1, padding: '0.75rem 0', borderRadius: '8px', border: 'none', background: activeTab === 'transactions' ? 'var(--primary)' : 'transparent', color: activeTab === 'transactions' ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.875rem', transition: 'all 0.3s ease', cursor: 'pointer' }}
+              onClick={() => { setSlideDirection('right'); setActiveTab('transactions'); }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: '0.5rem 0', borderRadius: '10px', border: 'none', background: 'transparent', color: activeTab === 'transactions' ? 'white' : 'rgba(255,255,255,0.6)', fontWeight: '600', cursor: 'pointer', transition: 'color 0.3s', fontSize: '0.85rem', outline: 'none', WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
           >
               Transactions
           </button>
       </div>
 
-      <div>
+      <div key={activeTab} className={slideDirection ? (slideDirection === 'left' ? 'animate-slide-left' : 'animate-slide-right') : ''}>
           {activeTab === 'due' && renderDue()}
           {activeTab === 'history' && renderHistory()}
           {activeTab === 'transactions' && renderTransactions()}

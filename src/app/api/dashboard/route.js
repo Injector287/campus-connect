@@ -42,24 +42,28 @@ export async function GET(request) {
          });
       }
 
-      // If sync needed, schedule it in the background using after() and return cache instantly
       // Optimistically update the sync timestamp to act as a mutex lock
-      // This prevents race conditions if the user spams F5 before the background sync finishes
       await db.user.update({
         where: { registerNum },
         data: { lastSyncDashboard: new Date() }
       });
 
-      console.log(`[Dashboard API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
-      after(async () => {
-        try {
-          await syncDashboard(registerNum);
-        } catch (syncErr) {
-          console.error('[Dashboard API] Background sync failed:', syncErr.message);
-        }
-      });
-      
-      return NextResponse.json({ success: true, ...cachedData, isCached: true, lastSyncMinutesAgo: diffMins });
+      if (force) {
+        console.log(`[Dashboard API] Foreground sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        const freshData = await syncDashboard(registerNum);
+        return NextResponse.json({ success: true, ...freshData, isCached: false, lastSyncMinutesAgo: 0, cooldownRemaining: 5 });
+      } else {
+        console.log(`[Dashboard API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        after(async () => {
+          try {
+            await syncDashboard(registerNum);
+          } catch (syncErr) {
+            console.error('[Dashboard API] Background sync failed:', syncErr.message);
+          }
+        });
+        
+        return NextResponse.json({ success: true, ...cachedData, isCached: true, lastSyncMinutesAgo: diffMins, cooldownRemaining: cacheStatus.cooldownRemaining });
+      }
     } else {
       // 4. No cached data (first login or cache cleared). We must wait for the sync to finish.
       console.log(`[Dashboard API] No cache found for ${registerNum}. Performing initial sync...`);

@@ -1,10 +1,10 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  // previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -24,7 +24,6 @@ model User {
   role            String   @default("USER") // "USER" or "ADMIN"
   status          String   @default("ACTIVE") // "ACTIVE", "BLACKLISTED", "WHITELISTED"
   sessionVersion  Int      @default(1)
-  customRateLimit Int?
   
   // Customization
   mobileNav       String?
@@ -40,7 +39,6 @@ model User {
   leavesCache     String?
 
   // Relations
-  scrapeLogs      ScrapeLog[]
   suggestions     Suggestion[]
   userTimetables  UserTimetable[]
   subjectAliases  SubjectAlias[]
@@ -83,17 +81,7 @@ model ClassTimetable {
   @@unique([classId, dayOrder, period])
 }
 
-model ScrapeLog {
-  id           String   @id @default(uuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  endpoint     String
-  status       String   // "SUCCESS" or "ERROR"
-  fullLog      String?  // Optional payload for failures
-  createdAt    DateTime @default(now())
 
-  @@index([createdAt])
-}
 
 model Setting {
   id           String   @id @default(uuid())
