@@ -6,6 +6,7 @@ import { fetcher } from '@/utils/fetcher';
 import Link from 'next/link';
 import calendarData from '../../../calendar.json';
 import CurrentPeriod from '@/components/CurrentPeriod';
+import DashboardReminders, { useReminders } from '@/components/DashboardReminders';
 
 // Helper to get today's date in DD.MM.YYYY format
 const getTodayStr = () => {
@@ -42,6 +43,7 @@ export default function DashboardHomePage() {
     const router = useRouter();
     const [todayStr, setTodayStr] = useState('');
     const [todayCalendar, setTodayCalendar] = useState(null);
+    const reminders = useReminders();
 
     useEffect(() => {
         const today = getTodayStr();
@@ -52,6 +54,7 @@ export default function DashboardHomePage() {
 
     const { data: attendanceData, error: attendanceError, mutate: mutateAttendance } = useSWR('/api/dashboard', fetcher, { keepPreviousData: true });
     const { data: financeData, error: financeError } = useSWR('/api/finance', fetcher);
+    const { data: libraryData } = useSWR('/api/library', fetcher);
     const { data: weatherData } = useSWR('/api/weather', fetcher);
     const { data: timetableData } = useSWR('/api/timetable', fetcher);
     const { data: profileData } = useSWR('/api/profile', fetcher);
@@ -143,11 +146,20 @@ export default function DashboardHomePage() {
     const currentPresent = (stats.hrsPresent || 0) + (stats.hrsML || 0) + (stats.hrsOD || 0);
     const currentPercentage = totalConducted > 0 ? (currentPresent / totalConducted) * 100 : 0;
 
-    // Finance dues
+    // Finance & Library dues
     let pendingDuesTotal = 0;
     if (financeData?.due?.data) {
-        pendingDuesTotal = financeData.due.data.reduce((sum, item) => {
+        pendingDuesTotal += financeData.due.data.reduce((sum, item) => {
             const amt = parseFloat(String(item.dueAmount).replace(/,/g, ''));
+            return sum + (isNaN(amt) ? 0 : amt);
+        }, 0);
+    }
+    if (libraryData?.library?.fines) {
+        pendingDuesTotal += libraryData.library.fines.reduce((sum, item) => {
+            if (item.status && item.status.toLowerCase().includes('paid')) {
+                return sum;
+            }
+            const amt = parseFloat(String(item.fineAmount).replace(/,/g, ''));
             return sum + (isNaN(amt) ? 0 : amt);
         }, 0);
     }
@@ -245,12 +257,47 @@ export default function DashboardHomePage() {
                 )}
             </div>
 
-            <CurrentPeriod />
+            <div className="responsive-grid" style={{ marginBottom: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+                {/* Finance Snapshot Widget with Reminders inside */}
+                <div className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <Link href="/dashboard/finance" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', justifyContent: 'space-between' }}>
+                            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0 }}>Pending Items</h2>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </Link>
+                    </div>
+                    {financeData ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            {pendingDuesTotal > 0 ? (
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <div style={{ fontSize: '2rem', fontWeight: '800', color: '#ef4444', lineHeight: 1, marginBottom: '0.5rem' }}>
+                                        ₹{pendingDuesTotal.toLocaleString('en-IN')}
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Pending fees</div>
+                                </div>
+                            ) : (
+                                reminders.length === 0 && (
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#4ade80', lineHeight: 1, marginBottom: '0.5rem' }}>
+                                            All Clear!
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Nothing pending</div>
+                                    </div>
+                                )
+                            )}
+                            {reminders.length > 0 && (
+                                <div style={{ marginTop: 'auto', margin: '0 -1.25rem -1.25rem -1.25rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                                    <DashboardReminders style={{ marginBottom: 0, marginTop: 'auto' }} />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: 'auto' }}>Loading...</div>
+                    )}
+                </div>
 
-            <div className="responsive-grid">
-                
-                {/* Weather & Day Overview Widget */}
-                <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05))', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                {/* Weather & Day Overview Widget (Calendar) */}
+                <div className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05))', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                             <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white', margin: 0 }}>Today</h2>
@@ -304,8 +351,12 @@ export default function DashboardHomePage() {
                         </div>
                     )}
                 </div>
+            </div>
 
-                {/* Attendance Snapshot Widget */}
+            <CurrentPeriod />
+
+            {/* Attendance Snapshot Widget */}
+            <div style={{ marginBottom: '2rem' }}>
                 <Link href="/dashboard/attendance" style={{ textDecoration: 'none' }}>
                     <div id="attendance-card" className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s, background 0.2s, box-shadow 0.5s, border-color 0.5s', border: '1px solid rgba(255,255,255,0.1)' }}
                          onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
@@ -349,40 +400,6 @@ export default function DashboardHomePage() {
                         )}
                     </div>
                 </Link>
-
-                {/* Finance Snapshot Widget */}
-                <Link href="/dashboard/finance" style={{ textDecoration: 'none' }}>
-                    <div className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s, background 0.2s' }}
-                         onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                         onMouseOut={e => e.currentTarget.style.background = 'rgba(15, 23, 42, 0.6)'}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0 }}>Pending Dues</h2>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-                        </div>
-                        {financeData ? (
-                            <div style={{ marginTop: 'auto' }}>
-                                {pendingDuesTotal > 0 ? (
-                                    <>
-                                        <div style={{ fontSize: '2rem', fontWeight: '800', color: '#ef4444', lineHeight: 1, marginBottom: '0.5rem' }}>
-                                            ₹{pendingDuesTotal.toLocaleString('en-IN')}
-                                        </div>
-                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Action required</div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#4ade80', lineHeight: 1, marginBottom: '0.5rem' }}>
-                                            All Clear!
-                                        </div>
-                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>No pending fees</div>
-                                    </>
-                                )}
-                            </div>
-                        ) : (
-                            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: 'auto' }}>Loading...</div>
-                        )}
-                    </div>
-                </Link>
-
             </div>
 
             {/* Today's Classes Widget */}

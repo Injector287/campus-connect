@@ -23,6 +23,24 @@ export default function ClientLayout({ children, initialMobileNav }) {
   const [activeLinkStyle, setActiveLinkStyle] = useState({ top: 0, height: 0, opacity: 0 });
 
   useEffect(() => {
+    // Scroll to top instantly on route change, bypassing smooth scroll
+    // Delayed slightly to ensure React has finished swapping the DOM/display states
+    setTimeout(() => {
+        const html = document.documentElement;
+        const body = document.body;
+        html.style.setProperty('scroll-behavior', 'auto', 'important');
+        body.style.setProperty('scroll-behavior', 'auto', 'important');
+        
+        window.scrollTo(0, 0);
+        html.scrollTop = 0;
+        body.scrollTop = 0;
+        
+        setTimeout(() => {
+            html.style.removeProperty('scroll-behavior');
+            body.style.removeProperty('scroll-behavior');
+        }, 50);
+    }, 10);
+
     if (!navContainerRef.current) return;
     // Small delay to ensure layout is done
     const timeoutId = setTimeout(() => {

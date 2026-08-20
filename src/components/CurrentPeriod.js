@@ -7,7 +7,7 @@ import calendarData from '../../calendar.json';
 
 export default function CurrentPeriod() {
     const [currentTime, setCurrentTime] = useState(new Date());
-    const { data: dynamicTimetable } = useSWR('/api/timetable', fetcher);
+    const { data: dynamicTimetable } = useSWR('/api/timetable', fetcher, { revalidateOnFocus: false, keepPreviousData: true });
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
