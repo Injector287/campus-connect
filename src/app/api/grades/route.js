@@ -41,27 +41,30 @@ export async function GET(request) {
          });
       }
 
-      // Optimistically update the sync timestamp to act as a mutex lock
-      // This prevents race conditions if the user spams F5 before the background sync finishes
       await db.user.update({
         where: { registerNum },
         data: { lastSyncGrades: new Date() }
       });
 
-      console.log(`[Grades API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
-      after(async () => {
-        try {
-          await syncGrades(registerNum);
-        } catch (err) {
-          console.error(`[Background Sync] Failed for grades:`, err.message);
-        }
-      });
-
-      return NextResponse.json({ success: true, ...responseData, isCached: true, lastSyncMinutesAgo: diffMins });
+      if (force) {
+        console.log(`[Grades API] Foreground sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        const freshData = await syncGrades(registerNum);
+        const gradesData = freshData.grades ? freshData : { ...freshData, grades: freshData };
+        return NextResponse.json({ success: true, ...gradesData, isCached: false, lastSyncMinutesAgo: 0, cooldownRemaining: 5 });
+      } else {
+        console.log(`[Grades API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        after(async () => {
+          try {
+            await syncGrades(registerNum);
+          } catch (err) {
+            console.error('[Background Sync] Failed for grades:', err.message);
+          }
+        });
+        return NextResponse.json({ success: true, ...responseData, isCached: true, lastSyncMinutesAgo: diffMins, cooldownRemaining: cacheStatus.cooldownRemaining });
+      }
     } else {
       console.log(`[Grades API] No cache found for ${registerNum}. Performing initial blocking sync...`);
       const freshData = await syncGrades(registerNum);
-
       const gradesData = freshData.grades ? freshData : { ...freshData, grades: freshData };
       return NextResponse.json({ success: true, ...gradesData, isCached: false, lastSyncMinutesAgo: 0 });
     }
@@ -70,4 +73,3 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Failed to fetch grades data' }, { status: 500 });
   }
 }
-

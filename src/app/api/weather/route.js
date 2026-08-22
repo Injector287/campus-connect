@@ -41,98 +41,69 @@ export async function GET(request) {
     }
 
     let finalData = null;
+    let hourly = [];
 
-    // Fetch from OpenWeather if the API key is present
-    const apiKey = process.env.OPENWEATHER_API_KEY;
-    if (apiKey) {
-      const [currentRes, forecastRes] = await Promise.all([
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`),
-        fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
-      ]);
+    // Always fetch Open-Meteo for the 8 AM to 8 PM hourly forecast
+    try {
+        const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&timezone=auto`;
+        const res = await fetch(meteoUrl);
+        if (res.ok) {
+            const data = await res.json();
+            
+            // Get today's local date string to match
+            const now = new Date();
+            const todayStr = new Date(now.toLocaleString("en-US", {timeZone: data.timezone || "Asia/Kolkata"})).toDateString();
+            
+            let isPast8PM = false;
+            if (now.getHours() > 20) {
+                isPast8PM = true;
+            }
 
-      if (currentRes.ok && forecastRes.ok) {
-        const currentData = await currentRes.json();
-        const forecastData = await forecastRes.json();
-        
-        const hourly = forecastData.list
-          .slice(0, 8) // Next 24 hours (8 points of 3-hour intervals)
-          .map(item => {
-             const date = new Date(item.dt * 1000);
-             let hours = date.getHours();
-             const ampm = hours >= 12 ? 'PM' : 'AM';
-             hours = hours % 12;
-             hours = hours ? hours : 12;
-             const timeStr = `${hours} ${ampm}`;
-             
-             return {
-                 time: timeStr,
-                 temp: item.main.temp,
-                 icon: item.weather[0].icon,
-                 description: item.weather[0].main
-             };
-          });
-
-        finalData = {
-          source: 'openweather',
-          temp: currentData.main.temp,
-          condition: currentData.weather[0].main,
-          description: currentData.weather[0].description,
-          icon: currentData.weather[0].icon,
-          location: currentData.name,
-          hourly,
-          cachedAt: new Date().toISOString()
-        };
-      }
-    }
-
-    // Fallback to Open-Meteo if no finalData yet
-    if (!finalData) {
-      const fallbackUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&timezone=auto`;
-      const res = await fetch(fallbackUrl);
-      if (res.ok) {
-        const data = await res.json();
-        const code = data.current.weather_code;
-        const isDay = data.current.is_day === 1;
-        const { condition, icon } = mapWmoCode(code, isDay);
-        
-        const currentHourIdx = data.hourly.time.findIndex(t => new Date(t) >= new Date());
-        const hourly = [];
-        
-        if (currentHourIdx !== -1) {
-            for (let i = 0; i < 8; i++) {
-                const idx = currentHourIdx + (i * 3); // every 3 hours
-                if (idx < data.hourly.time.length) {
-                    const date = new Date(data.hourly.time[idx]);
-                    let hours = date.getHours();
-                    const ampm = hours >= 12 ? 'PM' : 'AM';
-                    hours = hours % 12;
-                    hours = hours ? hours : 12;
+            for (let idx = 0; idx < data.hourly.time.length; idx++) {
+                const timeStr = data.hourly.time[idx];
+                const date = new Date(timeStr);
+                const dateStr = date.toDateString();
+                const hour = date.getHours();
+                
+                // If it's past 8 PM, show tomorrow's 8 AM to 8 PM. Otherwise, show today's.
+                if (isPast8PM && dateStr === todayStr) continue;
+                
+                // If hour is between 8 and 20 (inclusive) and we haven't collected 13 hours yet
+                if (hour >= 8 && hour <= 20 && hourly.length < 13) {
+                    const ampm = hour >= 12 ? 'PM' : 'AM';
+                    let h12 = hour % 12;
+                    h12 = h12 ? h12 : 12;
                     
                     const hCode = data.hourly.weather_code[idx];
                     const hIsDay = data.hourly.is_day[idx] === 1;
                     const hMapped = mapWmoCode(hCode, hIsDay);
                     
                     hourly.push({
-                        time: `${hours} ${ampm}`,
+                        time: `${h12} ${ampm}`,
                         temp: data.hourly.temperature_2m[idx],
                         icon: hMapped.icon,
                         description: hMapped.condition
                     });
                 }
             }
-        }
+            
+            const code = data.current.weather_code;
+            const isDay = data.current.is_day === 1;
+            const { condition, icon } = mapWmoCode(code, isDay);
 
-        finalData = {
-          source: 'openmeteo',
-          temp: data.current.temperature_2m,
-          condition,
-          description: condition,
-          icon: icon,
-          location: 'Loyola College (Fallback)',
-          hourly,
-          cachedAt: new Date().toISOString()
-        };
-      }
+            finalData = {
+              source: 'openmeteo',
+              temp: data.current.temperature_2m,
+              condition,
+              description: condition,
+              icon: icon,
+              location: 'Loyola College',
+              hourly,
+              cachedAt: new Date().toISOString()
+            };
+        }
+    } catch (e) {
+        console.error('Failed to fetch from OpenMeteo', e);
     }
 
     if (finalData) {

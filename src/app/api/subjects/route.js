@@ -48,16 +48,22 @@ export async function GET(request) {
         data: { lastSyncSubjects: new Date() }
       });
 
-      console.log(`[Subjects API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
-      after(async () => {
-        try {
-          await syncSubjects(registerNum);
-        } catch (err) {
-          console.error(`[Background Sync] Failed for subjects:`, err.message);
-        }
-      });
-
-      return NextResponse.json({ success: true, ...subjectsData, isCached: true, lastSyncMinutesAgo: diffMins });
+      if (force) {
+        console.log(`[Subjects API] Foreground sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        const freshData = await syncSubjects(registerNum);
+        const freshSubjectsData = Array.isArray(freshData) ? { categories: freshData } : freshData;
+        return NextResponse.json({ success: true, ...freshSubjectsData, isCached: false, lastSyncMinutesAgo: 0, cooldownRemaining: 5 });
+      } else {
+        console.log(`[Subjects API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        after(async () => {
+          try {
+            await syncSubjects(registerNum);
+          } catch (err) {
+            console.error(`[Background Sync] Failed for subjects:`, err.message);
+          }
+        });
+        return NextResponse.json({ success: true, ...subjectsData, isCached: true, lastSyncMinutesAgo: diffMins, cooldownRemaining: cacheStatus.cooldownRemaining });
+      }
     } else {
       console.log(`[Subjects API] No cache found for ${registerNum}. Performing initial blocking sync...`);
       const freshData = await syncSubjects(registerNum);

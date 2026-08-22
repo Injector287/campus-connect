@@ -88,7 +88,20 @@ export async function fetchWithReauth(request, url, options = { method: 'GET' })
     }
 
     // Check if the ERP returned a login page (indicating an expired or missing session)
-    const isLoginRedirect = typeof res.data === 'string' && (res.data.includes('youLogin.jsp') || res.data.includes('loginManager'));
+    let isLoginRedirect = false;
+    if (typeof res.data === 'string') {
+        isLoginRedirect = res.data.includes('youLogin.jsp') || res.data.includes('loginManager');
+    } else if (res.data) {
+        try {
+            // Handle arraybuffer/Buffer response types safely
+            const buf = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
+            const snippet = buf.toString('utf-8', 0, Math.min(buf.length, 4096));
+            isLoginRedirect = snippet.includes('youLogin.jsp') || snippet.includes('loginManager');
+        } catch (e) {
+            // Ignore parsing errors for binary data
+            isLoginRedirect = false;
+        }
+    }
     
     if (!isLoginRedirect && jsessionId) {
         // Success!
@@ -135,6 +148,7 @@ export async function fetchWithReauth(request, url, options = { method: 'GET' })
         data: retryRes.data, 
         newSessionCookie: { name: 'JSESSIONID', value: newJsessionId, httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' },
         status: retryRes.status,
-        jsessionId: newJsessionId
+        jsessionId: newJsessionId,
+        headers: retryRes.headers
     };
 }

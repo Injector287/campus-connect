@@ -109,7 +109,7 @@ export async function POST(request) {
     );
 
     // Pass along the contentType (usually application/pdf or text/html)
-    const contentType = headers['content-type'] || 'application/pdf';
+    const contentType = (headers && headers['content-type']) || 'application/pdf';
 
     const response = new NextResponse(responseData, {
       status: 200,

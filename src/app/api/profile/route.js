@@ -51,16 +51,21 @@ export async function GET(request) {
         data: { lastSyncProfile: new Date() }
       });
 
-      console.log(`[Profile API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
-      after(async () => {
-        try {
-          await syncProfile(registerNum);
-        } catch (err) {
-          console.error(`[Background Sync] Failed for profile:`, err.message);
-        }
-      });
-
-      return NextResponse.json({ success: true, role: userRole, mobileNav: user?.mobileNav, ...cachedData, isCached: true, lastSyncMinutesAgo: diffMins });
+      if (force) {
+        console.log(`[Profile API] Foreground sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        const freshData = await syncProfile(registerNum);
+        return NextResponse.json({ success: true, role: userRole, mobileNav: user?.mobileNav, ...freshData, isCached: false, lastSyncMinutesAgo: 0, cooldownRemaining: 5 });
+      } else {
+        console.log(`[Profile API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        after(async () => {
+          try {
+            await syncProfile(registerNum);
+          } catch (err) {
+            console.error(`[Background Sync] Failed for profile:`, err.message);
+          }
+        });
+        return NextResponse.json({ success: true, role: userRole, mobileNav: user?.mobileNav, ...cachedData, isCached: true, lastSyncMinutesAgo: diffMins, cooldownRemaining: cacheStatus.cooldownRemaining });
+      }
     } else {
       console.log(`[Profile API] No cache found for ${registerNum}. Performing initial blocking sync...`);
       const freshData = await syncProfile(registerNum);

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { fetcher } from '@/utils/fetcher';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import SkeletonPage from '@/components/SkeletonPage';
-import DashboardReminders from '@/components/DashboardReminders';
 
 const formatSubjectName = (name) => {
     if (!name) return '';
@@ -520,8 +519,6 @@ export default function DashboardPage() {
 
   return (
     <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
-      
-      <DashboardReminders />
 
       {/* Header */}
       <div className="desktop-view" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>

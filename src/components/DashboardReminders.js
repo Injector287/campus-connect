@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import { fetcher } from '@/utils/fetcher';
 
@@ -26,15 +26,14 @@ function parseDateStr(dateStr) {
   return new Date(yyyy, mm, dd);
 }
 
-export default function DashboardReminders() {
+export function useReminders() {
     const { data: financeData } = useSWR('/api/finance', fetcher, { revalidateOnFocus: false });
     const { data: libraryData } = useSWR('/api/library', fetcher, { revalidateOnFocus: false });
     
-    const [reminders, setReminders] = useState([]);
-    const [isExpanded, setIsExpanded] = useState(false);
-    
-    useEffect(() => {
+    return useMemo(() => {
         const newReminders = [];
+        if (!financeData && !libraryData) return newReminders;
+
         const today = new Date();
         today.setHours(0, 0, 0, 0); 
         
@@ -95,8 +94,13 @@ export default function DashboardReminders() {
             });
         }
         
-        setReminders(newReminders);
+        return newReminders;
     }, [financeData, libraryData]);
+}
+
+export default function DashboardReminders({ style }) {
+    const reminders = useReminders();
+    const [isExpanded, setIsExpanded] = useState(false);
     
     if (reminders.length === 0) return null;
 
@@ -105,7 +109,7 @@ export default function DashboardReminders() {
     const hasLibrary = reminders.some(r => r.type === 'library');
     
     return (
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div style={style || { marginBottom: '1.5rem' }}>
             <div 
                 onClick={() => setIsExpanded(!isExpanded)}
                 style={{

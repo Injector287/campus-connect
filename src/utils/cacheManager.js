@@ -7,7 +7,7 @@ export function getCacheStatus(lastSyncDate, force = false) {
   const diffMinutes = (now.getTime() - lastSyncDate.getTime()) / (1000 * 60);
 
   // Hard cooldown for forced refreshes (anti-spam)
-  const COOLDOWN_MINUTES = 0; // Temporarily disabled for testing
+  const COOLDOWN_MINUTES = 5;
   const cooldownRemaining = Math.max(0, Math.ceil(COOLDOWN_MINUTES - diffMinutes));
 
   if (force) {

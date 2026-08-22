@@ -48,16 +48,22 @@ export async function GET(request) {
         data: { lastSyncLibrary: new Date() }
       });
 
-      console.log(`[Library API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
-      after(async () => {
-        try {
-          await syncLibrary(registerNum);
-        } catch (err) {
-          console.error(`[Background Sync] Failed for library:`, err.message);
-        }
-      });
-
-      return NextResponse.json({ success: true, ...libraryData, isCached: true, lastSyncMinutesAgo: diffMins });
+      if (force) {
+        console.log(`[Library API] Foreground sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        const freshData = await syncLibrary(registerNum);
+        const freshLibraryData = freshData.library ? freshData : { ...freshData, library: freshData };
+        return NextResponse.json({ success: true, ...freshLibraryData, isCached: false, lastSyncMinutesAgo: 0, cooldownRemaining: 5 });
+      } else {
+        console.log(`[Library API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        after(async () => {
+          try {
+            await syncLibrary(registerNum);
+          } catch (err) {
+            console.error(`[Background Sync] Failed for library:`, err.message);
+          }
+        });
+        return NextResponse.json({ success: true, ...libraryData, isCached: true, lastSyncMinutesAgo: diffMins, cooldownRemaining: cacheStatus.cooldownRemaining });
+      }
     } else {
       console.log(`[Library API] No cache found for ${registerNum}. Performing initial blocking sync...`);
       const freshData = await syncLibrary(registerNum);

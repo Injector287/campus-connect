@@ -48,16 +48,21 @@ export async function GET(request) {
         data: { lastSyncFinance: new Date() }
       });
 
-      console.log(`[Finance API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
-      after(async () => {
-        try {
-          await syncFinance(registerNum);
-        } catch (err) {
-          console.error('[Background Sync] Failed for finance:', err.message);
-        }
-      });
-
-      return NextResponse.json({ success: true, ...cachedData, isCached: true, lastSyncMinutesAgo: diffMins });
+      if (force) {
+        console.log(`[Finance API] Foreground sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        const freshData = await syncFinance(registerNum);
+        return NextResponse.json({ success: true, ...freshData, isCached: false, lastSyncMinutesAgo: 0, cooldownRemaining: 5 });
+      } else {
+        console.log(`[Finance API] Background sync scheduled for ${registerNum}. Reason: ${cacheStatus.reason}`);
+        after(async () => {
+          try {
+            await syncFinance(registerNum);
+          } catch (err) {
+            console.error('[Background Sync] Failed for finance:', err.message);
+          }
+        });
+        return NextResponse.json({ success: true, ...cachedData, isCached: true, lastSyncMinutesAgo: diffMins, cooldownRemaining: cacheStatus.cooldownRemaining });
+      }
     } else {
       console.log(`[Finance API] No cache found for ${registerNum}. Performing initial blocking sync...`);
       const freshData = await syncFinance(registerNum);

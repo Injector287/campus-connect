@@ -253,10 +253,16 @@ export function parseGrades(internalHtml = '', examHtml = '') {
       nextTr.find('#tblComponentWiseMarks tr').each((j, cRow) => {
         const cTds = $int(cRow).find('td');
         if (cTds.length >= 3) {
-          components.push({
-            name: $int(cTds[0]).text().trim(),
-            mark: $int(cTds[2]).text().trim()
-          });
+          const name = $int(cTds[0]).text().trim();
+          const mark = $int(cTds[1]).text().trim(); // Secured marks
+          const max = $int(cTds[2]).text().trim();  // Max marks
+          
+          // Skip header row if it contains text like 'Max' instead of numbers
+          if (name.toLowerCase().includes('component') || max.toLowerCase().includes('max') || mark.toLowerCase().includes('max')) {
+              return; // Skip this row
+          }
+          
+          components.push({ name, max, mark });
         }
       });
       internalMarks.push({ code, desc, obtained, max, components });
