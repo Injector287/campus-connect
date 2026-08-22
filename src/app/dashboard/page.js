@@ -5,7 +5,11 @@ import { useRouter } from 'next/navigation';
 import { fetcher } from '@/utils/fetcher';
 import Link from 'next/link';
 import calendarData from '../../../calendar.json';
+<<<<<<< HEAD
 
+=======
+import CurrentPeriod from '@/components/CurrentPeriod';
+>>>>>>> 13e161c57a4c7e49d216ab488e9d11df1c693f5d
 import DashboardReminders, { useReminders } from '@/components/DashboardReminders';
 
 // Helper to get today's date in DD.MM.YYYY format
@@ -53,12 +57,20 @@ export default function DashboardHomePage() {
     }, []);
 
     const { data: attendanceData, error: attendanceError, mutate: mutateAttendance } = useSWR('/api/dashboard', fetcher, { keepPreviousData: true });
+<<<<<<< HEAD
     const { data: financeData, error: financeError, mutate: mutateFinance } = useSWR('/api/finance', fetcher);
     const { data: libraryData, mutate: mutateLibrary } = useSWR('/api/library', fetcher);
     const { data: weatherData, mutate: mutateWeather } = useSWR('/api/weather', fetcher);
     const { data: timetableData, mutate: mutateTimetable } = useSWR('/api/timetable', fetcher);
     const { data: profileData, mutate: mutateProfile } = useSWR('/api/profile', fetcher);
     const { data: gradesData, mutate: mutateGrades } = useSWR('/api/grades', fetcher);
+=======
+    const { data: financeData, error: financeError } = useSWR('/api/finance', fetcher);
+    const { data: libraryData } = useSWR('/api/library', fetcher);
+    const { data: weatherData } = useSWR('/api/weather', fetcher);
+    const { data: timetableData } = useSWR('/api/timetable', fetcher);
+    const { data: profileData } = useSWR('/api/profile', fetcher);
+>>>>>>> 13e161c57a4c7e49d216ab488e9d11df1c693f5d
 
     const [liveMins, setLiveMins] = useState(0);
     const [liveCooldown, setLiveCooldown] = useState(0);
@@ -193,6 +205,7 @@ export default function DashboardHomePage() {
             return sum + (isNaN(amt) ? 0 : amt);
         }, 0);
     }
+<<<<<<< HEAD
 
     // Grades & CGPA
     let currentCgpa = 'N/A';
@@ -211,6 +224,8 @@ export default function DashboardHomePage() {
             currentCgpa = (totalCreditPoints / totalCreditsForCgpa).toFixed(2);
         }
     }
+=======
+>>>>>>> 13e161c57a4c7e49d216ab488e9d11df1c693f5d
 
     // Greeting logic
     let greeting = 'Good day';
@@ -316,6 +331,7 @@ export default function DashboardHomePage() {
                 </div>
             </div>
 
+<<<<<<< HEAD
             <div className="dashboard-grid" style={{ display: 'grid', gap: '1.5rem', alignItems: 'stretch' }}>
                 <style>{`
                     .weather-widget:hover .weather-arrow {
@@ -455,6 +471,53 @@ export default function DashboardHomePage() {
                                 <h2 style={{ fontSize: '1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.2 }}>Pending Items</h2>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M9 18l6-6-6-6"/></svg>
                             </Link>
+=======
+            <div className="responsive-grid" style={{ marginBottom: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+                {/* Finance Snapshot Widget with Reminders inside */}
+                <div className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <Link href="/dashboard/finance" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', justifyContent: 'space-between' }}>
+                            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0 }}>Pending Items</h2>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </Link>
+                    </div>
+                    {financeData ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            {pendingDuesTotal > 0 ? (
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <div style={{ fontSize: '2rem', fontWeight: '800', color: '#ef4444', lineHeight: 1, marginBottom: '0.5rem' }}>
+                                        ₹{pendingDuesTotal.toLocaleString('en-IN')}
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Pending fees</div>
+                                </div>
+                            ) : (
+                                reminders.length === 0 && (
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#4ade80', lineHeight: 1, marginBottom: '0.5rem' }}>
+                                            All Clear!
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Nothing pending</div>
+                                    </div>
+                                )
+                            )}
+                            {reminders.length > 0 && (
+                                <div style={{ marginTop: 'auto', margin: '0 -1.25rem -1.25rem -1.25rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                                    <DashboardReminders style={{ marginBottom: 0, marginTop: 'auto' }} />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: 'auto' }}>Loading...</div>
+                    )}
+                </div>
+
+                {/* Weather & Day Overview Widget (Calendar) */}
+                <div className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05))', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                            <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white', margin: 0 }}>Today</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: 0 }}>{todayStr}</p>
+>>>>>>> 13e161c57a4c7e49d216ab488e9d11df1c693f5d
                         </div>
                         {financeData ? (
                             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minWidth: 0 }}>
@@ -615,6 +678,7 @@ export default function DashboardHomePage() {
                         </div>
                     </div>
                 </div>
+<<<<<<< HEAD
             ) : (
                 <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>
                     Loading Weather...
@@ -635,6 +699,21 @@ export default function DashboardHomePage() {
                         <div>
                             <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.5rem', fontWeight: '600' }}>Overall CGPA</div>
                             <div style={{ fontSize: '2.5rem', fontWeight: '800', color: 'white', lineHeight: 1 }}>{currentCgpa}</div>
+=======
+            </div>
+
+            <CurrentPeriod />
+
+            {/* Attendance Snapshot Widget */}
+            <div style={{ marginBottom: '2rem' }}>
+                <Link href="/dashboard/attendance" style={{ textDecoration: 'none' }}>
+                    <div id="attendance-card" className="glass-panel" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s, background 0.2s, box-shadow 0.5s, border-color 0.5s', border: '1px solid rgba(255,255,255,0.1)' }}
+                         onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                         onMouseOut={e => e.currentTarget.style.background = 'rgba(15, 23, 42, 0.6)'}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0 }}>Attendance</h2>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+>>>>>>> 13e161c57a4c7e49d216ab488e9d11df1c693f5d
                         </div>
                         {gradesData.grades?.summary && (
                             <div style={{ display: 'flex', gap: '1.5rem', textAlign: 'center' }}>
@@ -749,7 +828,63 @@ export default function DashboardHomePage() {
                                     );
                                 })}
                             </div>
+<<<<<<< HEAD
                         </div>
+=======
+                        ) : (
+                            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: 'auto' }}>Loading...</div>
+                        )}
+                    </div>
+                </Link>
+            </div>
+
+            {/* Today's Classes Widget */}
+            <div style={{ marginTop: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', margin: 0 }}>Today's Classes</h2>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {todayCalendar?.day_order ? (
+                            <span style={{ background: 'var(--primary)', color: 'white', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontWeight: '700', fontSize: '0.85rem' }}>
+                                Day Order {todayCalendar.day_order}
+                            </span>
+                        ) : (
+                            <span style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontWeight: '600', fontSize: '0.85rem' }}>
+                                No classes today
+                            </span>
+                        )}
+                        {todayCalendar?.event && (
+                            <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                {todayCalendar.event}
+                            </span>
+                        )}
+                    </div>
+                </div>
+                {todaysClasses.length > 0 ? (
+                    <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
+                        {todaysClasses.map((cls, idx) => (
+                            <div key={idx} style={{ 
+                                display: 'flex', alignItems: 'center', gap: '1rem', 
+                                padding: '1rem', 
+                                borderBottom: idx === todaysClasses.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <div style={{ 
+                                    width: '40px', height: '40px', borderRadius: '8px', 
+                                    background: 'rgba(255,255,255,0.05)', 
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontWeight: '800', color: 'var(--primary)'
+                                }}>
+                                    {cls.period}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>{cls.subject}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.15rem' }}>
+                                        {timetableData.timings?.[cls.period]}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+>>>>>>> 13e161c57a4c7e49d216ab488e9d11df1c693f5d
                     </div>
                 ) : (
                     <div className="glass-panel" style={{ padding: '1.5rem', flex: 1, textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
