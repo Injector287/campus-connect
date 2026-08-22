@@ -83,16 +83,12 @@ export async function POST(request) {
     
     // Convert to application/x-www-form-urlencoded expected by the ERP
     const formData = new URLSearchParams();
-    formData.append('optLeaveType', body.optLeaveType);
     formData.append('txtFromDate', body.txtFromDate);
-    formData.append('hdnFromDate', body.hdnFromDate);
     formData.append('txtToDate', body.txtToDate);
-    formData.append('hdnToDate', body.hdnToDate);
     formData.append('txtnoofDays', body.txtnoofDays);
     formData.append('txtReason', body.txtReason);
     formData.append('txtAssigment', body.txtAssigment);
     formData.append('hdnLeaveType', body.hdnLeaveType);
-    formData.append('cmdGenChallan', 'Print');
 
     const { data: responseData, newSessionCookie, headers } = await fetchWithReauth(
       request,
@@ -128,7 +124,7 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Leave API Error:', error);
-    return NextResponse.json({ error: 'Failed to generate leave application' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to generate leave application', details: error.message, stack: error.stack }, { status: 500 });
   }
 }
 

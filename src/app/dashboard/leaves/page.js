@@ -78,7 +78,8 @@ export default function LeaveApplicationPage() {
           });
 
           if (!res.ok) {
-              throw new Error('Failed to generate application');
+              const errData = await res.json().catch(() => null);
+              throw new Error(errData?.details || 'Failed to generate application');
           }
 
           // It returns a PDF/HTML blob

@@ -2,6 +2,7 @@ import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { decrypt } from './crypto';
+import { db } from '@/lib/db';
 
 const BASE_URL = 'https://erp.loyolacollege.edu';
 
@@ -109,19 +110,19 @@ export async function fetchWithReauth(request, url, options = { method: 'GET' })
     }
 
     // Session is invalid. Try to re-authenticate if we have credentials.
-    const encryptedCreds = request.cookies.get('ERP_CREDS')?.value;
-    if (!encryptedCreds) {
+    const username = request.cookies.get('ERP_USERNAME')?.value;
+    if (!username) {
         throw new Error('Unauthorized. No valid session or credentials found.');
     }
 
-    const decryptedStr = decrypt(encryptedCreds);
-    if (!decryptedStr) {
-        throw new Error('Failed to decrypt credentials.');
+    const user = await db.user.findUnique({ where: { registerNum: username } });
+    if (!user || !user.password) {
+        throw new Error('Unauthorized. User not found in database.');
     }
 
-    const [username, password] = decryptedStr.split(':');
-    if (!username || !password) {
-        throw new Error('Malformed credentials.');
+    const password = decrypt(user.password);
+    if (!password) {
+        throw new Error('Failed to decrypt credentials.');
     }
 
     const newJsessionId = await loginToERP(username, password);

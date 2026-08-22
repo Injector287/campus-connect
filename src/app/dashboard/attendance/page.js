@@ -140,7 +140,7 @@ export default function DashboardPage() {
     return (
     <div className="responsive-split">
       {/* Pie Chart Card */}
-      <div className="glass-panel" style={{ padding: '1rem', textAlign: 'center', marginBottom: '2rem' }}>
+      <div className="glass-panel left-panel-sticky" style={{ padding: '1rem', textAlign: 'center', marginBottom: '2rem' }}>
          <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)' }}>Attendance Breakdown</h2>
          <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer>
@@ -521,7 +521,7 @@ export default function DashboardPage() {
     <main className="main-container animate-slide-up" style={{ justifyContent: 'flex-start' }}>
 
       {/* Header */}
-      <div className="desktop-view" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div className="desktop-view sticky-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="text-gradient" style={{ fontSize: '2rem', margin: 0 }}>Attendance</h1>
         <div style={{ position: 'relative', display: 'flex', background: 'rgba(0,0,0,0.2)', padding: '0.35rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', width: '320px' }}>
             <div style={{
@@ -556,6 +556,35 @@ export default function DashboardPage() {
       <style>{`
         .mobile-view { display: none; }
         .desktop-view { display: block; }
+        @media (min-width: 769px) {
+            .sticky-header {
+                position: sticky;
+                top: 2rem;
+                z-index: 50;
+                background: rgba(15, 23, 42, 0.85);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 16px;
+                padding: 1rem 1.5rem;
+                margin-top: -1rem;
+                margin-left: -1rem;
+                margin-right: -1rem;
+                margin-bottom: 2rem !important;
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            }
+            .left-panel-sticky {
+                position: sticky;
+                top: 8.5rem; /* offset below the sticky header */
+                max-height: calc(100vh - 9.5rem);
+                overflow-y: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .left-panel-sticky::-webkit-scrollbar {
+                display: none;
+            }
+        }
         @media (max-width: 768px) {
             .mobile-view { display: block; }
             .desktop-view { display: none; }

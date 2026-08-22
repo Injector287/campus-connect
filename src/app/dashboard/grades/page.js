@@ -119,7 +119,9 @@ export default function GradesPage() {
                                                 {subj.components.map((comp, cIdx) => (
                                                     <div key={cIdx} style={{ display: 'flex', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                                         <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>{comp.name}</span>
-                                                        <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--primary)' }}>{comp.mark} / {comp.max}</span>
+                                                        <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--primary)' }}>
+                                                            {comp.mark} <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: '500', fontSize: '0.75rem' }}>/ {comp.max}</span>
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -159,7 +161,9 @@ export default function GradesPage() {
                         {subj.components.map((comp, cIdx) => (
                             <div key={cIdx} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: cIdx === subj.components.length - 1 ? 'none' : '1px dashed rgba(255,255,255,0.1)' }}>
                                 <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>{comp.name}</span>
-                                <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{comp.mark} / {comp.max}</span>
+                                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--primary)' }}>
+                                    {comp.mark} <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: '500', fontSize: '0.75rem' }}>/ {comp.max}</span>
+                                </span>
                             </div>
                         ))}
                     </div>
