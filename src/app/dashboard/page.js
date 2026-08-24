@@ -239,9 +239,9 @@ export default function DashboardHomePage() {
                         width: 100%;
                     }
                     .dash-greeting {
-                        font-size: 1.85rem !important;
+                        font-size: clamp(1.4rem, 7vw, 1.9rem) !important;
                         width: 100%;
-                        padding-right: 1rem;
+                        padding-right: 0.5rem;
                     }
                 }
             `}</style>
@@ -468,9 +468,9 @@ export default function DashboardHomePage() {
                     {/* Finance Snapshot Widget with Reminders inside */}
                     <div className="glass-panel widget-square pending-wrapper" style={{ padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.1)', minWidth: 0, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <Link href="/dashboard/finance" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', width: '100%', justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+                            <Link href="/dashboard/finance" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', justifyContent: 'flex-start', flexWrap: 'nowrap' }}>
                                 <h2 style={{ fontSize: '1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.2, whiteSpace: 'nowrap' }}>Pending Items</h2>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M9 18l6-6-6-6"/></svg>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M9 18l6-6-6-6"/></svg>
                             </Link>
                         </div>
                         {financeData ? (
