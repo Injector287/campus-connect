@@ -95,13 +95,73 @@ export default function FinancePage() {
     }
 
     return (
-      <div className="responsive-grid">
+      <>
+      <style>{`
+        .mobile-view { display: none; }
+        .desktop-view { display: block; }
+        @media (max-width: 768px) {
+            .mobile-view { display: block; }
+            .desktop-view { display: none; }
+        }
+      `}</style>
+
+      {/* Desktop View */}
+      <div className="desktop-view glass-panel" style={{ padding: '0', overflow: 'hidden', marginBottom: '2rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <th style={{ width: '30%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fee Type</th>
+                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Semester</th>
+                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Due Date</th>
+                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Due Amount</th>
+                      <th style={{ width: '10%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Balance</th>
+                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Action</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {due.data.map((item, idx) => (
+                      <tr key={idx} style={{ borderBottom: idx === due.data.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}
+                          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                          <td style={{ padding: '1.25rem' }}>
+                              <span style={{ fontWeight: '700', color: 'white', fontSize: '0.95rem' }}>{item.category}</span>
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '500', color: 'rgba(255,255,255,0.8)' }}>
+                              {item.academicYear}
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'center', fontWeight: '500', color: 'rgba(255,255,255,0.8)' }}>
+                              {item.dueDate}
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'right', fontWeight: '800', color: '#ef4444' }}>
+                              ₹{item.dueAmount}
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'right', fontWeight: '800', color: '#facc15' }}>
+                              {item.balance ? `₹${item.balance}` : '-'}
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'center' }}>
+                              <button 
+                                onClick={() => window.open('/api/finance/pay', '_blank')}
+                                className="btn-primary" 
+                                style={{ padding: '0.5rem 1rem', borderRadius: '6px', fontSize: '0.85rem' }}
+                              >
+                                Pay Now
+                              </button>
+                          </td>
+                      </tr>
+                  ))}
+              </tbody>
+          </table>
+      </div>
+
+      {/* Mobile View */}
+      <div className="responsive-grid mobile-view">
         {due.data.map((item, idx) => (
           <div key={idx} className="glass-panel" style={{ padding: '1.25rem' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                  <div>
                      <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'white', marginBottom: '0.25rem' }}>{item.category}</h3>
-                     <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: '600' }}>{item.academicYear}</span>
+                     <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: '600' }}>Sem {item.academicYear}</span>
                  </div>
                  <div style={{ textAlign: 'right' }}>
                      <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#ef4444' }}>₹{item.dueAmount}</div>
@@ -111,17 +171,24 @@ export default function FinancePage() {
              <div style={{ display: 'flex', justifyContent: 'space-between', background: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: '8px' }}>
                  <div style={{ textAlign: 'center' }}>
                      <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Due Date</div>
-                     <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'white' }}>{item.dueDate}</div>
+                     <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'white' }}>{item.dueDate || '-'}</div>
                  </div>
                  <div style={{ textAlign: 'center' }}>
                      <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem' }}>Balance</div>
-                     <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#facc15' }}>₹{item.balance}</div>
+                     <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#facc15' }}>{item.balance ? `₹${item.balance}` : '-'}</div>
                  </div>
              </div>
-             <button className="btn-primary" style={{ width: '100%', marginTop: '1rem', padding: '0.75rem', borderRadius: '8px' }}>Pay Now</button>
+             <button 
+               onClick={() => window.open('/api/finance/pay', '_blank')}
+               className="btn-primary" 
+               style={{ width: '100%', marginTop: '1rem', padding: '0.75rem', borderRadius: '8px' }}
+             >
+               Pay Now
+             </button>
           </div>
         ))}
       </div>
+      </>
     )
   }
 
@@ -158,8 +225,8 @@ export default function FinancePage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <th style={{ width: '35%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</th>
-                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Academic Year</th>
+                      <th style={{ width: '35%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fee Type</th>
+                      <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Semester</th>
                       <th style={{ width: '20%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Receipt No</th>
                       <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Date</th>
                       <th style={{ width: '15%', padding: '1.25rem', color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Amount</th>
@@ -200,7 +267,7 @@ export default function FinancePage() {
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                  <div style={{ flex: 1, paddingRight: '1rem' }}>
                      <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '0.25rem' }}>{item.category}</h3>
-                     <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>{item.academicYear} • {item.paymentMode}</span>
+                     <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Sem {item.academicYear} • {item.paymentMode}</span>
                  </div>
                  <div style={{ textAlign: 'right' }}>
                      <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#4ade80' }}>

@@ -66,6 +66,7 @@ export default function DashboardHomePage() {
     const [shakeTimeout, setShakeTimeout] = useState(null);
     const [currentTime, setCurrentTime] = useState(null);
     const [showHourlyWeather, setShowHourlyWeather] = useState(false);
+    const [weatherInteracted, setWeatherInteracted] = useState(false);
     const weatherScrollRef = useRef(null);
 
     const handleWeatherScroll = (e) => {
@@ -228,9 +229,25 @@ export default function DashboardHomePage() {
 
     return (
         <main className="main-container dashboard-main animate-slide-up" style={{ justifyContent: 'flex-start' }}>
+            <style>{`
+                .dash-greeting {
+                    font-size: 2rem;
+                    max-width: 100%;
+                }
+                @media (max-width: 768px) {
+                    .dash-greeting-container {
+                        width: 100%;
+                    }
+                    .dash-greeting {
+                        font-size: 1.85rem !important;
+                        width: 100%;
+                        padding-right: 1rem;
+                    }
+                }
+            `}</style>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "1rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-                    <h1 className="text-gradient" style={{ fontSize: "2rem", margin: 0 }}>
+                <div className="dash-greeting-container" style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                    <h1 className="text-gradient dash-greeting" style={{ margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {firstName ? `${greeting}, ${firstName}!` : "Overview"}
                     </h1>
                     {todayCalendar?.event && (
@@ -451,8 +468,8 @@ export default function DashboardHomePage() {
                     {/* Finance Snapshot Widget with Reminders inside */}
                     <div className="glass-panel widget-square pending-wrapper" style={{ padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.1)', minWidth: 0, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <Link href="/dashboard/finance" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', width: '100%', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                                <h2 style={{ fontSize: '1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.2 }}>Pending Items</h2>
+                            <Link href="/dashboard/finance" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', width: '100%', justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+                                <h2 style={{ fontSize: '1rem', fontWeight: '700', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.2, whiteSpace: 'nowrap' }}>Pending Items</h2>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M9 18l6-6-6-6"/></svg>
                             </Link>
                         </div>
@@ -580,10 +597,13 @@ export default function DashboardHomePage() {
                 <div className="weather-inner-wrapper" style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80px' }}>
                     
                     {/* Main Weather View */}
-                    <div className="weather-main-view" style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', transition: 'transform 0.4s ease, opacity 0.4s ease', transform: showHourlyWeather ? 'translateX(-100%)' : 'translateX(0)', opacity: showHourlyWeather ? 0 : 1, position: showHourlyWeather ? 'absolute' : 'relative', width: '100%' }}>
+                    <div className="weather-main-view" style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', transition: weatherInteracted ? 'transform 0.4s ease, opacity 0.4s ease' : 'none', transform: showHourlyWeather ? 'translateX(-100%)' : 'translateX(0)', opacity: showHourlyWeather ? 0 : 1, position: showHourlyWeather ? 'absolute' : 'relative', width: '100%' }}>
                         <div className="weather-top-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <img className="weather-icon-main" src={`https://openweathermap.org/img/wn/${weatherData.icon}@2x.png`} alt="weather icon" style={{ width: '80px', height: '80px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }} />
-                            <div className="weather-temp-main" style={{ fontSize: '3rem', fontWeight: '800', color: 'white', lineHeight: 1 }}>{Math.round(weatherData.temp)}°</div>
+                            <div className="weather-temp-main" style={{ fontSize: '3rem', fontWeight: '800', color: 'white', lineHeight: 1, position: 'relative', display: 'inline-block' }}>
+                                {Math.round(weatherData.temp)}
+                                <span style={{ position: 'absolute', left: '100%', top: '0.1em', fontSize: '0.5em' }}>°</span>
+                            </div>
                         </div>
                         <div className="weather-desc-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
                             <div className="weather-desc-main" style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.9)', fontWeight: '700', textTransform: 'capitalize' }}>
@@ -594,15 +614,15 @@ export default function DashboardHomePage() {
                             </div>
                         </div>
                         {weatherData.hourly && weatherData.hourly.length > 0 && (
-                            <div className="weather-arrow pc-only" onClick={() => setShowHourlyWeather(true)}>
+                            <div className="weather-arrow pc-only" onClick={() => { setWeatherInteracted(true); setShowHourlyWeather(true); }}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
                             </div>
                         )}
                     </div>
 
                     {/* Hourly Forecast View */}
-                    <div className="hourly-view" style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'center', transition: 'transform 0.4s ease, opacity 0.4s ease', transform: showHourlyWeather ? 'translateX(0)' : 'translateX(100%)', opacity: showHourlyWeather ? 1 : 0, position: showHourlyWeather ? 'relative' : 'absolute', width: '100%', top: 0 }}>
-                        <div className="weather-arrow weather-arrow-left pc-only" onClick={() => setShowHourlyWeather(false)}>
+                    <div className="hourly-view" style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'center', transition: weatherInteracted ? 'transform 0.4s ease, opacity 0.4s ease' : 'none', transform: showHourlyWeather ? 'translateX(0)' : 'translateX(100%)', opacity: showHourlyWeather ? 1 : 0, position: showHourlyWeather ? 'relative' : 'absolute', width: '100%', top: 0 }}>
+                        <div className="weather-arrow weather-arrow-left pc-only" onClick={() => { setWeatherInteracted(true); setShowHourlyWeather(false); }}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
                         </div>
                         

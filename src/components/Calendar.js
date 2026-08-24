@@ -699,7 +699,17 @@ export default function CalendarPage() {
                                         {/* Timetable List */}
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', height: '100%' }}>
                                             {(() => {
-                                                if (isTimetableLoading && !dynamicTimetable.userOverrides) return <div style={{ color: 'white', textAlign: 'center', padding: '2rem' }}>Loading...</div>;
+                                                if (isTimetableLoading && !dynamicTimetable.userOverrides) {
+                                                    return Array(5).fill(0).map((_, i) => (
+                                                        <div key={`skel-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1.25rem 1rem', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', minHeight: '85px' }}>
+                                                            <div className="skeleton" style={{ width: '42px', height: '42px', borderRadius: '12px', flexShrink: 0 }}></div>
+                                                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                                <div className="skeleton" style={{ height: '1.2rem', width: '70%', borderRadius: '4px' }}></div>
+                                                                <div className="skeleton" style={{ height: '0.9rem', width: '40%', borderRadius: '4px' }}></div>
+                                                            </div>
+                                                        </div>
+                                                    ));
+                                                }
                                                 const dayTimetable = dynamicTimetable.timetable[selectedDayOrder];
                                                 if (!dayTimetable) return <div style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '2rem' }}>No timetable available for Day {selectedDayOrder}</div>;
                                                 
